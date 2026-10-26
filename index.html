@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -143,7 +143,7 @@ label{letter-spacing:0;text-transform:none;font-size:13px;color:#cfe2ff}
 .btn.ghost{background:transparent;border:1px solid var(--bd);color:#cfe2ff;box-shadow:none}
 .btn.bad{background:transparent;border:1px solid rgba(255,143,163,.5);color:var(--bad);box-shadow:none}
 select,textarea{width:100%;padding:12px 2px 11px;font:400 16px var(--sans);color:var(--ink);background:transparent;border:0;border-bottom:1px solid rgba(140,200,255,.45);border-radius:0;outline:none;transition:border-color .2s,box-shadow .2s}
-select{appearance:none;-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2335c4ff' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat left 4px center}
+select{appearance:none;-webkit-appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2335c4ff' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 4px center}
 select:invalid,select:has(option[value=""]:checked){color:#8fa6c9}
 option{background:#0a1530;color:#fff}
 select:focus,textarea:focus{border-bottom-color:var(--amber);box-shadow:0 1px 0 0 var(--amber)}
@@ -259,6 +259,11 @@ body.in-app{overflow:hidden}body.in-app .scene{display:none}
   .top b{flex:1;font-size:16px}
   .hero{flex-direction:column;text-align:center}.kv{grid-template-columns:1fr 1fr}.two{gap:12px}
 }
+
+/* direction-aware helpers (needed for the later language toggle) */
+html[dir=rtl] select{background-position:left 4px center}
+html[dir=rtl] .nav.on{box-shadow:inset -3px 0 0 var(--cy)}
+@media (max-width:860px){.side{transform:translateX(-100%)}html[dir=rtl] .side{transform:translateX(100%)}.side.open,html[dir=rtl] .side.open{transform:none}}
 </style>
 </head>
 <body data-state="dark">
@@ -315,7 +320,7 @@ body.in-app{overflow:hidden}body.in-app .scene{display:none}
         <circle id="hit" cx="0" cy="17" r="46"/>
       </g>
     </svg>
-    <p class="hint">اسحب الحبل لترى جزءاً بسيطاً مما سنكون قادرين على إنشائه معاً<span>Pull the cord · أو اضغط Enter على الحبل بالكيبورد</span></p>
+    <p class="hint">Pull the cord to see a small part of what we will be able to build together<span>Pull the cord · or press Enter on the cord with your keyboard</span></p>
   </div>
 
   <div class="layer halo" aria-hidden="true"></div>
@@ -328,61 +333,61 @@ body.in-app{overflow:hidden}body.in-app .scene{display:none}
     </header>
     <div class="views" style="--i:1">
       <form class="view" data-view="apply" id="apply-form" novalidate>
-        <div class="field"><label for="a-name">الاسم الكامل</label><input id="a-name" autocomplete="name" maxlength="60" placeholder="اسمك الثلاثي" aria-describedby="a-name-err"><p class="error" id="a-name-err"></p></div>
+        <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name" maxlength="60" placeholder="Your full name" aria-describedby="a-name-err"><p class="error" id="a-name-err"></p></div>
         <div class="two">
-          <div class="field"><label for="a-dept">القسم</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
-          <div class="field"><label for="a-year">الفرقة</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
+          <div class="field"><label for="a-dept">Department</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
+          <div class="field"><label for="a-year">Year</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
         </div>
-        <label class="check"><input type="checkbox" id="a-terms"><span class="box"></span><span>أوافق على الشروط والأحكام الخاصة بالمجتمع. <button type="button" class="link" id="open-terms">اضغط هنا</button> لقراءتها.</span></label>
+        <label class="check"><input type="checkbox" id="a-terms"><span class="box"></span><span>I agree to the community terms and conditions. <button type="button" class="link" id="open-terms">Click here</button> to read them.</span></label>
         <p class="error" id="a-terms-err"></p>
-        <button type="submit" class="btn" id="a-submit">إرسال طلب الانضمام</button>
-        <p class="alt">لديك ID بالفعل؟ <a href="#" data-go="login">تسجيل الدخول</a></p>
+        <button type="submit" class="btn" id="a-submit">Send join request</button>
+        <p class="alt">Already have an ID? <a href="#" data-go="login">Sign in</a></p>
       </form>
       <div class="view" data-view="pending" hidden>
         <div class="pulse"><i></i><i></i><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
         <p class="note" id="p-info"></p>
-        <p class="note dim">يمكنك إغلاق الصفحة والعودة لاحقاً، ستظهر لك النتيجة هنا تلقائياً.</p>
-        <p class="alt"><a href="#" data-go="login">لدي ID بالفعل</a></p>
+        <p class="note dim">You can close the page and come back later; the result will appear here automatically.</p>
+        <p class="alt"><a href="#" data-go="login">I already have an ID</a></p>
       </div>
       <div class="view" data-view="result" hidden>
         <p class="note" id="r-note"></p>
         <button type="button" class="btn" id="r-btn"></button>
       </div>
       <form class="view" data-view="login" id="login-form" novalidate hidden>
-        <div class="field"><label for="l-id">الـ ID الخاص بك</label><input id="l-id" dir="ltr" autocapitalize="characters" autocomplete="username" placeholder="SVX-0000" aria-describedby="l-id-err"><p class="error" id="l-id-err"></p></div>
-        <div class="field" id="l-pw-wrap" hidden><label for="l-pw" id="l-pw-label">كلمة المرور</label><input id="l-pw" type="password" dir="ltr" autocomplete="current-password" aria-describedby="l-pw-err"><p class="error" id="l-pw-err"></p></div>
-        <div class="field" id="l-pw2-wrap" hidden><label for="l-pw2">تأكيد كلمة المرور</label><input id="l-pw2" type="password" dir="ltr" autocomplete="new-password" aria-describedby="l-pw2-err"><p class="error" id="l-pw2-err"></p></div>
-        <button type="submit" class="btn" id="l-submit">متابعة</button>
+        <div class="field"><label for="l-id">Your ID</label><input id="l-id" dir="ltr" autocapitalize="characters" autocomplete="username" placeholder="SVX-0000" aria-describedby="l-id-err"><p class="error" id="l-id-err"></p></div>
+        <div class="field" id="l-pw-wrap" hidden><label for="l-pw" id="l-pw-label">Password</label><input id="l-pw" type="password" dir="ltr" autocomplete="current-password" aria-describedby="l-pw-err"><p class="error" id="l-pw-err"></p></div>
+        <div class="field" id="l-pw2-wrap" hidden><label for="l-pw2">Confirm password</label><input id="l-pw2" type="password" dir="ltr" autocomplete="new-password" aria-describedby="l-pw2-err"><p class="error" id="l-pw2-err"></p></div>
+        <button type="submit" class="btn" id="l-submit">Continue</button>
         <p class="status" id="l-status" role="status" aria-live="polite"></p>
-        <p class="alt"><a href="#" id="l-back" hidden>تغيير الـ ID</a> <span id="l-new">طالب جديد؟ <a href="#" data-go="apply">قدّم طلب انضمام</a></span></p>
+        <p class="alt"><a href="#" id="l-back" hidden>Change ID</a> <span id="l-new">New student? <a href="#" data-go="apply">Apply to join</a></span></p>
       </form>
     </div>
   </section>
   <p class="sr-only" id="live" aria-live="polite"></p>
 </main>
 <div id="app" hidden>
-  <aside class="side" id="side" aria-label="القائمة"></aside>
+  <aside class="side" id="side" aria-label="Menu"></aside>
   <div class="scrim" id="scrim"></div>
   <div class="main">
-    <header class="top"><button class="icon" id="menu" aria-label="القائمة"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><b id="top-title"></b><span id="top-badge"></span></header>
+    <header class="top"><button class="icon" id="menu" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><b id="top-title"></b><span id="top-badge"></span></header>
     <main class="content" id="content" tabindex="-1"></main>
   </div>
 </div>
 <div id="modal" class="modal" hidden></div>
 <div id="toasts" aria-live="polite"></div>
 <script>
-/* ============ إعدادات Solvix Kod — عدّل هنا فقط ============ */
+/* ============ Solvix Kod settings — edit here only ============ */
 window.SOLVIX_CONFIG = {
-  // 1) Firebase (Firestore فقط). الصق إعدادات تطبيق الويب هنا. لو فاضية يعمل التطبيق ببيانات تجريبية محلية.
+  // 1) Firebase (Firestore only). Paste your web app config here. If empty, the app runs on local demo data.
   firebase: { apiKey: "", authDomain: "", projectId: "", appId: "" },
-  // 2) رابط ملف الشروط والأحكام (PDF) على Cloudinary، مثال:
+  // 2) Terms and conditions PDF link on Cloudinary, e.g.:
   //    https://res.cloudinary.com/CLOUD_NAME/image/upload/v1/terms.pdf
   termsUrl: "",
   termsPages: 3,
-  // 3) الـ ID الخاص بالمشرف (أول دخول به ينشئ كلمة المرور)
+  // 3) Admin ID (first sign-in with it creates the password)
   adminId: "SVX-ADMIN",
-  departments: ["علوم الحاسب", "نظم المعلومات", "تكنولوجيا المعلومات", "الذكاء الاصطناعي", "الأمن السيبراني", "أخرى"],
-  years: ["الفرقة الأولى", "الفرقة الثانية", "الفرقة الثالثة", "الفرقة الرابعة", "خريج"]
+  departments: ["Computer Science", "Information Systems", "Information Technology", "Artificial Intelligence", "Cybersecurity", "Other"],
+  years: ["First year", "Second year", "Third year", "Fourth year", "Graduate"]
 };
 </script>
 <script>
@@ -597,8 +602,8 @@ window.SOLVIX_CONFIG = {
   const CONFIG = window.SOLVIX_CONFIG;
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const fmt = (t) => t ? new Date(t).toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
-  const ago = (t) => { const s = (Date.now() - t) / 1000; return s < 60 ? 'الآن' : s < 3600 ? 'منذ ' + Math.floor(s / 60) + ' د' : s < 86400 ? 'منذ ' + Math.floor(s / 3600) + ' س' : 'منذ ' + Math.floor(s / 86400) + ' يوم'; };
+  const fmt = (t) => t ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+  const ago = (t) => { const s = (Date.now() - t) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s / 60) + ' min ago' : s < 86400 ? Math.floor(s / 3600) + ' h ago' : Math.floor(s / 86400) + ' d ago'; };
   const store = (() => { try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); return localStorage; } catch (_) { const m = {}; return { getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; } }; } })();
   function toast(m, t = 'ok') { const e = document.createElement('div'); e.className = 'toast ' + t; e.textContent = m; $('#toasts').append(e); setTimeout(() => e.classList.add('out'), 3200); setTimeout(() => e.remove(), 3700); }
 
@@ -606,9 +611,9 @@ window.SOLVIX_CONFIG = {
   const IC = { home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
   const ico = (n, s = 20) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + IC[n] + '"/></svg>';
   const LEVELS = [null,
-    { ar: 'مبتدئ', en: 'Initiate', d: 'بداية الرحلة' }, { ar: 'مستكشف', en: 'Explorer', d: 'يتعلّم ويجرّب' },
-    { ar: 'مطوّر', en: 'Builder', d: 'يبني مشاريع حقيقية' }, { ar: 'مهندس', en: 'Architect', d: 'يصمّم الحلول' },
-    { ar: 'مرشد', en: 'Mentor', d: 'يقود ويُلهم غيره' }, { ar: 'قائد', en: 'Core', d: 'قلب المجتمع' }];
+    { ar: 'Initiate', en: 'Level 1', d: 'The start of the journey' }, { ar: 'Explorer', en: 'Level 2', d: 'Learns and experiments' },
+    { ar: 'Builder', en: 'Level 3', d: 'Builds real projects' }, { ar: 'Architect', en: 'Level 4', d: 'Designs solutions' },
+    { ar: 'Mentor', en: 'Level 5', d: 'Leads and inspires others' }, { ar: 'Core', en: 'Level 6', d: 'The heart of the community' }];
   const badge = (n, s = 56) => {
     let g = '';
     if (n < 6) { for (let i = 0; i < n; i++) { const y = 38 + (i - (n - 1) / 2) * 9; g += '<path d="M21 ' + (y + 4) + 'L32 ' + (y - 5) + 'L43 ' + (y + 4) + '"/>'; } }
@@ -616,7 +621,7 @@ window.SOLVIX_CONFIG = {
     return '<svg class="bdg l' + n + '" width="' + s + '" height="' + Math.round(s * 1.12) + '" viewBox="0 0 64 72" role="img" aria-label="' + LEVELS[n].ar + '"><path class="hex" d="M32 3L58 18V50L32 69L6 50V18Z"/><g class="mk">' + g + '</g></svg>';
   };
   const av = (n) => '<span class="av">' + esc([...String(n).trim()][0] || '?') + '</span>';
-  const PILL = { pending: ['قيد المراجعة', 'warn'], approved: ['مقبول', 'ok'], rejected: ['مرفوض', 'bad'] };
+  const PILL = { pending: ['Pending', 'warn'], approved: ['Accepted', 'ok'], rejected: ['Rejected', 'bad'] };
 
   /* ---------- data layer: Firestore (database only) or local demo ---------- */
   function localDB() {
@@ -669,22 +674,22 @@ window.SOLVIX_CONFIG = {
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
 
   /* ---------- terms (Cloudinary PDF pages, or built-in sample text) ---------- */
-  const SAMPLE_TERMS = '<p><b>نص تجريبي</b> — استبدله بملف Cloudinary عبر <code>termsUrl</code> في الإعدادات.</p><h4>1. العضوية</h4><p>العضوية خاصة بالطلاب المقبولين من إدارة المجتمع، ويحق للإدارة مراجعتها في أي وقت.</p><h4>2. السلوك</h4><p>الالتزام بالاحترام المتبادل وبقواعد العمل الجماعي وعدم نشر محتوى مسيء.</p><h4>3. المهام والمشاريع</h4><p>الالتزام بمواعيد التسليم، وأي عمل داخل المجتمع يُنسب لأصحابه.</p><h4>4. الخصوصية</h4><p>تُستخدم بياناتك داخل المجتمع فقط ولا تُشارك مع أي جهة خارجية.</p>';
+  const SAMPLE_TERMS = '<p><b>Sample text</b> — replace it with a Cloudinary file via <code>termsUrl</code> in the settings.</p><h4>1. Membership</h4><p>Membership is limited to students accepted by the community admins, who may review it at any time.</p><h4>2. Conduct</h4><p>Members must respect one another, follow teamwork rules and not post offensive content.</p><h4>3. Tasks and projects</h4><p>Deadlines must be respected, and any work done inside the community is credited to its authors.</p><h4>4. Privacy</h4><p>Your data is used inside the community only and is never shared with any external party.</p>';
   function openTerms() {
     const u = CONFIG.termsUrl; const pg = (n) => (/\.pdf$/i.test(u) ? u.replace('/upload/', '/upload/pg_' + n + ',f_auto,q_auto,w_900/').replace(/\.pdf$/i, '.jpg') : u);
-    const body = u ? Array.from({ length: CONFIG.termsPages || 1 }, (_, i) => '<img class="tpage" loading="lazy" alt="صفحة ' + (i + 1) + '" src="' + esc(pg(i + 1)) + '">').join('') : SAMPLE_TERMS;
-    openModal('<div class="mhead"><h3>الشروط والأحكام</h3><button class="icon" data-close aria-label="إغلاق">' + ico('x') + '</button></div><div class="mbody terms">' + body + '</div><div class="mfoot"><button class="btn sm" id="accept">موافق وإغلاق</button></div>');
+    const body = u ? Array.from({ length: CONFIG.termsPages || 1 }, (_, i) => '<img class="tpage" loading="lazy" alt="Page ' + (i + 1) + '" src="' + esc(pg(i + 1)) + '">').join('') : SAMPLE_TERMS;
+    openModal('<div class="mhead"><h3>Terms and Conditions</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody terms">' + body + '</div><div class="mfoot"><button class="btn sm" id="accept">Agree and close</button></div>');
     $('#accept').onclick = () => { $('#a-terms').checked = true; fe('a-terms', ''); closeModal(); };
   }
 
   /* ---------- gate: apply → pending → login ---------- */
-  const TITLES = { apply: ['انضم إلى مجتمع Solvix Kod', 'Real Problems. <b>Smart Solutions.</b>'], pending: ['طلبك قيد المراجعة', 'سنخبرك هنا فور اتخاذ القرار'], login: ['تسجيل الدخول', 'أدخل الـ ID الذي سلّمته لك الإدارة'], result: ['', ''] };
+  const TITLES = { apply: ['Join the Solvix Kod Community', 'Real Problems. <b>Smart Solutions.</b>'], pending: ['Your request is under review', 'We will let you know here as soon as a decision is made'], login: ['Sign in', 'Enter the ID the admins gave you'], result: ['', ''] };
   const GV = $$('.view', login); let curView = 'apply', gateUnsub = null, db = null, me = null;
   const fe = (id, m) => { const i = $('#' + id), e = $('#' + id + '-err'); if (e) e.textContent = m || ''; if (i) i.setAttribute('aria-invalid', String(!!m)); return !m; };
   function focusFirst() { const el = login.querySelector('.view:not([hidden]) input:not([type=checkbox]):not([readonly]),.view:not([hidden]) select'); if (el && !matchMedia('(pointer: coarse)').matches) el.focus({ preventScroll: true }); }
   function showView(v, t, l) { curView = v; GV.forEach((e) => { e.hidden = e.dataset.view !== v; }); const d = TITLES[v]; $('#login-title').textContent = t || d[0]; $('#gate-lede').innerHTML = l || d[1]; if (state === 'login-visible') focusFirst(); }
-  $('#a-dept').innerHTML = '<option value="" disabled selected>اختر القسم</option>' + CONFIG.departments.map((d) => '<option>' + esc(d) + '</option>').join('');
-  $('#a-year').innerHTML = '<option value="" disabled selected>اختر الفرقة</option>' + CONFIG.years.map((d) => '<option>' + esc(d) + '</option>').join('');
+  $('#a-dept').innerHTML = '<option value="" disabled selected>Choose department</option>' + CONFIG.departments.map((d) => '<option>' + esc(d) + '</option>').join('');
+  $('#a-year').innerHTML = '<option value="" disabled selected>Choose year</option>' + CONFIG.years.map((d) => '<option>' + esc(d) + '</option>').join('');
   $('#open-terms').onclick = openTerms;
   login.addEventListener('click', (e) => { const a = e.target.closest('[data-go]'); if (a) { e.preventDefault(); showView(a.dataset.go); } });
 
@@ -696,63 +701,63 @@ window.SOLVIX_CONFIG = {
       if (r.status === 'pending') { $('#p-info').innerHTML = '<b>' + esc(r.name) + '</b><br>' + esc(r.dept) + ' · ' + esc(r.year); showView('pending'); }
       else {
         const ok = r.status === 'approved';
-        $('#r-note').innerHTML = ok ? 'تمت الموافقة على طلبك يا <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>تواصل مع الإدارة لاستلام الـ ID الخاص بك ثم سجّل الدخول.' : 'نأسف، لم يتم قبول طلبك في الوقت الحالي. يمكنك تقديم طلب جديد لاحقاً.';
-        $('#r-btn').textContent = ok ? 'تسجيل الدخول' : 'تقديم طلب جديد';
+        $('#r-note').innerHTML = ok ? 'Your request has been approved, <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>Contact the admins to receive your ID, then sign in.' : 'Sorry, your request was not accepted at this time. You can submit a new request later.';
+        $('#r-btn').textContent = ok ? 'Sign in' : 'Submit a new request';
         $('#r-btn').onclick = () => { if (!ok) { store.removeItem('svx.req'); showView('apply'); } else showView('login'); };
-        showView('result', ok ? 'تم قبولك في المجتمع' : 'تعذّر قبول الطلب', ok ? 'مرحباً بك في Solvix Kod' : '');
+        showView('result', ok ? 'You have been accepted' : 'Request not accepted', ok ? 'Welcome to Solvix Kod' : '');
       }
     });
   }
   $('#apply-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('#a-name').value.trim().replace(/\s+/g, ' '), dept = $('#a-dept').value, year = $('#a-year').value;
-    const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'اكتب اسمك الثنائي على الأقل.' : ''), fe('a-dept', dept ? '' : 'اختر القسم.'), fe('a-year', year ? '' : 'اختر الفرقة.'), fe('a-terms', $('#a-terms').checked ? '' : 'يجب الموافقة على الشروط والأحكام.')];
+    const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
-    const b = $('#a-submit'); b.disabled = true; b.textContent = 'جارٍ الإرسال…';
-    try { const id = await db.add('requests', { name, dept, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('تم إرسال طلبك بنجاح'); }
-    catch (_) { toast('تعذّر الإرسال، حاول مرة أخرى', 'bad'); }
-    b.disabled = false; b.textContent = 'إرسال طلب الانضمام';
+    const b = $('#a-submit'); b.disabled = true; b.textContent = 'Sending…';
+    try { const id = await db.add('requests', { name, dept, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
+    catch (_) { toast('Could not send, please try again', 'bad'); }
+    b.disabled = false; b.textContent = 'Send join request';
   });
 
   let lstep = 'id', ld = null, fails = 0, lock = 0;
   const lf = $('#login-form'), setSt = (m) => { $('#l-status').textContent = m || ''; };
-  function resetLogin() { lstep = 'id'; ld = null; lf.reset(); $('#l-id').readOnly = false; $('#l-pw-wrap').hidden = $('#l-pw2-wrap').hidden = $('#l-back').hidden = true; $('#l-new').hidden = false; $('#l-pw-label').textContent = 'كلمة المرور'; $('#l-submit').textContent = 'متابعة'; setSt(''); ['l-id', 'l-pw', 'l-pw2'].forEach((i) => fe(i, '')); $('#l-id').focus(); }
+  function resetLogin() { lstep = 'id'; ld = null; lf.reset(); $('#l-id').readOnly = false; $('#l-pw-wrap').hidden = $('#l-pw2-wrap').hidden = $('#l-back').hidden = true; $('#l-new').hidden = false; $('#l-pw-label').textContent = 'Password'; $('#l-submit').textContent = 'Continue'; setSt(''); ['l-id', 'l-pw', 'l-pw2'].forEach((i) => fe(i, '')); $('#l-id').focus(); }
   $('#l-back').onclick = (e) => { e.preventDefault(); resetLogin(); };
   lf.addEventListener('submit', async (e) => {
     e.preventDefault(); setSt('');
-    if (Date.now() < lock) return setSt('محاولات كثيرة. حاول بعد لحظات.');
-    if (!(window.crypto && crypto.subtle)) return setSt('المتصفح لا يدعم التشفير المطلوب. افتح الصفحة عبر HTTPS.');
+    if (Date.now() < lock) return setSt('Too many attempts. Try again shortly.');
+    if (!(window.crypto && crypto.subtle)) return setSt('Your browser does not support the required encryption. Open the page over HTTPS.');
     const btn = $('#l-submit');
     if (lstep === 'id') {
       const idv = $('#l-id').value.trim().toUpperCase();
-      if (!fe('l-id', /^[A-Z0-9-]{4,24}$/.test(idv) ? '' : 'اكتب الـ ID بالشكل الصحيح.')) return;
+      if (!fe('l-id', /^[A-Z0-9-]{4,24}$/.test(idv) ? '' : 'Enter a valid ID.')) return;
       btn.disabled = true; let d = null;
-      try { d = await db.get('members', idv); } catch (_) { btn.disabled = false; return setSt('تعذّر الاتصال بقاعدة البيانات.'); }
+      try { d = await db.get('members', idv); } catch (_) { btn.disabled = false; return setSt('Could not connect to the database.'); }
       btn.disabled = false;
-      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'المشرف', level: 6, createdAt: Date.now() };
-      if (!d) return fe('l-id', 'هذا الـ ID غير مسجّل لدينا.');
+      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() };
+      if (!d) return fe('l-id', 'This ID is not registered.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
-      if (d.passHash) { lstep = 'pw'; btn.textContent = 'دخول'; }
-      else { lstep = 'setup'; $('#l-pw2-wrap').hidden = false; $('#l-pw-label').textContent = 'أنشئ كلمة مرور جديدة'; $('#l-pw').autocomplete = 'new-password'; btn.textContent = 'حفظ كلمة المرور والدخول'; setSt('أهلاً ' + d.name.split(' ')[0] + '! هذه أول مرة لك، اختر كلمة مرور وستدخل بها دائماً.'); }
+      if (d.passHash) { lstep = 'pw'; btn.textContent = 'Sign in'; }
+      else { lstep = 'setup'; $('#l-pw2-wrap').hidden = false; $('#l-pw-label').textContent = 'Create a new password'; $('#l-pw').autocomplete = 'new-password'; btn.textContent = 'Save password and sign in'; setSt('Welcome ' + d.name.split(' ')[0] + '! This is your first time, choose a password and use it to sign in from now on.'); }
       $('#l-pw').focus(); return;
     }
     const pw = $('#l-pw').value;
     if (lstep === 'pw') {
-      if (!fe('l-pw', pw ? '' : 'اكتب كلمة المرور.')) return;
+      if (!fe('l-pw', pw ? '' : 'Enter your password.')) return;
       btn.disabled = true; const hh = await hashPw(pw, unb(ld.salt)); btn.disabled = false;
-      if (hh !== ld.passHash) { if (++fails >= 5) { lock = Date.now() + 30000; fails = 0; } return fe('l-pw', 'كلمة المرور غير صحيحة.'); }
+      if (hh !== ld.passHash) { if (++fails >= 5) { lock = Date.now() + 30000; fails = 0; } return fe('l-pw', 'Incorrect password.'); }
       fails = 0; return enterApp(ld);
     }
-    const a = fe('l-pw', pw.length >= 8 ? '' : '8 أحرف على الأقل.'), c = fe('l-pw2', $('#l-pw2').value === pw ? '' : 'كلمتا المرور غير متطابقتين.');
+    const a = fe('l-pw', pw.length >= 8 ? '' : 'At least 8 characters.'), c = fe('l-pw2', $('#l-pw2').value === pw ? '' : 'Passwords do not match.');
     if (!a || !c) return;
     btn.disabled = true;
     try { const salt = crypto.getRandomValues(new Uint8Array(16)); const rec = Object.assign({}, ld, { salt: b64(salt), passHash: await hashPw(pw, salt), passSetAt: Date.now() }); await db.set('members', ld.id, rec); btn.disabled = false; enterApp(rec); }
-    catch (_) { btn.disabled = false; setSt('تعذّر الحفظ، حاول مرة أخرى.'); }
+    catch (_) { btn.disabled = false; setSt('Could not save, please try again.'); }
   });
 
   /* ---------- app: shell, routing, data ---------- */
   const D = { requests: [], members: [], tasks: [] }, F = { req: 'pending', q: '', lvl: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
-  const NAV = { member: [['home', 'الرئيسية', 'home'], ['tasks', 'المهام', 'tasks'], ['profile', 'ملفي', 'user']], admin: [['requests', 'طلبات الانضمام', 'inbox'], ['members', 'الأعضاء', 'users'], ['tasks', 'المهام', 'tasks']] };
+  const NAV = { member: [['home', 'Home', 'home'], ['tasks', 'Tasks', 'tasks'], ['profile', 'My profile', 'user']], admin: [['requests', 'Join requests', 'inbox'], ['members', 'Members', 'users'], ['tasks', 'Tasks', 'tasks']] };
   const lvl = () => Math.min(6, Math.max(1, (me && me.level) || 1));
   const isAdmin = () => me && me.role === 'admin';
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
@@ -765,11 +770,11 @@ window.SOLVIX_CONFIG = {
   }
   function paintProfile() {
     const n = isAdmin() ? 6 : lvl();
-    $('#s-prof').innerHTML = '<div class="aura l' + n + '">' + badge(n, 66) + '</div><strong>' + esc(me.name) + '</strong><code>' + esc(me.id) + '</code><span class="lvl l' + n + '">' + (isAdmin() ? 'مشرف المجتمع' : LEVELS[n].ar + ' · ' + LEVELS[n].en) + '</span>';
+    $('#s-prof').innerHTML = '<div class="aura l' + n + '">' + badge(n, 66) + '</div><strong>' + esc(me.name) + '</strong><code>' + esc(me.id) + '</code><span class="lvl l' + n + '">' + (isAdmin() ? 'Community admin' : LEVELS[n].ar + ' · ' + LEVELS[n].en) + '</span>';
     $('#top-badge').innerHTML = badge(n, 30);
   }
   function buildShell() {
-    $('#side').innerHTML = '<div class="s-brand"><img src="' + $('.mark').src + '" alt=""><span>SOLVIX KOD</span></div><div class="s-prof" id="s-prof"></div>' + NAV[isAdmin() ? 'admin' : 'member'].map((x) => '<button class="nav" data-nav="' + x[0] + '">' + ico(x[2]) + '<span>' + x[1] + '</span><em id="nb-' + x[0] + '"></em></button>').join('') + '<button class="nav out" id="logout">' + ico('out') + '<span>تسجيل الخروج</span></button>';
+    $('#side').innerHTML = '<div class="s-brand"><img src="' + $('.mark').src + '" alt=""><span>SOLVIX KOD</span></div><div class="s-prof" id="s-prof"></div>' + NAV[isAdmin() ? 'admin' : 'member'].map((x) => '<button class="nav" data-nav="' + x[0] + '">' + ico(x[2]) + '<span>' + x[1] + '</span><em id="nb-' + x[0] + '"></em></button>').join('') + '<button class="nav out" id="logout">' + ico('out') + '<span>Sign out</span></button>';
     paintProfile();
   }
   function startData() {
@@ -786,7 +791,7 @@ window.SOLVIX_CONFIG = {
 
   function levelUp(n) {
     const o = document.createElement('div'); o.className = 'lvlup l' + n; o.setAttribute('role', 'alertdialog');
-    o.innerHTML = '<div class="rings"><i></i><i></i><i></i></div><div class="aura l' + n + '">' + badge(n, 130) + '</div><h2>ترقية جديدة!</h2><p>وصلت إلى مستوى <b>' + LEVELS[n].ar + '</b> · ' + LEVELS[n].en + '</p><button class="btn sm">متابعة</button>';
+    o.innerHTML = '<div class="rings"><i></i><i></i><i></i></div><div class="aura l' + n + '">' + badge(n, 130) + '</div><h2>Level up!</h2><p>You reached level <b>' + LEVELS[n].ar + '</b> · ' + LEVELS[n].en + '</p><button class="btn sm">Continue</button>';
     document.body.append(o); o.querySelector('button').onclick = () => o.remove(); o.querySelector('button').focus();
   }
 
@@ -795,42 +800,42 @@ window.SOLVIX_CONFIG = {
   const kv = (a) => '<dl class="kv">' + a.map((x) => '<div><dt>' + x[0] + '</dt><dd>' + x[1] + '</dd></div>').join('') + '</dl>';
   const V = {
     requests: {
-      html: () => '<h2 class="ph">طلبات الانضمام</h2><p class="pp">راجع الطلبات الجديدة وحدّد الـ ID لكل طالب مقبول.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>',
+      html: () => '<h2 class="ph">Join requests</h2><p class="pp">Review new requests and assign an ID to each accepted student.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>',
       paint() {
-        const R = D.requests; $('#stats').innerHTML = stat('قيد المراجعة', R.filter((r) => r.status === 'pending').length, 'clock') + stat('الأعضاء', D.members.filter((m) => m.role !== 'admin').length, 'users') + stat('المهام', D.tasks.length, 'tasks');
-        $('#chips').innerHTML = [['pending', 'قيد المراجعة'], ['approved', 'مقبولة'], ['rejected', 'مرفوضة'], ['all', 'الكل']].map((c) => '<button class="chip' + (F.req === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + '</button>').join('');
+        const R = D.requests; $('#stats').innerHTML = stat('Pending', R.filter((r) => r.status === 'pending').length, 'clock') + stat('Members', D.members.filter((m) => m.role !== 'admin').length, 'users') + stat('Tasks', D.tasks.length, 'tasks');
+        $('#chips').innerHTML = [['pending', 'Pending'], ['approved', 'Accepted'], ['rejected', 'Rejected'], ['all', 'All']].map((c) => '<button class="chip' + (F.req === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + '</button>').join('');
         const L = R.filter((r) => F.req === 'all' || r.status === F.req).sort((a, b) => b.createdAt - a.createdAt);
-        $('#list').innerHTML = L.length ? L.map((r, i) => { const p = PILL[r.status]; return '<button class="rowc" data-req="' + r.id + '" style="--i:' + i + '">' + av(r.name) + '<div class="rc-t"><b>' + esc(r.name) + '</b><small>' + esc(r.dept) + ' · ' + esc(r.year) + '</small></div><span class="rc-m">' + ago(r.createdAt) + '</span><span class="pill ' + p[1] + '">' + p[0] + '</span></button>'; }).join('') : empty('لا توجد طلبات هنا حالياً');
+        $('#list').innerHTML = L.length ? L.map((r, i) => { const p = PILL[r.status]; return '<button class="rowc" data-req="' + r.id + '" style="--i:' + i + '">' + av(r.name) + '<div class="rc-t"><b>' + esc(r.name) + '</b><small>' + esc(r.dept) + ' · ' + esc(r.year) + '</small></div><span class="rc-m">' + ago(r.createdAt) + '</span><span class="pill ' + p[1] + '">' + p[0] + '</span></button>'; }).join('') : empty('No requests here right now');
       }
     },
     members: {
-      html: () => '<h2 class="ph">أعضاء المجتمع</h2><p class="pp">اضغط على أي عضو لعرض بياناته الكاملة وترقيته.</p><div class="tools"><div class="field"><label for="q">بحث</label><input id="q" placeholder="الاسم أو الـ ID" value="' + esc(F.q) + '"></div><div class="field"><label for="fl">المستوى</label><select id="fl"><option value="0">الكل</option>' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '"' + (F.lvl === String(i + 1) ? ' selected' : '') + '>' + l.ar + '</option>').join('') + '</select></div></div><div class="list" id="list"></div>',
+      html: () => '<h2 class="ph">Community members</h2><p class="pp">Tap any member to see their full details and promote them.</p><div class="tools"><div class="field"><label for="q">Search</label><input id="q" placeholder="Name or ID" value="' + esc(F.q) + '"></div><div class="field"><label for="fl">Level</label><select id="fl"><option value="0">All</option>' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '"' + (F.lvl === String(i + 1) ? ' selected' : '') + '>' + l.ar + '</option>').join('') + '</select></div></div><div class="list" id="list"></div>',
       paint() {
-        const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'ar'));
-        $('#list').innerHTML = L.length ? L.map((m, i) => { const l = m.level || 1; return '<button class="rowc" data-mem="' + esc(m.id) + '" style="--i:' + i + '">' + badge(l, 38) + '<div class="rc-t"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'بانتظار التفعيل') + '</span></button>'; }).join('') : empty('لا يوجد أعضاء مطابقون');
+        const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'en'));
+        $('#list').innerHTML = L.length ? L.map((m, i) => { const l = m.level || 1; return '<button class="rowc" data-mem="' + esc(m.id) + '" style="--i:' + i + '">' + badge(l, 38) + '<div class="rc-t"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'Awaiting activation') + '</span></button>'; }).join('') : empty('No matching members');
       }
     },
     tasks: {
       html: () => isAdmin()
-        ? '<h2 class="ph">المهام</h2><p class="pp">أنشئ مهمة وستظهر فوراً لأعضاء المستوى المناسب.</p><form class="card" id="task-form" novalidate style="margin-bottom:20px"><div class="field"><label for="t-title">عنوان المهمة</label><input id="t-title" maxlength="80"><p class="error" id="t-title-err"></p></div><div class="field"><label for="t-desc">الوصف</label><textarea id="t-desc" maxlength="600"></textarea></div><div class="two"><div class="field"><label for="t-due">آخر موعد</label><input id="t-due" type="date" dir="ltr"></div><div class="field"><label for="t-min">أقل مستوى</label><select id="t-min">' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '">' + l.ar + ' فأعلى</option>').join('') + '</select></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' نشر المهمة</button></form><div class="list" id="list"></div>'
-        : '<h2 class="ph">مهامي</h2><p class="pp">المهام المتاحة لمستواك. أنجزها واضغط «تم التنفيذ».</p><div class="list" id="list"></div>',
+        ? '<h2 class="ph">Tasks</h2><p class="pp">Create a task and it will instantly appear to members of the right level.</p><form class="card" id="task-form" novalidate style="margin-bottom:20px"><div class="field"><label for="t-title">Task title</label><input id="t-title" maxlength="80"><p class="error" id="t-title-err"></p></div><div class="field"><label for="t-desc">Description</label><textarea id="t-desc" maxlength="600"></textarea></div><div class="two"><div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" dir="ltr"></div><div class="field"><label for="t-min">Minimum level</label><select id="t-min">' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '">' + l.ar + ' and above</option>').join('') + '</select></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' Publish task</button></form><div class="list" id="list"></div>'
+        : '<h2 class="ph">My tasks</h2><p class="pp">Tasks available for your level. Complete them and press "Done".</p><div class="list" id="list"></div>',
       paint() {
         const T = D.tasks.slice().sort((a, b) => b.createdAt - a.createdAt);
-        if (isAdmin()) { const mem = D.members.filter((m) => m.role !== 'admin'); $('#list').innerHTML = T.length ? T.map((t, i) => { const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)); const dn = el.filter((m) => m.done && m.done[t.id]).length; return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill ok">' + dn + ' / ' + el.length + ' أنجزوها</span> <span class="pill warn">' + (t.due ? 'حتى ' + fmt(t.due) : 'بدون موعد') + '</span></div>' + badge(t.minLevel || 1, 36) + '</div>'; }).join('') : empty('لم تُنشأ مهام بعد'); return; }
+        if (isAdmin()) { const mem = D.members.filter((m) => m.role !== 'admin'); $('#list').innerHTML = T.length ? T.map((t, i) => { const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)); const dn = el.filter((m) => m.done && m.done[t.id]).length; return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill ok">' + dn + ' / ' + el.length + ' completed</span> <span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span></div>' + badge(t.minLevel || 1, 36) + '</div>'; }).join('') : empty('No tasks created yet'); return; }
         const mine = T.filter((t) => (t.minLevel || 1) <= lvl());
-        $('#list').innerHTML = mine.length ? mine.map((t, i) => { const dn = me.done && me.done[t.id]; return '<div class="card tcard' + (dn ? ' done' : '') + '" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p>' + (dn ? '<span class="pill ok">أُنجزت · ' + fmt(dn) + '</span>' : '<button class="btn sm" data-done="' + t.id + '">' + ico('check', 16) + ' تم التنفيذ</button> <span class="pill warn">' + (t.due ? 'حتى ' + fmt(t.due) : 'مفتوحة') + '</span>') + '</div></div>'; }).join('') : empty('لا توجد مهام لمستواك الآن');
+        $('#list').innerHTML = mine.length ? mine.map((t, i) => { const dn = me.done && me.done[t.id]; return '<div class="card tcard' + (dn ? ' done' : '') + '" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p>' + (dn ? '<span class="pill ok">Completed · ' + fmt(dn) + '</span>' : '<button class="btn sm" data-done="' + t.id + '">' + ico('check', 16) + ' Done</button> <span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'Open') + '</span>') + '</div></div>'; }).join('') : empty('No tasks for your level right now');
       }
     },
     home: {
-      html: () => '<div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>أهلاً، ' + esc(me.name.split(' ')[0]) + '</h2><p>مستواك الحالي <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
+      html: () => '<div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
       paint() {
         const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl()), dn = mine.filter((t) => me.done && me.done[t.id]).length;
-        $('#stats').innerHTML = stat('مهام منجزة', dn, 'check') + stat('مهام متاحة', mine.length - dn, 'tasks') + stat('المستوى من 6', lvl(), 'up');
-        $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">المستوى التالي: <b>' + LEVELS[lvl() + 1].ar + '</b>. تحدّد الإدارة الترقية بناءً على نشاطك وإنجازك للمهام.</p>' : '<p class="note" style="margin:0">أنت في أعلى مستوى في المجتمع.</p>';
+        $('#stats').innerHTML = stat('Tasks completed', dn, 'check') + stat('Tasks available', mine.length - dn, 'tasks') + stat('Level out of 6', lvl(), 'up');
+        $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is decided by the admins based on your activity and completed tasks.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
       }
     },
     profile: {
-      html: () => { const l = lvl(); return '<h2 class="ph">ملفي</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([['القسم', esc(me.dept || '—')], ['الفرقة', esc(me.year || '—')], ['المستوى', LEVELS[l].ar], ['تاريخ الانضمام', fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">رحلة المستويات</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
+      html: () => { const l = lvl(); return '<h2 class="ph">My profile</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([['Department', esc(me.dept || '—')], ['Year', esc(me.year || '—')], ['Level', LEVELS[l].ar], ['Joined', fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">Level journey</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
     }
   };
 
@@ -838,38 +843,38 @@ window.SOLVIX_CONFIG = {
   const genId = () => { let id; do { id = 'SVX-' + String(new Date().getFullYear()).slice(2) + String(Math.floor(Math.random() * 9000) + 1000); } while (D.members.some((m) => m.id === id)); return id; };
   function openRequest(id) {
     const r = D.requests.find((x) => x.id === id); if (!r) return; const p = PILL[r.status];
-    openModal('<div class="mhead"><h3>طلب انضمام</h3><button class="icon" data-close aria-label="إغلاق">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['القسم', esc(r.dept)], ['الفرقة', esc(r.year)], ['تاريخ الطلب', fmt(r.createdAt)], ['رقم الطلب', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
-      + (r.status === 'pending' ? '<div class="field"><label for="rq-id">الـ ID الخاص بالطالب</label><div class="idrow"><input id="rq-id" dir="ltr" autocapitalize="characters" value="' + genId() + '"><button type="button" class="btn sm ghost" id="rq-gen">توليد</button></div><p class="error" id="rq-id-err"></p></div><div class="mfoot"><button class="btn sm bad" id="rq-no">رفض</button><button class="btn sm" id="rq-ok">قبول وإنشاء العضوية</button></div>' : (r.memberId ? '<p class="note">الـ ID: <code>' + esc(r.memberId) + '</code></p>' : '')) + '</div>');
+    openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['Department', esc(r.dept)], ['Year', esc(r.year)], ['Request date', fmt(r.createdAt)], ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
+      + (r.status === 'pending' ? '<div class="field"><label for="rq-id">Student ID</label><div class="idrow"><input id="rq-id" dir="ltr" autocapitalize="characters" value="' + genId() + '"><button type="button" class="btn sm ghost" id="rq-gen">Generate</button></div><p class="error" id="rq-id-err"></p></div><div class="mfoot"><button class="btn sm bad" id="rq-no">Reject</button><button class="btn sm" id="rq-ok">Accept and create membership</button></div>' : (r.memberId ? '<p class="note">ID: <code>' + esc(r.memberId) + '</code></p>' : '')) + '</div>');
     if (r.status !== 'pending') return;
     $('#rq-gen').onclick = () => { $('#rq-id').value = genId(); };
-    $('#rq-no').onclick = async () => { await db.set('requests', r.id, { status: 'rejected', decidedAt: Date.now() }); closeModal(); toast('تم رفض الطلب'); };
+    $('#rq-no').onclick = async () => { await db.set('requests', r.id, { status: 'rejected', decidedAt: Date.now() }); closeModal(); toast('Request rejected'); };
     $('#rq-ok').onclick = async () => {
       const mid = $('#rq-id').value.trim().toUpperCase();
-      if (!fe('rq-id', !/^[A-Z0-9-]{4,24}$/.test(mid) ? 'ID غير صالح (حروف إنجليزية وأرقام وشرطة).' : (D.members.some((m) => m.id === mid) || mid === CONFIG.adminId.toUpperCase()) ? 'هذا الـ ID مستخدم بالفعل.' : '')) return;
+      if (!fe('rq-id', !/^[A-Z0-9-]{4,24}$/.test(mid) ? 'Invalid ID (English letters, digits and dashes).' : (D.members.some((m) => m.id === mid) || mid === CONFIG.adminId.toUpperCase()) ? 'This ID is already in use.' : '')) return;
       $('#rq-ok').disabled = true;
       await db.set('members', mid, { id: mid, name: r.name, dept: r.dept, year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} });
       await db.set('requests', r.id, { status: 'approved', memberId: mid, decidedAt: Date.now() });
-      closeModal(); toast('تم القبول. سلّم الـ ID للطالب: ' + mid);
+      closeModal(); toast('Accepted. Give this ID to the student: ' + mid);
     };
   }
   function openMember(id) {
     const m = D.members.find((x) => x.id === id); if (!m) return; const l = m.level || 1, dn = Object.keys(m.done || {}).length;
-    openModal('<div class="mhead"><h3>بيانات العضو</h3><button class="icon" data-close aria-label="إغلاق">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code></div></div>'
-      + kv([['القسم', esc(m.dept)], ['الفرقة', esc(m.year)], ['المستوى', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['الحساب', m.passHash ? 'مفعّل' : 'لم يسجّل بعد'], ['تاريخ الانضمام', fmt(m.createdAt)], ['مهام منجزة', dn], ['آخر ترقية', fmt(m.promotedAt)], ['رقم الطلب', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
-      + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">ترقية إلى ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">أعلى مستوى في المجتمع</p>')
-      + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="المستوى">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">ضبط المستوى</button></div>'
-      + (m.passHash ? '<button class="btn sm bad" id="m-reset">إعادة تعيين كلمة المرور</button>' : '') + '</div></div>');
+    openModal('<div class="mhead"><h3>Member details</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code></div></div>'
+      + kv([['Department', esc(m.dept)], ['Year', esc(m.year)], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks completed', dn], ['Last promotion', fmt(m.promotedAt)], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
+      + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
+      + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
+      + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '') + '</div></div>');
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
-    if ($('#m-up')) $('#m-up').onclick = () => upd({ level: l + 1, promotedAt: Date.now() }, 'تمت ترقية ' + m.name.split(' ')[0]);
-    $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) upd({ level: n, promotedAt: Date.now() }, 'تم تعديل المستوى'); };
-    if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null }, 'سيُنشئ العضو كلمة مرور جديدة عند دخوله');
+    if ($('#m-up')) $('#m-up').onclick = () => upd({ level: l + 1, promotedAt: Date.now() }, 'Promoted ' + m.name.split(' ')[0]);
+    $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) upd({ level: n, promotedAt: Date.now() }, 'Level updated'); };
+    if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null }, 'The member will create a new password at next sign-in');
   }
-  async function markDone(tid) { await db.set('members', me.id, { done: Object.assign({}, me.done || {}, { [tid]: Date.now() }) }); toast('أحسنت! تم تسجيل إنجازك'); }
+  async function markDone(tid) { await db.set('members', me.id, { done: Object.assign({}, me.done || {}, { [tid]: Date.now() }) }); toast('Well done! Your achievement was recorded'); }
   async function addTask() {
-    const title = $('#t-title').value.trim(); if (!fe('t-title', title.length < 3 ? 'اكتب عنواناً واضحاً.' : '')) return;
+    const title = $('#t-title').value.trim(); if (!fe('t-title', title.length < 3 ? 'Enter a clear title.' : '')) return;
     const due = $('#t-due').value ? new Date($('#t-due').value + 'T23:59:00').getTime() : null;
     await db.add('tasks', { title, desc: $('#t-desc').value.trim(), due, minLevel: +$('#t-min').value, createdAt: Date.now() });
-    $('#task-form').reset(); toast('تم نشر المهمة');
+    $('#task-form').reset(); toast('Task published');
   }
   const C = $('#content');
   C.addEventListener('click', (e) => { const t = e.target.closest('[data-req],[data-mem],[data-f],[data-done]'); if (!t) return; if (t.dataset.req) openRequest(t.dataset.req); else if (t.dataset.mem) openMember(t.dataset.mem); else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); } else if (t.dataset.done) markDone(t.dataset.done); });
@@ -881,7 +886,7 @@ window.SOLVIX_CONFIG = {
   (async function boot() {
     db = await initDB();
     const sid = store.getItem('svx.session');
-    if (sid) { try { const m = await db.get('members', sid); if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'المشرف', level: 6 }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
+    if (sid) { try { const m = await db.get('members', sid); if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6 }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');
   })();
 
