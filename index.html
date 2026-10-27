@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SOLVIX</title>
 <meta name="theme-color" content="#020611">
+<script>try{if(localStorage.getItem('svx.session')){document.documentElement.classList.add('restoring');setTimeout(function(){document.documentElement.classList.remove('restoring')},8000)}}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -276,6 +277,13 @@ body.in-app{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;widt
 html[dir=rtl] select{background-position:left 4px center}
 html[dir=rtl] .nav.on{box-shadow:inset -3px 0 0 var(--cy)}
 @media (max-width:860px){.side{transform:translateX(-100%)}html[dir=rtl] .side{transform:translateX(100%)}.side.open,html[dir=rtl] .side.open{transform:none}}
+/* instant restore of a saved session: hide the lamp scene while the app loads */
+html.restoring .scene{display:none}
+html.restoring body{background:#030818}
+html.restoring body::after{content:"";position:fixed;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid var(--cy);border-radius:50%;animation:ping 1.6s ease-out infinite}
+select:disabled{opacity:.45;cursor:not-allowed}
+.nav.set{margin-top:auto}
+.nav.set + .nav.out{margin-top:0}
 </style>
 </head>
 <body data-state="dark">
@@ -346,10 +354,10 @@ html[dir=rtl] .nav.on{box-shadow:inset -3px 0 0 var(--cy)}
     <div class="views" style="--i:1">
       <form class="view" data-view="apply" id="apply-form" novalidate>
         <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name" maxlength="60" placeholder="Your full name" aria-describedby="a-name-err"><p class="error" id="a-name-err"></p></div>
-        <div class="two">
-          <div class="field"><label for="a-dept">Department</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
-          <div class="field"><label for="a-year">Year</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
-        </div>
+        <div class="field"><label for="a-dept">Department</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
+        <div class="field"><label for="a-prog">Program</label><select id="a-prog" aria-describedby="a-prog-err"></select><p class="error" id="a-prog-err"></p></div>
+        <label class="check"><input type="checkbox" id="a-prep"><span class="box"></span><span>I am in the preparatory year</span></label>
+        <div class="field" style="margin-top:12px"><label for="a-year">Year</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
         <label class="check"><input type="checkbox" id="a-terms"><span class="box"></span><span>I agree to the community terms and conditions. <button type="button" class="link" id="open-terms">Click here</button> to read them.</span></label>
         <p class="error" id="a-terms-err"></p>
         <button type="submit" class="btn" id="a-submit">Send join request</button>
@@ -401,8 +409,32 @@ window.SOLVIX_CONFIG = {
   adminId: "278601",
   adminSalt: "qQ6YrYylvnmPBFGAx999zQ==",
   adminHash: "44Q+jZZer6xiHZgUR2nnrSSHXKafBI4hZyTLWvz6kGE=",
-  departments: ["Computer Science", "Information Systems", "Information Technology", "Artificial Intelligence", "Cybersecurity", "Other"],
-  years: ["First year", "Second year", "Third year", "Fourth year", "Graduate"]
+  prepYear: { ar: "الفرقة الإعدادية", en: "Preparatory Year" },
+  years: [
+    { ar: "الفرقة الأولى", en: "First Year" },
+    { ar: "الفرقة الثانية", en: "Second Year" },
+    { ar: "الفرقة الثالثة", en: "Third Year" },
+    { ar: "الفرقة الرابعة", en: "Fourth Year" }
+  ],
+  departments: [
+    { ar: "قسم العلوم الأساسية", en: "Basic Sciences Department", programs: [] },
+    { ar: "قسم الهندسة الكهربائية", en: "Electrical Engineering Department", programs: [
+      { ar: "هندسة القوى والآلات الكهربائية", en: "Electrical Power and Machines Engineering" } ] },
+    { ar: "قسم هندسة الاتصالات", en: "Communications Engineering Department", programs: [
+      { ar: "هندسة الاتصالات والإلكترونيات", en: "Communications and Electronics Engineering" },
+      { ar: "هندسة نظم الحاسبات", en: "Computer Systems Engineering" } ] },
+    { ar: "قسم الهندسة الميكانيكية", en: "Mechanical Engineering Department", programs: [
+      { ar: "هندسة الإنتاج والتصميم الميكانيكي", en: "Production Engineering and Mechanical Design" },
+      { ar: "هندسة القوى الميكانيكية", en: "Mechanical Power Engineering" },
+      { ar: "هندسة الميكاترونكس", en: "Mechatronics Engineering" } ] },
+    { ar: "قسم الهندسة المدنية", en: "Civil Engineering Department", programs: [
+      { ar: "الهندسة المدنية العامة", en: "General Civil Engineering" },
+      { ar: "الهندسة المدنية الإنشائية", en: "Structural Civil Engineering" } ] },
+    { ar: "قسم الهندسة المعمارية", en: "Architectural Engineering Department", programs: [
+      { ar: "الهندسة المعمارية", en: "Architectural Engineering" } ] },
+    { ar: "قسم هندسة الجيوماتكس", en: "Geomatics Engineering Department", programs: [
+      { ar: "هندسة الجيوماتكس", en: "Geomatics Engineering" } ] }
+  ]
 };
 </script>
 <script>
@@ -623,7 +655,7 @@ window.SOLVIX_CONFIG = {
   function toast(m, t = 'ok') { const e = document.createElement('div'); e.className = 'toast ' + t; e.textContent = m; $('#toasts').append(e); setTimeout(() => e.classList.add('out'), 3200); setTimeout(() => e.remove(), 3700); }
 
   /* ---------- icons + level badges ---------- */
-  const IC = { home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
+  const IC = { home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', cog: 'M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
   const ico = (n, s = 20) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + IC[n] + '"/></svg>';
   const LEVELS = [null,
     { ar: 'Initiate', en: 'Level 1', d: 'The start of the journey' }, { ar: 'Explorer', en: 'Level 2', d: 'Learns and experiments' },
@@ -707,8 +739,52 @@ window.SOLVIX_CONFIG = {
   const fe = (id, m) => { const i = $('#' + id), e = $('#' + id + '-err'); if (e) e.textContent = m || ''; if (i) i.setAttribute('aria-invalid', String(!!m)); return !m; };
   function focusFirst() { const el = login.querySelector('.view:not([hidden]) input:not([type=checkbox]):not([readonly]),.view:not([hidden]) select'); if (el && !matchMedia('(pointer: coarse)').matches) el.focus({ preventScroll: true }); }
   function showView(v, t, l) { curView = v; GV.forEach((e) => { e.hidden = e.dataset.view !== v; }); const d = TITLES[v]; $('#login-title').textContent = t || d[0]; $('#gate-lede').innerHTML = l || d[1]; if (state === 'login-visible') focusFirst(); }
-  $('#a-dept').innerHTML = '<option value="" disabled selected>Choose department</option>' + CONFIG.departments.map((d) => '<option>' + esc(d) + '</option>').join('');
-  $('#a-year').innerHTML = '<option value="" disabled selected>Choose year</option>' + CONFIG.years.map((d) => '<option>' + esc(d) + '</option>').join('');
+  /* ---------- academic data, language, translations ---------- */
+  const DEPTS = CONFIG.departments, YEARS = CONFIG.years, PREP = CONFIG.prepYear;
+  const NM = {}; [PREP].concat(YEARS, DEPTS, [].concat(...DEPTS.map((d) => d.programs))).forEach((o) => { NM[o.ar] = o.en; });
+  let LANG = 'en', acSet = null;
+  const AR = {
+    'Home': 'الرئيسية', 'Tasks': 'المهام', 'My profile': 'ملفي الشخصي', 'Settings': 'الإعدادات', 'Join requests': 'طلبات الانضمام', 'Members': 'الأعضاء', 'Sign out': 'تسجيل الخروج',
+    'Department': 'القسم', 'Program': 'البرنامج', 'Year': 'الفرقة الدراسية', 'Level': 'المستوى', 'Joined': 'تاريخ الانضمام', 'Level journey': 'رحلة المستويات',
+    'Choose department': 'اختر القسم', 'Choose department first': 'اختر القسم أولاً', 'Choose program': 'اختر البرنامج', 'Choose year': 'اختر الفرقة', 'No programs for this department': 'لا توجد برامج لهذا القسم',
+    'Choose a department.': 'اختر القسم.', 'Choose a program.': 'اختر البرنامج.', 'Choose a year.': 'اختر الفرقة الدراسية.',
+    'Manage your academic info and app preferences.': 'تحكم في بياناتك الأكاديمية وتفضيلات التطبيق.', 'Academic info': 'البيانات الأكاديمية', 'I am in the preparatory year': 'أنا في الفرقة الإعدادية',
+    'Save changes': 'حفظ التغييرات', 'Language': 'اللغة', 'Saved': 'تم الحفظ', 'Could not save, please try again.': 'تعذر الحفظ، حاول مرة أخرى.'
+  };
+  const tr = (s) => (LANG === 'ar' && AR[s]) || s;
+  const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
+  const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
+  const LV_EN = LEVELS.map((o) => (o ? [o.ar, o.en, o.d] : null));
+  const LV_AR = [null, ['المبتدئ', 'المستوى 1', 'بداية الرحلة'], ['المستكشف', 'المستوى 2', 'يتعلم ويجرب'], ['الباني', 'المستوى 3', 'يبني مشاريع حقيقية'], ['المهندس', 'المستوى 4', 'يصمم الحلول'], ['المرشد', 'المستوى 5', 'يقود ويلهم الآخرين'], ['النواة', 'المستوى 6', 'قلب المجتمع']];
+  function applyLang() {
+    root.lang = LANG; root.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+    LEVELS.forEach((o, i) => { if (!o) return; const s = (LANG === 'ar' ? LV_AR : LV_EN)[i]; o.ar = s[0]; o.en = s[1]; o.d = s[2]; });
+  }
+  function cacheMe() { try { const c = Object.assign({}, me); delete c.salt; delete c.passHash; store.setItem('svx.me', JSON.stringify(c)); } catch (_) {} }
+  function setLang(l) { if (l === LANG) return; LANG = l; store.setItem('svx.lang', l); applyLang(); buildShell(); nav(route.v); }
+  function acadInit(p, v) {
+    v = v || {};
+    const d = $('#' + p + '-dept'), g = $('#' + p + '-prog'), y = $('#' + p + '-year'), c = $('#' + p + '-prep');
+    const op = (val, txt) => '<option value="' + esc(val) + '">' + esc(txt) + '</option>';
+    const ph = (txt) => '<option value="" disabled selected>' + esc(txt) + '</option>';
+    const fillProg = (cur) => {
+      const dep = DEPTS.find((x) => x.ar === d.value), list = dep ? dep.programs : [];
+      g.innerHTML = ph(tr(!dep ? 'Choose department first' : list.length ? 'Choose program' : 'No programs for this department')) + list.map((x) => op(x.ar, nm(x.ar))).join('');
+      g.disabled = !list.length; g.value = list.some((x) => x.ar === cur) ? cur : ''; fe(p + '-prog', '');
+    };
+    const syncYear = () => { if (c.checked) y.value = ''; y.disabled = c.checked; fe(p + '-year', ''); };
+    d.innerHTML = ph(tr('Choose department')) + DEPTS.map((x) => op(x.ar, nm(x.ar))).join('');
+    y.innerHTML = ph(tr('Choose year')) + YEARS.map((x) => op(x.ar, nm(x.ar))).join('');
+    d.value = DEPTS.some((x) => x.ar === v.dept) ? v.dept : '';
+    fillProg(v.program);
+    c.checked = v.year === PREP.ar;
+    y.value = YEARS.some((x) => x.ar === v.year) ? v.year : '';
+    syncYear();
+    d.onchange = () => { fillProg(''); fe(p + '-dept', ''); };
+    c.onchange = syncYear;
+    return { get: () => ({ dept: d.value, program: g.disabled ? '' : g.value, progNeeded: !g.disabled, year: c.checked ? PREP.ar : y.value }) };
+  }
+  const acA = acadInit('a');
   $('#open-terms').onclick = openTerms;
   login.addEventListener('click', (e) => { const a = e.target.closest('[data-go]'); if (a) { e.preventDefault(); showView(a.dataset.go); } });
 
@@ -717,7 +793,7 @@ window.SOLVIX_CONFIG = {
     gateUnsub = db.watchDoc('requests', rid, (r) => {
       if (!r) { store.removeItem('svx.req'); return; }
       if (['apply', 'pending', 'result'].indexOf(curView) < 0) return;
-      if (r.status === 'pending') { $('#p-info').innerHTML = '<b>' + esc(r.name) + '</b><br>' + esc(r.dept) + ' · ' + esc(r.year); showView('pending'); }
+      if (r.status === 'pending') { $('#p-info').innerHTML = '<b>' + esc(r.name) + '</b><br>' + dline(r); showView('pending'); }
       else {
         const ok = r.status === 'approved', mid = ok && r.memberId ? r.memberId : '';
         $('#r-note').innerHTML = ok ? 'Your request has been approved, <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>' + (mid ? 'Save your ID below, you will use it to sign in.' : 'Contact the admins to receive your ID, then sign in.') : 'Sorry, your request was not accepted at this time. You can submit a new request later.';
@@ -732,11 +808,11 @@ window.SOLVIX_CONFIG = {
   }
   $('#apply-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = $('#a-name').value.trim().replace(/\s+/g, ' '), dept = $('#a-dept').value, year = $('#a-year').value;
-    const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
+    const name = $('#a-name').value.trim().replace(/\s+/g, ' '), A = acA.get(), dept = A.dept, program = A.program, year = A.year;
+    const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-prog', A.progNeeded && !program ? 'Choose a program.' : ''), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
     const b = $('#a-submit'); b.disabled = true; b.textContent = 'Sending…';
-    try { const id = await db.add('requests', { name, dept, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
+    try { const id = await db.add('requests', { name, dept, program, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
     catch (_) { toast('Could not send, please try again', 'bad'); }
     b.disabled = false; b.textContent = 'Send join request';
   });
@@ -789,15 +865,15 @@ window.SOLVIX_CONFIG = {
 
   /* ---------- app: shell, routing, data ---------- */
   const D = { requests: [], members: [], tasks: [] }, F = { req: 'pending', q: '', lvl: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
-  const NAV = { member: [['home', 'Home', 'home'], ['tasks', 'Tasks', 'tasks'], ['profile', 'My profile', 'user']], admin: [['requests', 'Join requests', 'inbox'], ['members', 'Members', 'users'], ['tasks', 'Tasks', 'tasks']] };
+  const NAV = { member: [['home', 'Home', 'home'], ['tasks', 'Tasks', 'tasks'], ['profile', 'My profile', 'user'], ['settings', 'Settings', 'cog']], admin: [['requests', 'Join requests', 'inbox'], ['members', 'Members', 'users'], ['tasks', 'Tasks', 'tasks']] };
   const lvl = () => Math.min(6, Math.max(1, (me && me.level) || 1));
   const isAdmin = () => me && me.role === 'admin';
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
   function countUp() { if (!firstPaint) return; firstPaint = false; $$('[data-count]').forEach((el) => { const n = +el.dataset.count; if (!n || reduced.matches) { el.textContent = n; return; } const t0 = performance.now(); (function f(t) { const p = Math.min(1, (t - t0) / 900); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0); }); }
 
   function enterApp(m, instant) {
-    me = m; store.setItem('svx.session', m.id); if (gateUnsub) gateUnsub();
-    const go = () => { body.classList.add('in-app'); $('#app').hidden = false; buildShell(); startData(); nav(isAdmin() ? 'requests' : 'home'); };
+    me = m; store.setItem('svx.session', m.id); cacheMe(); if (gateUnsub) gateUnsub();
+    const go = () => { LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false; buildShell(); startData(); nav(isAdmin() ? 'requests' : 'home'); };
     if (instant) go(); else { body.classList.add('leaving'); setTimeout(go, 650); }
   }
   function paintProfile() {
@@ -806,18 +882,18 @@ window.SOLVIX_CONFIG = {
     $('#top-badge').innerHTML = badge(n, 30);
   }
   function buildShell() {
-    $('#side').innerHTML = '<div class="s-brand"><img src="' + $('.mark').src + '" alt=""><span>SOLVIX KOD</span></div><div class="s-prof" id="s-prof"></div>' + NAV[isAdmin() ? 'admin' : 'member'].map((x) => '<button class="nav" data-nav="' + x[0] + '">' + ico(x[2]) + '<span>' + x[1] + '</span><em id="nb-' + x[0] + '"></em></button>').join('') + '<button class="nav out" id="logout">' + ico('out') + '<span>Sign out</span></button>';
+    $('#side').innerHTML = '<div class="s-brand"><img src="' + $('.mark').src + '" alt=""><span>SOLVIX KOD</span></div><div class="s-prof" id="s-prof"></div>' + NAV[isAdmin() ? 'admin' : 'member'].map((x) => '<button class="nav' + (x[0] === 'settings' ? ' set' : '') + '" data-nav="' + x[0] + '">' + ico(x[2]) + '<span>' + tr(x[1]) + '</span><em id="nb-' + x[0] + '"></em></button>').join('') + '<button class="nav out" id="logout">' + ico('out') + '<span>' + tr('Sign out') + '</span></button>';
     paintProfile();
   }
   function startData() {
     const U = unsubs; const tk = () => paint();
     if (isAdmin()) { let seen = null; U.push(db.watch('requests', (l) => { if (seen) l.forEach((r) => { if (r.status === 'pending' && !seen.has(r.id)) toast('New join request: ' + r.name); }); seen = new Set(l.map((r) => r.id)); D.requests = l; tk(); }), db.watch('members', (l) => { D.members = l; tk(); })); }
-    else U.push(db.watchDoc('members', me.id, (d) => { if (!d) return; const old = lvl(); me = d; paintProfile(); if (lvl() > old) levelUp(lvl()); tk(); }));
+    else U.push(db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); tk(); }));
     U.push(db.watch('tasks', (l) => { D.tasks = l; tk(); }));
   }
-  function nav(v) { route.v = v; firstPaint = true; $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v)); const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v); $('#top-title').textContent = L ? L[1] : ''; $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>'; $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); paint(); $('#content').scrollTop = 0; }
+  function nav(v) { route.v = v; firstPaint = true; $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v)); const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v); $('#top-title').textContent = L ? tr(L[1]) : ''; $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>'; $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); paint(); $('#content').scrollTop = 0; }
   function paint() { if (!route.v) return; const pc = D.requests.filter((r) => r.status === 'pending').length; const b = $('#nb-requests'); if (b) b.textContent = pc || ''; if (V[route.v].paint) V[route.v].paint(); countUp(); }
-  $('#side').addEventListener('click', (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); store.removeItem('svx.session'); location.reload(); } });
+  $('#side').addEventListener('click', (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); } });
   $('#menu').onclick = () => { $('#side').classList.add('open'); $('#scrim').classList.add('open'); };
   $('#scrim').onclick = () => { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); };
 
@@ -866,8 +942,19 @@ window.SOLVIX_CONFIG = {
         $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is decided by the admins based on your activity and completed tasks.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
       }
     },
+    settings: {
+      html: () => '<h2 class="ph">' + tr('Settings') + '</h2><p class="pp">' + tr('Manage your academic info and app preferences.') + '</p>'
+        + '<form class="card" id="set-form" novalidate style="margin-bottom:20px"><h3 style="margin:0 0 14px">' + tr('Academic info') + '</h3>'
+        + '<div class="field"><label for="s-dept">' + tr('Department') + '</label><select id="s-dept"></select><p class="error" id="s-dept-err"></p></div>'
+        + '<div class="field"><label for="s-prog">' + tr('Program') + '</label><select id="s-prog"></select><p class="error" id="s-prog-err"></p></div>'
+        + '<label class="check"><input type="checkbox" id="s-prep"><span class="box"></span><span>' + tr('I am in the preparatory year') + '</span></label>'
+        + '<div class="field" style="margin-top:12px"><label for="s-year">' + tr('Year') + '</label><select id="s-year"></select><p class="error" id="s-year-err"></p></div>'
+        + '<button class="btn sm" type="submit">' + tr('Save changes') + '</button></form>'
+        + '<div class="card"><h3 style="margin:0 0 14px">' + tr('Language') + '</h3><div class="chips" style="margin:0"><button type="button" class="chip' + (LANG === 'ar' ? ' on' : '') + '" data-lang="ar">العربية</button><button type="button" class="chip' + (LANG === 'en' ? ' on' : '') + '" data-lang="en">English</button></div></div>',
+      paint() { const d = $('#s-dept'); if (d && !d.dataset.ready) { d.dataset.ready = '1'; acSet = acadInit('s', me); } }
+    },
     profile: {
-      html: () => { const l = lvl(); return '<h2 class="ph">My profile</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([['Department', esc(me.dept || '—')], ['Year', esc(me.year || '—')], ['Level', LEVELS[l].ar], ['Joined', fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">Level journey</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
+      html: () => { const l = lvl(); return '<h2 class="ph">' + tr('My profile') + '</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([[tr('Department'), esc(nm(me.dept) || '—')], [tr('Program'), esc(nm(me.program) || '—')], [tr('Year'), esc(nm(me.year) || '—')], [tr('Level'), LEVELS[l].ar], [tr('Joined'), fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">' + tr('Level journey') + '</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
     }
   };
 
@@ -875,7 +962,7 @@ window.SOLVIX_CONFIG = {
   const genId = () => { let id; do { id = 'SVX-' + String(new Date().getFullYear()).slice(2) + String(Math.floor(Math.random() * 9000) + 1000); } while (D.members.some((m) => m.id === id)); return id; };
   function openRequest(id) {
     const r = D.requests.find((x) => x.id === id); if (!r) return; const p = PILL[r.status];
-    openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['Department', esc(r.dept)], ['Year', esc(r.year)], ['Request date', fmt(r.createdAt)], ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
+    openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['Department', esc(nm(r.dept))], ['Program', esc(nm(r.program) || '—')], ['Year', esc(nm(r.year))], ['Request date', fmt(r.createdAt)], ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
       + (r.status === 'pending' ? '<div class="field"><label for="rq-id">Student ID</label><div class="idrow"><input id="rq-id" dir="ltr" autocapitalize="characters" value="' + genId() + '"><button type="button" class="btn sm ghost" id="rq-gen">Generate</button></div><p class="error" id="rq-id-err"></p></div><div class="mfoot"><button class="btn sm bad" id="rq-no">Reject</button><button class="btn sm" id="rq-ok">Accept and create membership</button></div>' : (r.memberId ? '<p class="note">ID: <code>' + esc(r.memberId) + '</code></p>' : '')) + '</div>');
     if (r.status !== 'pending') return;
     $('#rq-gen').onclick = () => { $('#rq-id').value = genId(); };
@@ -884,7 +971,7 @@ window.SOLVIX_CONFIG = {
       const mid = $('#rq-id').value.trim().toUpperCase();
       if (!fe('rq-id', !/^[A-Z0-9-]{4,24}$/.test(mid) ? 'Invalid ID (English letters, digits and dashes).' : (D.members.some((m) => m.id === mid) || mid === CONFIG.adminId.toUpperCase()) ? 'This ID is already in use.' : '')) return;
       $('#rq-ok').disabled = true;
-      await db.set('members', mid, { id: mid, name: r.name, dept: r.dept, year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} });
+      await db.set('members', mid, { id: mid, name: r.name, dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} });
       await db.set('requests', r.id, { status: 'approved', memberId: mid, decidedAt: Date.now() });
       closeModal(); toast('Accepted. Give this ID to the student: ' + mid);
     };
@@ -892,7 +979,7 @@ window.SOLVIX_CONFIG = {
   function openMember(id) {
     const m = D.members.find((x) => x.id === id); if (!m) return; const l = m.level || 1, dn = Object.keys(m.done || {}).length;
     openModal('<div class="mhead"><h3>Member details</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code></div></div>'
-      + kv([['Department', esc(m.dept)], ['Year', esc(m.year)], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks completed', dn], ['Last promotion', fmt(m.promotedAt)], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
+      + kv([['Department', esc(nm(m.dept))], ['Program', esc(nm(m.program) || '—')], ['Year', esc(nm(m.year))], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks completed', dn], ['Last promotion', fmt(m.promotedAt)], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
       + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
       + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
       + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '') + '</div></div>');
@@ -900,6 +987,13 @@ window.SOLVIX_CONFIG = {
     if ($('#m-up')) $('#m-up').onclick = () => upd({ level: l + 1, promotedAt: Date.now() }, 'Promoted ' + m.name.split(' ')[0]);
     $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) upd({ level: n, promotedAt: Date.now() }, 'Level updated'); };
     if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null, uid: null }, 'Password and device binding were reset. The member can sign in from a new device');
+  }
+  async function saveSettings() {
+    const A = acSet.get();
+    const ok = [fe('s-dept', A.dept ? '' : tr('Choose a department.')), fe('s-prog', A.progNeeded && !A.program ? tr('Choose a program.') : ''), fe('s-year', A.year ? '' : tr('Choose a year.'))];
+    if (ok.indexOf(false) >= 0) return;
+    try { await db.set('members', me.id, { dept: A.dept, program: A.program, year: A.year }); toast(tr('Saved')); }
+    catch (_) { toast(tr('Could not save, please try again.'), 'bad'); }
   }
   async function markDone(tid) { await db.set('members', me.id, { done: Object.assign({}, me.done || {}, { [tid]: Date.now() }) }); toast('Well done! Your achievement was recorded'); }
   async function addTask() {
@@ -909,16 +1003,28 @@ window.SOLVIX_CONFIG = {
     $('#task-form').reset(); toast('Task published');
   }
   const C = $('#content');
-  C.addEventListener('click', (e) => { const t = e.target.closest('[data-req],[data-mem],[data-f],[data-done]'); if (!t) return; if (t.dataset.req) openRequest(t.dataset.req); else if (t.dataset.mem) openMember(t.dataset.mem); else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); } else if (t.dataset.done) markDone(t.dataset.done); });
+  C.addEventListener('click', (e) => { const t = e.target.closest('[data-req],[data-mem],[data-f],[data-done],[data-lang]'); if (!t) return; if (t.dataset.lang) setLang(t.dataset.lang); else if (t.dataset.req) openRequest(t.dataset.req); else if (t.dataset.mem) openMember(t.dataset.mem); else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); } else if (t.dataset.done) markDone(t.dataset.done); });
   C.addEventListener('input', (e) => { if (e.target.id === 'q') { F.q = e.target.value.trim(); V.members.paint(); } });
   C.addEventListener('change', (e) => { if (e.target.id === 'fl') { F.lvl = e.target.value; V.members.paint(); } });
-  C.addEventListener('submit', (e) => { if (e.target.id === 'task-form') { e.preventDefault(); addTask(); } });
+  C.addEventListener('submit', (e) => { if (e.target.id === 'task-form') { e.preventDefault(); addTask(); } else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); } });
 
   /* ---------- boot ---------- */
   (async function boot() {
     db = await initDB();
     const sid = store.getItem('svx.session');
-    if (sid) { try { const m = await db.get('members', sid); if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); } else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
+    if (sid) {
+      try {
+        let c = null; try { c = JSON.parse(store.getItem('svx.me') || 'null'); } catch (_) {}
+        if (c && c.id === sid && (c.role === 'admin' || !c.uid || c.uid === db.uid())) { enterApp(c, true); return; }   // instant: use the saved copy, live data syncs in the background
+        const m = await db.get('members', sid);
+        if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); }
+        else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) {
+          const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash };
+          if (d.passHash) { enterApp(d, true); return; }
+        }
+      } catch (_) {}
+    }
+    root.classList.remove('restoring');
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');
   })();
 
