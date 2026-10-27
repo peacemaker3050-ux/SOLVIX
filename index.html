@@ -356,7 +356,6 @@ select:disabled{opacity:.45;cursor:not-allowed}
         <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name" maxlength="60" placeholder="Your full name" aria-describedby="a-name-err"><p class="error" id="a-name-err"></p></div>
         <div class="field"><label for="a-dept">Department</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
         <div class="field"><label for="a-prog">Program</label><select id="a-prog" aria-describedby="a-prog-err"></select><p class="error" id="a-prog-err"></p></div>
-        <label class="check"><input type="checkbox" id="a-prep"><span class="box"></span><span>I am in the preparatory year</span></label>
         <div class="field" style="margin-top:12px"><label for="a-year">Year</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
         <label class="check"><input type="checkbox" id="a-terms"><span class="box"></span><span>I agree to the community terms and conditions. <button type="button" class="link" id="open-terms">Click here</button> to read them.</span></label>
         <p class="error" id="a-terms-err"></p>
@@ -764,25 +763,24 @@ window.SOLVIX_CONFIG = {
   function setLang(l) { if (l === LANG) return; LANG = l; store.setItem('svx.lang', l); applyLang(); buildShell(); nav(route.v); }
   function acadInit(p, v) {
     v = v || {};
-    const d = $('#' + p + '-dept'), g = $('#' + p + '-prog'), y = $('#' + p + '-year'), c = $('#' + p + '-prep');
+    const d = $('#' + p + '-dept'), g = $('#' + p + '-prog'), y = $('#' + p + '-year');
     const op = (val, txt) => '<option value="' + esc(val) + '">' + esc(txt) + '</option>';
     const ph = (txt) => '<option value="" disabled selected>' + esc(txt) + '</option>';
+    const isBasic = () => { const dep = DEPTS.find((x) => x.ar === d.value); return !!dep && dep.programs.length === 0; };
     const fillProg = (cur) => {
       const dep = DEPTS.find((x) => x.ar === d.value), list = dep ? dep.programs : [];
       g.innerHTML = ph(tr(!dep ? 'Choose department first' : list.length ? 'Choose program' : 'No programs for this department')) + list.map((x) => op(x.ar, nm(x.ar))).join('');
       g.disabled = !list.length; g.value = list.some((x) => x.ar === cur) ? cur : ''; fe(p + '-prog', '');
     };
-    const syncYear = () => { if (c.checked) y.value = ''; y.disabled = c.checked; fe(p + '-year', ''); };
+    const syncYear = () => { const b = isBasic(); if (b) y.value = ''; y.disabled = b; fe(p + '-year', ''); };
     d.innerHTML = ph(tr('Choose department')) + DEPTS.map((x) => op(x.ar, nm(x.ar))).join('');
     y.innerHTML = ph(tr('Choose year')) + YEARS.map((x) => op(x.ar, nm(x.ar))).join('');
     d.value = DEPTS.some((x) => x.ar === v.dept) ? v.dept : '';
     fillProg(v.program);
-    c.checked = v.year === PREP.ar;
     y.value = YEARS.some((x) => x.ar === v.year) ? v.year : '';
     syncYear();
-    d.onchange = () => { fillProg(''); fe(p + '-dept', ''); };
-    c.onchange = syncYear;
-    return { get: () => ({ dept: d.value, program: g.disabled ? '' : g.value, progNeeded: !g.disabled, year: c.checked ? PREP.ar : y.value }) };
+    d.onchange = () => { fillProg(''); syncYear(); fe(p + '-dept', ''); };
+    return { get: () => ({ dept: d.value, program: g.disabled ? '' : g.value, progNeeded: !g.disabled, year: isBasic() ? PREP.ar : y.value }) };
   }
   const acA = acadInit('a');
   $('#open-terms').onclick = openTerms;
@@ -947,7 +945,6 @@ window.SOLVIX_CONFIG = {
         + '<form class="card" id="set-form" novalidate style="margin-bottom:20px"><h3 style="margin:0 0 14px">' + tr('Academic info') + '</h3>'
         + '<div class="field"><label for="s-dept">' + tr('Department') + '</label><select id="s-dept"></select><p class="error" id="s-dept-err"></p></div>'
         + '<div class="field"><label for="s-prog">' + tr('Program') + '</label><select id="s-prog"></select><p class="error" id="s-prog-err"></p></div>'
-        + '<label class="check"><input type="checkbox" id="s-prep"><span class="box"></span><span>' + tr('I am in the preparatory year') + '</span></label>'
         + '<div class="field" style="margin-top:12px"><label for="s-year">' + tr('Year') + '</label><select id="s-year"></select><p class="error" id="s-year-err"></p></div>'
         + '<button class="btn sm" type="submit">' + tr('Save changes') + '</button></form>'
         + '<div class="card"><h3 style="margin:0 0 14px">' + tr('Language') + '</h3><div class="chips" style="margin:0"><button type="button" class="chip' + (LANG === 'ar' ? ' on' : '') + '" data-lang="ar">العربية</button><button type="button" class="chip' + (LANG === 'en' ? ' on' : '') + '" data-lang="en">English</button></div></div>',

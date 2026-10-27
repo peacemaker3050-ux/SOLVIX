@@ -1,4 +1,4 @@
-const CACHE = 'solvix-v4';
+const CACHE = 'solvix-v5';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
