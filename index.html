@@ -276,9 +276,14 @@ body.in-app{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;widt
 html[dir=rtl] select{background-position:left 4px center}
 html[dir=rtl] .nav.on{box-shadow:inset -3px 0 0 var(--cy)}
 @media (max-width:860px){.side{transform:translateX(-100%)}html[dir=rtl] .side{transform:translateX(100%)}.side.open,html[dir=rtl] .side.open{transform:none}}
+/* ===== Splash: keeps the logo on screen until the saved session is restored ===== */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#020611;opacity:1;transition:opacity .5s ease}
+#splash img{width:min(44vw,200px);height:auto;-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 74%);mask-image:radial-gradient(circle,#000 58%,transparent 74%)}
+#splash.hide{opacity:0;pointer-events:none}
 </style>
 </head>
 <body data-state="dark">
+<div id="splash" aria-hidden="true"><img src="icon-192.png" alt="" width="192" height="192"></div>
 <main class="scene">
   <div class="layer wall" aria-hidden="true"></div>
   <div class="layer pool" aria-hidden="true"></div>
@@ -715,6 +720,7 @@ window.SOLVIX_CONFIG = {
   function watchReq(rid) {
     if (gateUnsub) gateUnsub();
     gateUnsub = db.watchDoc('requests', rid, (r) => {
+      hideSplash();
       if (!r) { store.removeItem('svx.req'); return; }
       if (['apply', 'pending', 'result'].indexOf(curView) < 0) return;
       if (r.status === 'pending') { $('#p-info').innerHTML = '<b>' + esc(r.name) + '</b><br>' + esc(r.dept) + ' · ' + esc(r.year); showView('pending'); }
@@ -918,7 +924,7 @@ window.SOLVIX_CONFIG = {
   (async function boot() {
     db = await initDB();
     const sid = store.getItem('svx.session');
-    if (sid) { try { const m = await db.get('members', sid); if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); } else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
+    if (sid) { try { const m = await db.get('members', sid); if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); } else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { if (m && !m.uid) { await db.set('members', m.id, { uid: db.uid() }); d.uid = db.uid(); } enterApp(d, true); return; } } } catch (_) {} }
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');
   })();
 
