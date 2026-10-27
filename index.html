@@ -813,7 +813,7 @@ window.SOLVIX_CONFIG = {
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
     const b = $('#a-submit'); b.disabled = true; b.textContent = 'Sending…';
     try { const id = await db.add('requests', { name, dept, program, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
-    catch (_) { toast('Could not send, please try again', 'bad'); }
+    catch (err) { console.error(err); toast('Could not send: ' + (err.code || err.message), 'bad'); }
     b.disabled = false; b.textContent = 'Send join request';
   });
 
