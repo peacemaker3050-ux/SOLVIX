@@ -30,7 +30,8 @@
   --sans:"Inter","Cairo",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
-html{background:var(--bg)}
+html{background:var(--bg);overscroll-behavior:none}
+html,body{overscroll-behavior-y:none}
 body{margin:0;color:var(--ink);font-family:var(--sans);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body[data-state="dragging"]{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -199,7 +200,7 @@ textarea{resize:vertical;min-height:70px}
 .aura::before{content:"";position:absolute;inset:-34%;background:radial-gradient(circle,var(--c1),transparent 65%);opacity:.28;filter:blur(14px);pointer-events:none}
 /* app shell */
 body.leaving .scene{opacity:0;transition:opacity .6s ease}
-body.in-app{overflow:hidden}body.in-app .scene{display:none}
+body.in-app{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;width:100%}body.in-app .scene{display:none}
 #app{position:fixed;inset:0;z-index:20;display:flex;background:radial-gradient(60% 50% at 85% 0,rgba(34,208,255,.13),transparent 70%),radial-gradient(50% 50% at 0 100%,rgba(138,92,255,.15),transparent 70%),#030818;animation:fadeIn .8s ease}
 #app[hidden]{display:none}
 .side{width:272px;flex:none;display:flex;flex-direction:column;gap:6px;padding:22px 16px;overflow:auto;border-inline-end:1px solid var(--bd);background:linear-gradient(180deg,rgba(13,27,61,.9),rgba(4,9,24,.96))}
@@ -217,7 +218,7 @@ body.in-app{overflow:hidden}body.in-app .scene{display:none}
 .nav.out{margin-top:auto;color:#ff9db0}
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
 .top{display:none}
-.content{flex:1;overflow:auto;padding:30px clamp(16px,4vw,48px) 70px;outline:none}
+.content{flex:1;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:30px clamp(16px,4vw,48px) 70px;outline:none}
 .page{max-width:1020px;margin:0 auto;animation:viewIn .5s cubic-bezier(.2,.7,.2,1) both}
 .ph{margin:0 0 4px;font:700 26px var(--sans)}.pp{margin:0 0 22px;color:#9fb4d6;font-size:14.5px}
 .card{background:linear-gradient(180deg,rgba(18,34,76,.55),rgba(9,18,44,.62));border:1px solid var(--bd);border-radius:14px;padding:18px;box-shadow:inset 0 1px 0 rgba(150,210,255,.08)}
@@ -901,6 +902,25 @@ window.SOLVIX_CONFIG = {
 
   draw(); place();
 
+  /* ---------- block pull-to-refresh (app feel) ---------- */
+  (() => {
+    let startY = 0;
+    addEventListener('touchstart', (e) => { if (e.touches.length === 1) startY = e.touches[0].clientY; }, { passive: true });
+    addEventListener('touchmove', (e) => {
+      if (e.touches.length !== 1 || e.target.closest('input,textarea,select')) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy <= 0) return;
+      // find the nearest scrollable ancestor; if it is already at the top, a downward drag would trigger refresh
+      let el = e.target, scroller = null;
+      while (el && el !== document.body) {
+        const s = getComputedStyle(el);
+        if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight) { scroller = el; break; }
+        el = el.parentElement;
+      }
+      if (!scroller || scroller.scrollTop <= 0) { if (e.cancelable) e.preventDefault(); }
+    }, { passive: false });
+  })();
+
   /* ---------- PWA: install button + auto update banner ---------- */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
@@ -949,16 +969,35 @@ window.SOLVIX_CONFIG = {
     document.body.append(bar);
   }
 
+  /* the baseline is the index.html this session is actually running (embedded at load), not whatever the server has now */
+  async function runningSig() {
+    try {
+      const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      return b64(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html)));
+    } catch (_) { return null; }
+  }
+
+  let checking = false;
   async function checkUpdate() {
-    if (updShown || !(window.crypto && crypto.subtle) || location.protocol === 'file:') return;
-    const s = await signature();
-    if (!s) return;                                   // offline or a file failed: skip this round
-    if (baseSig === null) baseSig = s; else if (s !== baseSig) showUpdate();
+    if (updShown || checking || !(window.crypto && crypto.subtle) || location.protocol === 'file:') return;
+    checking = true;
+    try {
+      const s = await signature();
+      if (!s) return;                                 // offline or a file failed: skip this round
+      const saved = store.getItem('svx.sig');         // signature of the version this device last ran
+      if (baseSig === null) {
+        baseSig = s;
+        if (saved && saved !== s) { store.setItem('svx.sig', s); showUpdate(); return; }   // app opened from an old cached copy
+        store.setItem('svx.sig', s);
+      } else if (s !== baseSig) showUpdate();
+    } finally { checking = false; }
   }
   checkUpdate();
-  setInterval(checkUpdate, 60000);
+  setInterval(checkUpdate, 30000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
   addEventListener('online', checkUpdate);
+  addEventListener('focus', checkUpdate);
+  addEventListener('pageshow', checkUpdate);
 })();
 </script>
 </body>
