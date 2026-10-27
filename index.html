@@ -174,6 +174,10 @@ textarea{resize:vertical;min-height:70px}
 @keyframes ping{from{transform:scale(.45);opacity:.9}to{transform:scale(1.3);opacity:0}}
 .status{color:#9fe3ff;letter-spacing:0;line-height:1.7}
 .alt{letter-spacing:0}
+.idbox{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 18px;padding:16px 12px;border:1px dashed rgba(80,170,255,.45);border-radius:12px;background:rgba(34,208,255,.06)}
+.idbox small{color:#9fb4d6;font-size:12.5px}
+.idbox b{direction:ltr;unicode-bidi:isolate;font:400 24px var(--display);letter-spacing:.06em;color:#fff;text-shadow:0 0 18px rgba(34,208,255,.5);user-select:all;-webkit-user-select:all}
+.idbox .btn.sm{padding:8px 16px;font-size:13px}
 .modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(2,6,17,.74);backdrop-filter:blur(6px);animation:fadeIn .25s ease}
 .modal[hidden]{display:none}
 .mcard{width:min(540px,100%);max-height:90dvh;display:flex;flex-direction:column;background:linear-gradient(180deg,#0d1b3d,#070f26);border:1px solid var(--bd);border-radius:14px;box-shadow:0 40px 100px -20px #000,0 0 60px -20px rgba(47,107,255,.5);animation:viewIn .35s ease both}
@@ -359,6 +363,7 @@ html[dir=rtl] .nav.on{box-shadow:inset -3px 0 0 var(--cy)}
       </div>
       <div class="view" data-view="result" hidden>
         <p class="note" id="r-note"></p>
+        <div class="idbox" id="r-idbox" hidden><small>Your ID</small><b id="r-id"></b><button type="button" class="btn sm ghost" id="r-copy">Copy ID</button></div>
         <button type="button" class="btn" id="r-btn"></button>
       </div>
       <form class="view" data-view="login" id="login-form" novalidate hidden>
@@ -642,7 +647,7 @@ window.SOLVIX_CONFIG = {
     const list = (c) => Object.entries(rd(c)).map(([id, v]) => Object.assign({}, v, { id }));
     const sub = (c, f) => { (subs[c] = subs[c] || []).push(f); f(); return () => { subs[c] = subs[c].filter((x) => x !== f); }; };
     return {
-      demo: true, list: async (c) => list(c),
+      demo: true, uid: () => { let u = store.getItem('svx.dev'); if (!u) { u = 'd' + Math.random().toString(36).slice(2) + Date.now().toString(36); store.setItem('svx.dev', u); } return u; }, list: async (c) => list(c),
       get: async (c, i) => { const v = rd(c)[i]; return v ? Object.assign({}, v, { id: i }) : null; },
       set: async (c, i, d) => { const o = rd(c); o[i] = Object.assign({}, o[i] || {}, d); wr(c, o); },
       add: async (c, d) => { const i = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); const o = rd(c); o[i] = d; wr(c, o); return i; },
@@ -652,9 +657,13 @@ window.SOLVIX_CONFIG = {
   }
   async function firebaseDB(cfg) {
     const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
-    const { initializeApp } = await import(B + 'firebase-app.js'); const F = await import(B + 'firebase-firestore.js');
-    const fdb = F.getFirestore(initializeApp(cfg)); const m = (d) => Object.assign({}, d.data(), { id: d.id });
+    const { initializeApp } = await import(B + 'firebase-app.js'); const F = await import(B + 'firebase-firestore.js'); const A = await import(B + 'firebase-auth.js');
+    const app = initializeApp(cfg), fdb = F.getFirestore(app), auth = A.getAuth(app);
+    await auth.authStateReady();
+    if (!auth.currentUser) await A.signInAnonymously(auth);
+    const m = (d) => Object.assign({}, d.data(), { id: d.id });
     return {
+      uid: () => auth.currentUser.uid,
       list: async (c) => (await F.getDocs(F.collection(fdb, c))).docs.map(m),
       get: async (c, i) => { const s = await F.getDoc(F.doc(fdb, c, i)); return s.exists() ? m(s) : null; },
       set: (c, i, d) => F.setDoc(F.doc(fdb, c, i), d, { merge: true }),
@@ -710,10 +719,13 @@ window.SOLVIX_CONFIG = {
       if (['apply', 'pending', 'result'].indexOf(curView) < 0) return;
       if (r.status === 'pending') { $('#p-info').innerHTML = '<b>' + esc(r.name) + '</b><br>' + esc(r.dept) + ' · ' + esc(r.year); showView('pending'); }
       else {
-        const ok = r.status === 'approved';
-        $('#r-note').innerHTML = ok ? 'Your request has been approved, <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>Contact the admins to receive your ID, then sign in.' : 'Sorry, your request was not accepted at this time. You can submit a new request later.';
+        const ok = r.status === 'approved', mid = ok && r.memberId ? r.memberId : '';
+        $('#r-note').innerHTML = ok ? 'Your request has been approved, <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>' + (mid ? 'Save your ID below, you will use it to sign in.' : 'Contact the admins to receive your ID, then sign in.') : 'Sorry, your request was not accepted at this time. You can submit a new request later.';
+        $('#r-idbox').hidden = !mid; $('#r-id').textContent = mid;
+        $('#r-copy').textContent = 'Copy ID';
+        $('#r-copy').onclick = async () => { try { await navigator.clipboard.writeText(mid); $('#r-copy').textContent = 'Copied'; } catch (_) { const s = getSelection(), g = document.createRange(); g.selectNodeContents($('#r-id')); s.removeAllRanges(); s.addRange(g); $('#r-copy').textContent = 'Select and copy'; } };
         $('#r-btn').textContent = ok ? 'Sign in' : 'Submit a new request';
-        $('#r-btn').onclick = () => { if (!ok) { store.removeItem('svx.req'); showView('apply'); } else showView('login'); };
+        $('#r-btn').onclick = () => { if (!ok) { store.removeItem('svx.req'); showView('apply'); } else { showView('login'); if (mid) { $('#l-id').value = mid; $('#l-id').focus({ preventScroll: true }); } } };
         showView('result', ok ? 'You have been accepted' : 'Request not accepted', ok ? 'Welcome to Solvix Kod' : '');
       }
     });
@@ -746,6 +758,7 @@ window.SOLVIX_CONFIG = {
       btn.disabled = false;
       if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now(), salt: CONFIG.adminSalt, passHash: CONFIG.adminHash };
       if (!d) return fe('l-id', 'This ID is not registered.');
+      if (d.role !== 'admin' && d.uid && d.uid !== db.uid()) return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
       if (d.passHash) { lstep = 'pw'; btn.textContent = 'Sign in'; }
       else { lstep = 'setup'; $('#l-pw2-wrap').hidden = false; $('#l-pw-label').textContent = 'Create a new password'; $('#l-pw').autocomplete = 'new-password'; btn.textContent = 'Save password and sign in'; setSt('Welcome ' + d.name.split(' ')[0] + '! This is your first time, choose a password and use it to sign in from now on.'); }
@@ -756,12 +769,21 @@ window.SOLVIX_CONFIG = {
       if (!fe('l-pw', pw ? '' : 'Enter your password.')) return;
       btn.disabled = true; const hh = await hashPw(pw, unb(ld.salt)); btn.disabled = false;
       if (hh !== ld.passHash) { if (++fails >= 5) { lock = Date.now() + 30000; fails = 0; } return fe('l-pw', 'Incorrect password.'); }
-      fails = 0; return enterApp(ld);
+      fails = 0;
+      if (ld.role !== 'admin') {
+        try {
+          const cur = await db.get('members', ld.id);
+          if (cur && cur.uid && cur.uid !== db.uid()) return fe('l-pw', 'This ID belongs to another user and is registered on a different device.');
+          if (!cur || !cur.uid) await db.set('members', ld.id, { uid: db.uid() });
+          ld = Object.assign({}, ld, { uid: db.uid() });
+        } catch (_) { return setSt('Could not connect to the database.'); }
+      }
+      return enterApp(ld);
     }
     const a = fe('l-pw', pw.length >= 8 ? '' : 'At least 8 characters.'), c = fe('l-pw2', $('#l-pw2').value === pw ? '' : 'Passwords do not match.');
     if (!a || !c) return;
     btn.disabled = true;
-    try { const salt = crypto.getRandomValues(new Uint8Array(16)); const rec = Object.assign({}, ld, { salt: b64(salt), passHash: await hashPw(pw, salt), passSetAt: Date.now() }); await db.set('members', ld.id, rec); btn.disabled = false; enterApp(rec); }
+    try { const salt = crypto.getRandomValues(new Uint8Array(16)); const rec = Object.assign({}, ld, { salt: b64(salt), passHash: await hashPw(pw, salt), passSetAt: Date.now(), uid: db.uid() }); await db.set('members', ld.id, rec); btn.disabled = false; enterApp(rec); }
     catch (_) { btn.disabled = false; setSt('Could not save, please try again.'); }
   });
 
@@ -877,7 +899,7 @@ window.SOLVIX_CONFIG = {
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
     if ($('#m-up')) $('#m-up').onclick = () => upd({ level: l + 1, promotedAt: Date.now() }, 'Promoted ' + m.name.split(' ')[0]);
     $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) upd({ level: n, promotedAt: Date.now() }, 'Level updated'); };
-    if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null }, 'The member will create a new password at next sign-in');
+    if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null, uid: null }, 'Password and device binding were reset. The member can sign in from a new device');
   }
   async function markDone(tid) { await db.set('members', me.id, { done: Object.assign({}, me.done || {}, { [tid]: Date.now() }) }); toast('Well done! Your achievement was recorded'); }
   async function addTask() {
@@ -896,7 +918,7 @@ window.SOLVIX_CONFIG = {
   (async function boot() {
     db = await initDB();
     const sid = store.getItem('svx.session');
-    if (sid) { try { const m = await db.get('members', sid); if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
+    if (sid) { try { const m = await db.get('members', sid); if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); } else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');
   })();
 
