@@ -901,10 +901,11 @@ window.SOLVIX_CONFIG = {
 
   draw(); place();
 
-  /* ---------- PWA: service worker + install button ---------- */
+  /* ---------- PWA: install button + auto update banner ---------- */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
+
   let installEvt = null;
   addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); installEvt = e;
@@ -917,6 +918,47 @@ window.SOLVIX_CONFIG = {
     document.body.append(b);
   });
   addEventListener('appinstalled', () => { const b = $('#pwa-install'); if (b) b.remove(); });
+
+  /* ---- update detection: compares the files on the server with the ones this session started with ---- */
+  const WATCH = ['./index.html', './manifest.json', './sw.js', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
+  let baseSig = null, updShown = false;
+
+  async function signature() {
+    const parts = await Promise.all(WATCH.map(async (u) => {
+      try {
+        const r = await fetch(u, { cache: 'no-store' });
+        if (!r.ok) return null;
+        return u + ':' + b64(await crypto.subtle.digest('SHA-256', await r.arrayBuffer()));
+      } catch (_) { return null; }
+    }));
+    return parts.indexOf(null) >= 0 ? null : parts.join('|');
+  }
+
+  function showUpdate() {
+    if (updShown) return; updShown = true;
+    const bar = document.createElement('div');
+    bar.setAttribute('role', 'alert');
+    bar.style.cssText = 'position:fixed;inset-inline:12px;inset-block-end:calc(12px + env(safe-area-inset-bottom,0px));z-index:100;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 14px 12px 18px;border-radius:12px;background:linear-gradient(90deg,#0a78bd,#2547d9 55%,#6a38d6);color:#fff;font:600 14.5px var(--sans);box-shadow:0 16px 40px -10px #000;animation:viewIn .4s both';
+    bar.innerHTML = '<span style="flex:1">A new update is available</span><button type="button" style="padding:9px 20px;border:0;border-radius:8px;background:#fff;color:#0a1a40;font:700 14px var(--sans);cursor:pointer">Update</button>';
+    bar.querySelector('button').onclick = async () => {
+      bar.querySelector('button').textContent = '…';
+      try { const ks = await caches.keys(); await Promise.all(ks.map((k) => caches.delete(k))); } catch (_) {}
+      try { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map((r) => r.unregister())); } catch (_) {}
+      location.reload();
+    };
+    document.body.append(bar);
+  }
+
+  async function checkUpdate() {
+    if (updShown || !(window.crypto && crypto.subtle) || location.protocol === 'file:') return;
+    const s = await signature();
+    if (!s) return;                                   // offline or a file failed: skip this round
+    if (baseSig === null) baseSig = s; else if (s !== baseSig) showUpdate();
+  }
+  checkUpdate();
+  setInterval(checkUpdate, 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+  addEventListener('online', checkUpdate);
 })();
 </script>
 </body>
