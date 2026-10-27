@@ -3,8 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Solvix Kod — Community</title>
+<title>SOLVIX</title>
 <meta name="theme-color" content="#020611">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SOLVIX">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@400;500&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -893,6 +900,23 @@ window.SOLVIX_CONFIG = {
   })();
 
   draw(); place();
+
+  /* ---------- PWA: service worker + install button ---------- */
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+  let installEvt = null;
+  addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); installEvt = e;
+    if ($('#pwa-install')) return;
+    const b = document.createElement('button');
+    b.id = 'pwa-install'; b.className = 'btn sm';
+    b.style.cssText = 'position:fixed;inset-block-end:18px;inset-inline-end:18px;z-index:95;box-shadow:0 12px 30px -8px #000';
+    b.textContent = 'Install SOLVIX';
+    b.onclick = async () => { b.remove(); installEvt.prompt(); await installEvt.userChoice; installEvt = null; };
+    document.body.append(b);
+  });
+  addEventListener('appinstalled', () => { const b = $('#pwa-install'); if (b) b.remove(); });
 })();
 </script>
 </body>
