@@ -385,7 +385,9 @@ window.SOLVIX_CONFIG = {
   termsUrl: "",
   termsPages: 3,
   // 3) Admin ID (first sign-in with it creates the password)
-  adminId: "SVX-ADMIN",
+  adminId: "278601",
+  adminSalt: "qQ6YrYylvnmPBFGAx999zQ==",
+  adminHash: "44Q+jZZer6xiHZgUR2nnrSSHXKafBI4hZyTLWvz6kGE=",
   departments: ["Computer Science", "Information Systems", "Information Technology", "Artificial Intelligence", "Cybersecurity", "Other"],
   years: ["First year", "Second year", "Third year", "Fourth year", "Graduate"]
 };
@@ -734,7 +736,7 @@ window.SOLVIX_CONFIG = {
       btn.disabled = true; let d = null;
       try { d = await db.get('members', idv); } catch (_) { btn.disabled = false; return setSt('Could not connect to the database.'); }
       btn.disabled = false;
-      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() };
+      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now(), salt: CONFIG.adminSalt, passHash: CONFIG.adminHash };
       if (!d) return fe('l-id', 'This ID is not registered.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
       if (d.passHash) { lstep = 'pw'; btn.textContent = 'Sign in'; }
@@ -886,7 +888,7 @@ window.SOLVIX_CONFIG = {
   (async function boot() {
     db = await initDB();
     const sid = store.getItem('svx.session');
-    if (sid) { try { const m = await db.get('members', sid); if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6 }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
+    if (sid) { try { const m = await db.get('members', sid); if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) { const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash }; if (d.passHash) { enterApp(d, true); return; } } } catch (_) {} }
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');
   })();
 
