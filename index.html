@@ -284,6 +284,54 @@ html.restoring body::after{content:"";position:fixed;left:50%;top:50%;width:46px
 select:disabled{opacity:.45;cursor:not-allowed}
 .nav.set{margin-top:auto}
 .nav.set + .nav.out{margin-top:0}
+
+/* ===== WhatsApp invite card (shown after a join request is accepted) ===== */
+.wa{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:16px 18px;border:1px solid rgba(80,170,255,.45);border-radius:14px;text-decoration:none;color:var(--ink);background:linear-gradient(120deg,rgba(47,107,255,.26),rgba(34,208,255,.14) 60%,transparent),#0a1530;box-shadow:inset 0 1px 0 rgba(150,210,255,.1),0 18px 40px -24px rgba(34,208,255,.85);transition:transform .25s,border-color .25s,box-shadow .25s;animation:viewIn .5s cubic-bezier(.2,.7,.2,1) both}
+.wa::after{content:"";position:absolute;inset-inline-start:-40%;inset-block:0;width:40%;background:linear-gradient(90deg,transparent,rgba(150,220,255,.16),transparent);transform:skewX(-18deg);animation:waShine 4.5s ease-in-out 1.2s infinite}
+.wa:hover,.wa:focus-visible{border-color:rgba(34,208,255,.85);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(150,210,255,.16),0 22px 46px -22px rgba(34,208,255,1)}
+.wa:focus-visible{outline:2px solid var(--cy);outline-offset:3px}
+.wa[hidden]{display:none}
+.wa-ic{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:#031024;background:linear-gradient(135deg,var(--cy),var(--bl));box-shadow:0 0 22px -4px rgba(34,208,255,.8)}
+.wa-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:start}
+.wa-t b{font:600 15px/1.35 var(--sans)}
+.wa-t small{color:#9fb4d6;font-size:12.5px;line-height:1.6}
+.wa-go{flex:none;display:grid;place-items:center;color:var(--cy)}
+@keyframes waShine{0%{inset-inline-start:-45%}55%,100%{inset-inline-start:110%}}
+html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
+@media (prefers-reduced-motion:reduce){.wa::after{display:none}}
+
+/* ===== Notifications bell & panel ===== */
+.bell{position:relative;width:36px;height:36px;display:grid;place-items:center;border:0;background:none;color:var(--muted);cursor:pointer;transition:color .2s;border-radius:8px}
+.bell:hover,.bell.on{color:var(--cy);background:rgba(34,208,255,.1)}
+.bell .badge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;padding:0 4px;display:grid;place-items:center;font:700 10px var(--sans);color:#031024;background:linear-gradient(135deg,#ff6b9d,#ff4757);border-radius:10px;border:1.5px solid var(--bg);box-shadow:0 0 12px rgba(255,75,87,.7);animation:bellPulse 2s ease infinite}
+@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.notif-panel{position:absolute;top:56px;inset-inline-end:12px;width:min(360px,calc(100vw - 24px));max-height:480px;display:flex;flex-direction:column;background:linear-gradient(180deg,#0d1b3d,#070f26);border:1px solid var(--bd);border-radius:14px;box-shadow:0 24px 60px -12px #000;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity .25s,transform .25s;z-index:50}
+.notif-panel.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+.notif-panel h3{margin:0;padding:16px 18px;border-bottom:1px solid var(--bd);font:600 15px var(--sans);color:var(--ink)}
+.notif-list{flex:1;overflow-y:auto;padding:6px}
+.notif-item{display:flex;gap:12px;padding:12px 14px;margin-bottom:4px;border-radius:10px;cursor:pointer;transition:background .2s;text-align:start;border:0;width:100%;color:inherit;font:inherit}
+.notif-item:hover{background:rgba(34,208,255,.08)}
+.notif-item.unread{background:rgba(47,107,255,.12)}
+.notif-item.unread:hover{background:rgba(47,107,255,.18)}
+.notif-icon{flex:none;width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--cy),var(--bl))}
+.notif-icon.promo{background:linear-gradient(135deg,#ffc107,#ff9800)}
+.notif-icon.task{background:linear-gradient(135deg,#4caf50,#2e7d32)}
+.notif-body{flex:1;min-width:0}
+.notif-body b{display:block;font:600 14px var(--sans);margin-bottom:2px}
+.notif-body small{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+.notif-body .time{font-size:11px;color:#8397bb;margin-top:3px}
+.notif-empty{padding:48px 16px;text-align:center;color:#8397bb;font-size:14px}
+
+/* ===== Promotion modal ===== */
+.promo-modal{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding:32px 24px 24px}
+.promo-modal .rings{position:relative;width:140px;height:140px;display:grid;place-items:center}
+.promo-modal .rings i{position:absolute;inset:0;border:2px solid var(--cy);border-radius:50%;animation:ping 2s ease-out infinite}
+.promo-modal .rings i:nth-child(2){animation-delay:.6s}
+.promo-modal .rings i:nth-child(3){animation-delay:1.2s}
+.promo-modal h2{margin:0;font:700 26px var(--sans);background:linear-gradient(135deg,var(--cy),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.promo-modal p{margin:0 0 14px;color:#b9cbe8;line-height:1.7}
+.promo-modal .field{width:100%;max-width:340px;text-align:start}
+.promo-modal .actions{display:flex;gap:10px;margin-top:8px}
 </style>
 </head>
 <body data-state="dark">
@@ -370,6 +418,11 @@ select:disabled{opacity:.45;cursor:not-allowed}
       </div>
       <div class="view" data-view="result" hidden>
         <p class="note" id="r-note"></p>
+        <a class="wa" id="r-wa" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="wa-ic" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.6a8.5 8.5 0 01-12.6 7.5L3.5 20.5l1.4-4.3A8.5 8.5 0 1120.5 11.6z"/><path d="M9 8.6c.4-.1.8 0 1 .4l.7 1.3c.1.3.1.6-.1.8l-.5.5c.5 1 1.3 1.8 2.3 2.3l.5-.5c.2-.2.5-.2.8-.1l1.3.7c.4.2.5.6.4 1-.2.8-.9 1.5-1.8 1.6-2.9.3-6.6-3.4-6.3-6.3.1-.9.8-1.6 1.7-1.7z"/></svg></span>
+          <span class="wa-t"><b id="r-wa-title"></b><small id="r-wa-sub"></small></span>
+          <span class="wa-go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
         <div class="idbox" id="r-idbox" hidden><small>Your ID</small><b id="r-id"></b><button type="button" class="btn sm ghost" id="r-copy">Copy ID</button></div>
         <button type="button" class="btn" id="r-btn"></button>
       </div>
@@ -389,7 +442,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
   <aside class="side" id="side" aria-label="Menu"></aside>
   <div class="scrim" id="scrim"></div>
   <div class="main">
-    <header class="top"><button class="icon" id="menu" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><b id="top-title"></b><span id="top-badge"></span></header>
+    <header class="top"><button class="icon" id="menu" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><b id="top-title"></b><span id="top-badge"></span><button class="bell" id="bell-btn" aria-label="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg><span class="badge" id="bell-badge" hidden></span></button><div class="notif-panel" id="notif-panel"><h3 id="notif-title">Notifications</h3><div class="notif-list" id="notif-list"></div></div></header>
     <main class="content" id="content" tabindex="-1"></main>
   </div>
 </div>
@@ -404,6 +457,16 @@ window.SOLVIX_CONFIG = {
   //    https://res.cloudinary.com/CLOUD_NAME/image/upload/v1/terms.pdf
   termsUrl: "",
   termsPages: 3,
+  // 3) Invite link shown to students whose join request was accepted
+  whatsappUrl: "https://chat.whatsapp.com/HZFpgXQxoU29bYKdaMzdkp?s=cl&p=a&mlu=4&ilr=4&iam=2",
+  // 4) Fields required when promoting members to each level (empty = no fields needed)
+  promotionFields: {
+    2: [],           // Explorer: no extra fields
+    3: ['phone'],    // Builder: phone required
+    4: ['phone'],    // Engineer: phone required
+    5: ['phone', 'linkedin'],  // Mentor: phone + LinkedIn
+    6: ['phone', 'linkedin', 'github']  // Core: all fields
+  },
   // 3) Admin ID (first sign-in with it creates the password)
   adminId: "278601",
   adminSalt: "qQ6YrYylvnmPBFGAx999zQ==",
@@ -654,7 +717,7 @@ window.SOLVIX_CONFIG = {
   function toast(m, t = 'ok') { const e = document.createElement('div'); e.className = 'toast ' + t; e.textContent = m; $('#toasts').append(e); setTimeout(() => e.classList.add('out'), 3200); setTimeout(() => e.remove(), 3700); }
 
   /* ---------- icons + level badges ---------- */
-  const IC = { home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', cog: 'M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
+  const IC = { bell: 'M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0', home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', cog: 'M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
   const ico = (n, s = 20) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + IC[n] + '"/></svg>';
   const LEVELS = [null,
     { ar: 'Initiate', en: 'Level 1', d: 'The start of the journey' }, { ar: 'Explorer', en: 'Level 2', d: 'Learns and experiments' },
@@ -748,6 +811,13 @@ window.SOLVIX_CONFIG = {
     'Choose department': 'اختر القسم', 'Choose department first': 'اختر القسم أولاً', 'Choose program': 'اختر البرنامج', 'Choose year': 'اختر الفرقة', 'No programs for this department': 'لا توجد برامج لهذا القسم',
     'Choose a department.': 'اختر القسم.', 'Choose a program.': 'اختر البرنامج.', 'Choose a year.': 'اختر الفرقة الدراسية.',
     'Manage your academic info and app preferences.': 'تحكم في بياناتك الأكاديمية وتفضيلات التطبيق.', 'Academic info': 'البيانات الأكاديمية', 'I am in the preparatory year': 'أنا في الفرقة الإعدادية',
+    'Join our WhatsApp group': 'انضم إلى جروب الواتساب الخاص بنا', 'Stay updated with community news, tasks and announcements.': 'تابع أخبار المجتمع والمهام والإعلانات أولاً بأول.',
+    'Notifications': 'الإشعارات', 'No notifications yet': 'لا توجد إشعارات حتى الآن', 'Your request was accepted': 'تم قبول طلبك', 'You have been promoted': 'تمت ترقيتك',
+    'New task available': 'مهمة جديدة متاحة', 'Congratulations': 'تهانينا', 'You have been promoted to': 'تمت ترقيتك إلى', 'Please provide the following information to complete your promotion': 'من فضلك قدّم البيانات التالية لإكمال الترقية',
+    'Phone number': 'رقم الهاتف', 'LinkedIn profile': 'حساب LinkedIn', 'GitHub profile': 'حساب GitHub', 'Complete promotion': 'إكمال الترقية', 'Skip for now': 'تخطي الآن',
+    'Phone is required': 'رقم الهاتف مطلوب', 'LinkedIn profile is required': 'حساب LinkedIn مطلوب', 'GitHub profile is required': 'حساب GitHub مطلوب',
+    'Promotion Settings': 'إعدادات الترقية', 'Configure which fields are required when promoting members to each level.': 'حدد الحقول المطلوبة عند ترقية الأعضاء لكل مستوى.',
+    'No fields required': 'لا توجد حقول مطلوبة', 'Phone required': 'رقم الهاتف مطلوب', 'LinkedIn required': 'LinkedIn مطلوب', 'GitHub required': 'GitHub مطلوب',
     'Save changes': 'حفظ التغييرات', 'Language': 'اللغة', 'Saved': 'تم الحفظ', 'Could not save, please try again.': 'تعذر الحفظ، حاول مرة أخرى.'
   };
   const tr = (s) => (LANG === 'ar' && AR[s]) || s;
@@ -796,6 +866,8 @@ window.SOLVIX_CONFIG = {
         const ok = r.status === 'approved', mid = ok && r.memberId ? r.memberId : '';
         $('#r-note').innerHTML = ok ? 'Your request has been approved, <b>' + esc(r.name.split(' ')[0]) + '</b>.<br>' + (mid ? 'Save your ID below, you will use it to sign in.' : 'Contact the admins to receive your ID, then sign in.') : 'Sorry, your request was not accepted at this time. You can submit a new request later.';
         $('#r-idbox').hidden = !mid; $('#r-id').textContent = mid;
+        const wa = $('#r-wa'), waUrl = /^https:\/\/chat\.whatsapp\.com\//.test(CONFIG.whatsappUrl || '') ? CONFIG.whatsappUrl : '';
+        wa.hidden = !(ok && waUrl); if (!wa.hidden) { wa.href = waUrl; $('#r-wa-title').textContent = tr('Join our WhatsApp group'); $('#r-wa-sub').textContent = tr('Stay updated with community news, tasks and announcements.'); }
         $('#r-copy').textContent = 'Copy ID';
         $('#r-copy').onclick = async () => { try { await navigator.clipboard.writeText(mid); $('#r-copy').textContent = 'Copied'; } catch (_) { const s = getSelection(), g = document.createRange(); g.selectNodeContents($('#r-id')); s.removeAllRanges(); s.addRange(g); $('#r-copy').textContent = 'Select and copy'; } };
         $('#r-btn').textContent = ok ? 'Sign in' : 'Submit a new request';
@@ -899,6 +971,99 @@ window.SOLVIX_CONFIG = {
     const o = document.createElement('div'); o.className = 'lvlup l' + n; o.setAttribute('role', 'alertdialog');
     o.innerHTML = '<div class="rings"><i></i><i></i><i></i></div><div class="aura l' + n + '">' + badge(n, 130) + '</div><h2>Level up!</h2><p>You reached level <b>' + LEVELS[n].ar + '</b> · ' + LEVELS[n].en + '</p><button class="btn sm">Continue</button>';
     document.body.append(o); o.querySelector('button').onclick = () => o.remove(); o.querySelector('button').focus();
+  }
+
+  /* ===== Notifications System ===== */
+  let notifs = [];
+
+  function addNotif(type, title, body, meta = {}) {
+    if (!me || !me.id) return;
+    const notif = { id: 'n' + Date.now() + Math.random().toString(36).slice(2, 6), type, title, body, meta, read: false, createdAt: Date.now() };
+    const existing = (me.notifications || []);
+    existing.unshift(notif);
+    const updated = existing.slice(0, 50);
+    db.set('members', me.id, { notifications: updated }).catch(() => {});
+  }
+
+  function markRead(nid) {
+    if (!me || !me.notifications) return;
+    const idx = me.notifications.findIndex(n => n.id === nid);
+    if (idx >= 0 && !me.notifications[idx].read) {
+      me.notifications[idx].read = true;
+      db.set('members', me.id, { notifications: me.notifications }).catch(() => {});
+    }
+  }
+
+  function paintNotifs() {
+    notifs = (me && me.notifications) || [];
+    const unread = notifs.filter(n => !n.read).length;
+    const badge = $('#bell-badge');
+    if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.hidden = false; }
+    else { badge.hidden = true; }
+
+    const list = $('#notif-list');
+    if (notifs.length === 0) {
+      list.innerHTML = '<div class="notif-empty">' + tr('No notifications yet') + '</div>';
+    } else {
+      list.innerHTML = notifs.map(n => {
+        const icon = n.type === 'accepted' ? 'check' : n.type === 'promotion' ? 'up' : 'tasks';
+        const iconClass = n.type === 'accepted' ? '' : n.type === 'promotion' ? ' promo' : ' task';
+        return '<button class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + n.id + '"><div class="notif-icon' + iconClass + '">' + ico(icon, 20) + '</div><div class="notif-body"><b>' + esc(n.title) + '</b><small>' + esc(n.body) + '</small><div class="time">' + ago(n.createdAt) + '</div></div></button>';
+      }).join('');
+    }
+  }
+
+  function checkPromotion() {
+    if (!me || !me.pendingPromotion) return;
+    const pp = me.pendingPromotion;
+    const fields = CONFIG.promotionFields[pp.level] || [];
+    if (fields.length === 0) {
+      db.set('members', me.id, { pendingPromotion: null }).catch(() => {});
+      return;
+    }
+
+    const fieldMap = { phone: 'Phone number', linkedin: 'LinkedIn profile', github: 'GitHub profile' };
+    const fieldInputs = fields.map(f =>
+      '<div class="field"><label for="pf-' + f + '">' + tr(fieldMap[f]) + '</label><input id="pf-' + f + '" type="' + (f === 'phone' ? 'tel' : 'url') + '" dir="ltr" placeholder="' + (f === 'phone' ? '+20...' : 'https://...') + '" aria-describedby="pf-' + f + '-err"><p class="error" id="pf-' + f + '-err"></p></div>'
+    ).join('');
+
+    openModal('<div class="promo-modal"><div class="rings">' + badge(pp.level, 110) + '<i></i><i></i><i></i></div><h2>' + tr('Congratulations') + '</h2><p>' + tr('You have been promoted to') + ' <b>' + LEVELS[pp.level].ar + '</b></p><p style="font-size:14px;color:#9fb4d6">' + tr('Please provide the following information to complete your promotion') + '</p>' + fieldInputs + '<div class="actions"><button class="btn ghost" id="promo-skip">' + tr('Skip for now') + '</button><button class="btn" id="promo-submit">' + tr('Complete promotion') + '</button></div></div>');
+
+    $('#promo-skip').onclick = () => closeModal();
+
+    $('#promo-submit').onclick = async () => {
+      const data = {};
+      let valid = true;
+      fields.forEach(f => {
+        const inp = $('#pf-' + f);
+        const val = inp.value.trim();
+        const err = $('#pf-' + f + '-err');
+        if (!val) {
+          err.textContent = tr(fieldMap[f] + ' is required');
+          inp.setAttribute('aria-invalid', 'true');
+          valid = false;
+        } else {
+          data[f] = val;
+          err.textContent = '';
+          inp.setAttribute('aria-invalid', 'false');
+        }
+      });
+
+      if (!valid) return;
+
+      $('#promo-submit').disabled = true;
+      $('#promo-submit').textContent = '...';
+
+      try {
+        await db.set('members', me.id, Object.assign({}, data, { pendingPromotion: null }));
+        closeModal();
+        toast(tr('Saved'));
+      } catch (e) {
+        toast(tr('Could not save, please try again.'), 'bad');
+        $('#promo-submit').disabled = false;
+        $('#promo-submit').textContent = tr('Complete promotion');
+      }
+    };
   }
 
   /* ---------- views ---------- */
