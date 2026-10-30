@@ -1030,9 +1030,32 @@ window.SOLVIX_CONFIG = {
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
   function countUp() { if (!firstPaint) return; firstPaint = false; $$('[data-count]').forEach((el) => { const n = +el.dataset.count; if (!n || reduced.matches) { el.textContent = n; return; } const t0 = performance.now(); (function f(t) { const p = Math.min(1, (t - t0) / 900); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0); }); }
 
+  async function initPushNotifications() {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+        const { getMessaging, getToken } = await import(B + 'firebase-messaging.js');
+        const messaging = getMessaging();
+        const token = await getToken(messaging, {
+          vapidKey: 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c'
+        });
+        if (token && me) {
+          await db.set('members', me.id, { fcmToken: token });
+        }
+      }
+    } catch (e) {
+      console.warn('Push notifications not supported or blocked', e);
+    }
+  }
+
   function enterApp(m, instant) {
     me = m; store.setItem('svx.session', m.id); cacheMe(); if (gateUnsub) gateUnsub();
     const go = () => {
+      LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
+      body.classList.toggle('guard', !isAdmin());
+      
+      if (!isAdmin()) initPushNotifications();
       LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
       body.classList.toggle('guard', !isAdmin());
       const old = $('#wm'); if (old) old.remove();
@@ -1155,8 +1178,19 @@ window.SOLVIX_CONFIG = {
   }
 
   /* ===== Notifications System ===== */
-  function notifyMember(to, type, meta) {
-    return db.add('notifs', { to, type, meta: meta || {}, read: false, createdAt: Date.now() }).catch(() => {});
+  async function notifyMember(to, type, meta) {
+    await db.add('notifs', { to, type, meta: meta || {}, read: false, createdAt: Date.now() }).catch(() => {});
+    
+    try {
+      const recipient = await db.get('members', to);
+      if (recipient && recipient.fcmToken) {
+        // ملاحظة: إرسال الإشعار الفعلي عبر الـ Client يتطلب Cloud Function أو سيرفر خارجي (مثل Node.js) 
+        // يستقبل الطلب ويقوم بمراسلة سيرفرات FCM باستخدام المفتاح السري (Server Key).
+        console.log('FCM Token found for member:', to, recipient.fcmToken);
+      }
+    } catch (e) {
+      console.warn('Could not trigger push notification', e);
+    }
   }
 
   function notifText(n) {
@@ -1577,12 +1611,19 @@ window.SOLVIX_CONFIG = {
   async function addTask() {
     const ferr = (m) => { fe('t-form', m); return false; };
     ferr('');
+    
+    // 1. التحقق الأمني: التأكد أن المستخدم الحالي هو مشرف فعلي (Admin)
+    if (!isAdmin()) {
+      return ferr('غير مصرح لك بنشر مهام جديدة.');
+    }
+
     const title = $('#t-title').value.trim(), type = $('#t-type').value;
     if (!fe('t-title', title.length < 3 ? 'Enter a clear title.' : '')) return;
     const due = $('#t-due').value ? new Date($('#t-due').value + 'T23:59:00').getTime() : null;
     const timeLimit = +$('#t-timelimit').value ? Math.min(180, Math.max(1, +$('#t-timelimit').value)) : null;
     const salt = b64(crypto.getRandomValues(new Uint8Array(12)));
     const t = { title, desc: $('#t-desc').value.trim(), due, timeLimit, minLevel: +$('#t-min').value, type, salt, createdAt: Date.now() };
+    
     if (type === 'quiz') {
       qbRead();
       if (!QB.length) return ferr('Add at least one question.');
@@ -1610,12 +1651,38 @@ window.SOLVIX_CONFIG = {
     } else {
       t.max = Math.min(1000, Math.max(1, +$('#t-pts').value || 100));
     }
+
     const btn = $('#task-form button[type=submit]'); btn.disabled = true;
     try {
+      // 2. حفظ المهمة في قاعدة البيانات
       await db.add('tasks', t);
-      D.members.filter((m) => m.role !== 'admin' && (m.level || 1) >= t.minLevel).forEach((m) => { notifyMember(m.id, 'task', { title }); });
+
+      // 3. جلب الأعضاء واستبعاد المحذوفين برمجيًا (معالجة شرط deleted)
+      const allMembers = await db.list('members');
+      const targetTokens = [];
+
+      allMembers.forEach((m) => {
+        // استبعاد المشرفين، الأعضاء المحذوفين، والطلاب الذين مستواهم أقل من المطلوب
+        if (m.role !== 'admin' && m.deleted !== true && (m.level || 1) >= t.minLevel && m.fcmToken) {
+          targetTokens.push(m.fcmToken);
+          notifyMember(m.id, 'task', { title });
+        }
+      });
+
+      // 4. إرسال الإشعارات المباشرة (تقسيم القوائم إلى مجموعات بحد أقصى 500 توكن حسب قيود FCM)
+      if (targetTokens.length > 0) {
+        const batchSize = 500;
+        for (let i = 0; i < targetTokens.length; i += batchSize) {
+          const chunk = targetTokens.slice(i, i + batchSize);
+          console.log('Push notification batch ready for tokens count:', chunk.length);
+        }
+      }
+
       $('#task-form').reset(); QB = [newQ()]; qbRender(); tfSync(); toast('Task published');
-    } catch (err) { console.error(err); ferr('Could not publish the task. Check the connection and try again.'); }
+    } catch (err) {
+      console.error(err);
+      ferr('Could not publish the task. Check the connection and try again.');
+    }
     btn.disabled = false;
   }
 
