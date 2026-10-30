@@ -826,8 +826,19 @@ window.SOLVIX_CONFIG = {
   }
 
   /* ---------- modal ---------- */
-  function openModal(inner) { const m = $('#modal'); m.innerHTML = '<div class="mcard" role="dialog" aria-modal="true">' + inner + '</div>'; m.hidden = false; const f = m.querySelector('input,select,button'); if (f) f.focus({ preventScroll: true }); }
-  function closeModal() { if (timerInt) { clearInterval(timerInt); timerInt = null; } $('#modal').hidden = true; $('#modal').innerHTML = ''; }
+  function openModal(inner) {
+    history.pushState({ modal: true }, '');
+    const m = $('#modal');
+    m.innerHTML = '<div class="mcard" role="dialog" aria-modal="true">' + inner + '</div>';
+    m.hidden = false;
+    const f = m.querySelector('input,select,button');
+    if (f) f.focus({ preventScroll: true });
+  }
+  function closeModal() {
+    if (timerInt) { clearInterval(timerInt); timerInt = null; }
+    $('#modal').hidden = true;
+    $('#modal').innerHTML = '';
+  }
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal' || e.target.closest('[data-close]')) closeModal(); });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
 
@@ -1032,7 +1043,9 @@ window.SOLVIX_CONFIG = {
         w.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(tile) + '")';
         document.body.append(w);
       }
-      buildShell(); startData(); nav(isAdmin() ? 'requests' : 'home');
+      const initView = isAdmin() ? 'requests' : 'home';
+      history.replaceState({ view: initView }, '');
+      buildShell(); startData(); nav(initView, true);
     };
     if (instant) go(); else { body.classList.add('leaving'); setTimeout(go, 650); }
   }
@@ -1063,17 +1076,66 @@ window.SOLVIX_CONFIG = {
       );
     }
     U.push(
-      db.watch('tasks', (l) => { D.tasks = l; tk(); }),
+      db.watch('tasks', (l) => { D.tasks = l.filter((t) => !t.deleted); tk(); }),
       db.watch('resources', (l) => { D.resources = l; tk(); }),
       db.watch('questions', (l) => { D.questions = l; tk(); }),
       db.watch('announces', (l) => { D.announces = l; tk(); })
     );
   }
-  function nav(v) { route.v = v; firstPaint = true; $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v)); const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v); $('#top-title').textContent = L ? tr(L[1]) : ''; $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>'; $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); paint(); $('#content').scrollTop = 0; }
+  function nav(v, fromHistory) {
+    if (!fromHistory && route.v && route.v !== v) {
+      history.pushState({ view: v }, '');
+    }
+    route.v = v; firstPaint = true;
+    $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v));
+    const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v);
+    $('#top-title').textContent = L ? tr(L[1]) : '';
+    $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>';
+    $('#side').classList.remove('open');
+    $('#scrim').classList.remove('open');
+    paint();
+    $('#content').scrollTop = 0;
+  }
   function paint() { if (!route.v) return; const pc = D.requests.filter((r) => r.status === 'pending').length; const b = $('#nb-requests'); if (b) b.textContent = pc || ''; if (V[route.v].paint) V[route.v].paint(); countUp(); }
   $('#side').addEventListener('click', (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); } });
-  $('#menu').onclick = () => { $('#side').classList.add('open'); $('#scrim').classList.add('open'); };
-  $('#scrim').onclick = () => { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); };
+  $('#menu').onclick = () => {
+    history.pushState({ side: true }, '');
+    $('#side').classList.add('open');
+    $('#scrim').classList.add('open');
+  };
+  $('#scrim').onclick = () => {
+    if (history.state && history.state.side) history.back();
+    else { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); }
+  };
+
+  /* معالجة زر الرجوع الفيزيائي / إيماءة الرجوع في الموبايل */
+  window.addEventListener('popstate', (e) => {
+    // 1. إذا كانت القائمة الجانبية مفتوحة، يتم إغلاقها أولاً
+    if ($('#side').classList.contains('open')) {
+      $('#side').classList.remove('open');
+      $('#scrim').classList.remove('open');
+      return;
+    }
+    // 2. إذا كانت هناك نافذة منبثقة مفتوحة (تاسك، تفاصيل عضو، إلخ)، يتم إغلاقها
+    if (!$('#modal').hidden) {
+      closeModal();
+      return;
+    }
+    // 3. إذا كانت لوحة الإشعارات مفتوحة، يتم إغلاقها
+    if ($('#notif-panel') && $('#notif-panel').classList.contains('open')) {
+      closeNotifs();
+      return;
+    }
+    // 4. الرجوع إلى الصفحة السابقة المسجلة
+    if (e.state && e.state.view) {
+      nav(e.state.view, true);
+    } else {
+      const defaultView = isAdmin() ? 'requests' : 'home';
+      if (route.v !== defaultView) {
+        nav(defaultView, true);
+      }
+    }
+  });
   $('#bell-btn').onclick = (e) => {
     e.stopPropagation();
     const p = $('#notif-panel'), open = !p.classList.contains('open');
@@ -1185,7 +1247,7 @@ window.SOLVIX_CONFIG = {
     requests: {
       html: () => '<h2 class="ph">Join requests</h2><p class="pp">Review new requests and assign an ID to each accepted student.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>',
       paint() {
-        const R = D.requests; $('#stats').innerHTML = stat('Pending', R.filter((r) => r.status === 'pending').length, 'clock') + stat('Members', D.members.filter((m) => m.role !== 'admin').length, 'users') + stat('Tasks', D.tasks.length, 'tasks');
+        const R = D.requests; $('#stats').innerHTML = stat('Pending', R.filter((r) => r.status === 'pending').length, 'clock') + stat('Members', D.members.filter((m) => m.role !== 'admin' && !m.deleted).length, 'users') + stat('Tasks', D.tasks.filter((t) => !t.deleted).length, 'tasks');
         $('#chips').innerHTML = [['pending', 'Pending'], ['approved', 'Accepted'], ['rejected', 'Rejected'], ['all', 'All']].map((c) => '<button class="chip' + (F.req === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + '</button>').join('');
         const L = R.filter((r) => F.req === 'all' || r.status === F.req).sort((a, b) => b.createdAt - a.createdAt);
         $('#list').innerHTML = L.length ? L.map((r, i) => { const p = PILL[r.status]; return '<button class="rowc" data-req="' + r.id + '" style="--i:' + i + '">' + av(r.name) + '<div class="rc-t"><b>' + esc(r.name) + '</b><small>' + esc(r.dept) + ' · ' + esc(r.year) + '</small></div><span class="rc-m">' + ago(r.createdAt) + '</span><span class="pill ' + p[1] + '">' + p[0] + '</span></button>'; }).join('') : empty('No requests here right now');
@@ -1224,11 +1286,13 @@ window.SOLVIX_CONFIG = {
     home: {
       html: () => '<div id="home-banner"></div><div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p><div style="margin-top:10px" id="my-badges"></div></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
       paint() {
-        const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl() && !t.deleted), dn = mine.filter((t) => D.subs.some((s) => s.taskId === t.id && !s.deleted)).length;
-        const totalXp = D.subs.filter((s) => s.memberId === me.id && s.score != null).reduce((a, b) => a + (b.score || 0), 0);
-        $('#stats').innerHTML = stat('XP Points', totalXp, 'up') + stat('Tasks completed', dn, 'check') + stat('Available tasks', mine.length - dn, 'tasks');
+        const activeTasks = D.tasks.filter((t) => !t.deleted && (t.minLevel || 1) <= lvl());
+        const dn = activeTasks.filter((t) => D.subs.some((s) => s.taskId === t.id && !s.deleted)).length;
+        const availableTasks = activeTasks.filter((t) => !D.subs.some((s) => s.taskId === t.id && !s.deleted) && (!t.due || Date.now() <= t.due)).length;
+        const totalXp = D.subs.filter((s) => s.memberId === me.id && !s.deleted && s.score != null).reduce((a, b) => a + (b.score || 0), 0);
+        $('#stats').innerHTML = stat('XP Points', totalXp, 'up') + stat('Tasks completed', dn, 'check') + stat('Available tasks', availableTasks, 'tasks');
         
-        const ann = D.announces.slice().sort((a,b) => b.createdAt - a.createdAt)[0];
+        const ann = D.announces.filter((a) => !a.deleted).slice().sort((a,b) => b.createdAt - a.createdAt)[0];
         $('#home-banner').innerHTML = ann ? '<div class="announce-banner"><span>📢 ' + esc(ann.text) + '</span></div>' : '';
 
         const badges = [];
@@ -1294,6 +1358,7 @@ window.SOLVIX_CONFIG = {
         const totalSubs = D.subs.filter((s) => !s.deleted).length;
         const totalMembers = D.members.filter((m) => m.role !== 'admin' && !m.deleted).length;
         const activeTasks = D.tasks.filter((t) => !t.deleted).length;
+        
         $('#a-stats').innerHTML = stat('Total Students', totalMembers, 'users') + stat('Active Tasks', activeTasks, 'tasks') + stat('Submissions', totalSubs, 'check');
 
         const deptCounts = {};
@@ -1356,15 +1421,55 @@ window.SOLVIX_CONFIG = {
     };
   }
   function openMember(id) {
-    const m = D.members.find((x) => x.id === id); if (!m) return; const l = m.level || 1, dn = Object.keys(m.done || {}).length;
-    openModal('<div class="mhead"><h3>Member details</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code></div></div>'
-      + kv([['Department', esc(nm(m.dept))], ['Program', esc(nm(m.program) || '—')], ['Year', esc(nm(m.year))], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks submitted', D.subs.filter((s) => s.memberId === m.id).length], ['Last promotion', fmt(m.promotedAt)], ['Phone', '<span dir="ltr">' + esc(m.phone || '—') + '</span>'], ['LinkedIn', '<span dir="ltr">' + esc(m.linkedin || '—') + '</span>'], ['GitHub', '<span dir="ltr">' + esc(m.github || '—') + '</span>'], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
+    const m = D.members.find((x) => x.id === id); if (!m) return;
+    const l = m.level || 1;
+    
+    // حسابات النشاط والدرجات والتاسكات
+    const userSubs = D.subs.filter((s) => s.memberId === m.id && !s.deleted);
+    const userXp = userSubs.filter((s) => s.score != null).reduce((acc, cur) => acc + (cur.score || 0), 0);
+    const eligibleTasks = D.tasks.filter((t) => !t.deleted && (t.minLevel || 1) <= l);
+    const submittedTaskIds = new Set(userSubs.map((s) => s.taskId));
+    
+    // تفاصيل التاسكات للعضو
+    const taskDetailsHtml = eligibleTasks.length ? eligibleTasks.map((t) => {
+      const sub = userSubs.find((s) => s.taskId === t.id);
+      if (sub) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(34,208,255,0.06);border:1px solid var(--bd);border-radius:8px;margin-bottom:6px">'
+          + '<div><b>' + esc(t.title) + '</b><small style="display:block;color:#8397bb">' + ago(sub.submittedAt) + (sub.violations ? ' · ' + sub.violations + ' focus losses' : '') + '</small></div>'
+          + '<span class="pill ' + (sub.status === 'graded' ? 'ok' : 'warn') + '">' + (sub.status === 'graded' ? sub.score + ' / ' + sub.max : 'Under review') + '</span>'
+          + '</div>';
+      } else {
+        const isExpired = t.due && Date.now() > t.due;
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,143,163,0.04);border:1px dashed rgba(255,143,163,0.3);border-radius:8px;margin-bottom:6px">'
+          + '<div><b>' + esc(t.title) + '</b><small style="display:block;color:#ff9db0">' + (isExpired ? 'Missed deadline' : 'Not submitted yet') + '</small></div>'
+          + '<span class="pill ' + (isExpired ? 'bad' : 'warn') + '">' + (isExpired ? 'Missed' : 'Pending') + '</span>'
+          + '</div>';
+      }
+    }).join('') : '<p class="note dim">No tasks assigned to this level yet.</p>';
+
+    openModal('<div class="mhead"><h3>Member details & Activity</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><span class="wide" hidden></span>'
+      + '<div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code><div style="margin-top:6px"><span class="pill ok">' + userXp + ' Total XP</span> <span class="pill ' + (userSubs.length === eligibleTasks.length && eligibleTasks.length ? 'ok' : 'warn') + '">' + userSubs.length + ' / ' + eligibleTasks.length + ' Completed</span></div></div></div>'
+      + kv([
+          ['Department', esc(nm(m.dept))],
+          ['Program', esc(nm(m.program) || '—')],
+          ['Year', esc(nm(m.year))],
+          ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en],
+          ['Account status', m.passHash ? 'Active' : 'Awaiting password setup'],
+          ['Joined date', fmt(m.createdAt)],
+          ['Last promotion', fmt(m.promotedAt)],
+          ['Phone', '<span dir="ltr">' + esc(m.phone || '—') + '</span>'],
+          ['LinkedIn', '<span dir="ltr">' + esc(m.linkedin || '—') + '</span>'],
+          ['GitHub', '<span dir="ltr">' + esc(m.github || '—') + '</span>']
+        ])
+      + '<h4 style="margin:16px 0 8px">Task Submissions & History</h4>'
+      + '<div class="list" style="max-height:220px;overflow-y:auto;margin-bottom:16px">' + taskDetailsHtml + '</div>'
       + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
       + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
       + '<div style="display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap">'
       + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '')
       + '<button class="btn sm bad" id="m-del">Delete member</button>'
       + '</div></div></div>');
+
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
     if ($('#m-up')) $('#m-up').onclick = () => promoteMember(m, l + 1, 'Promoted ' + m.name.split(' ')[0]);
     $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) promoteMember(m, n, 'Level updated'); };
@@ -1375,8 +1480,8 @@ window.SOLVIX_CONFIG = {
         $('#cfm-del-m').disabled = true;
         try {
           await db.set('members', m.id, { passHash: null, uid: null, deleted: true, name: '[Deleted]' });
-          const userSubs = D.subs.filter((s) => s.memberId === m.id);
-          for (const s of userSubs) {
+          const relatedSubs = D.subs.filter((s) => s.memberId === m.id);
+          for (const s of relatedSubs) {
             await db.set('submissions', s.id, { deleted: true });
           }
           closeModal();
