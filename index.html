@@ -1144,7 +1144,7 @@ window.SOLVIX_CONFIG = {
     members: {
       html: () => '<h2 class="ph">Community members</h2><p class="pp">Tap any member to see their full details and promote them.</p><div class="tools"><div class="field"><label for="q">Search</label><input id="q" placeholder="Name or ID" value="' + esc(F.q) + '"></div><div class="field"><label for="fl">Level</label><select id="fl"><option value="0">All</option>' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '"' + (F.lvl === String(i + 1) ? ' selected' : '') + '>' + l.ar + '</option>').join('') + '</select></div></div><div class="list" id="list"></div>',
       paint() {
-        const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'en'));
+        const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && !m.deleted && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'en'));
         $('#list').innerHTML = L.length ? L.map((m, i) => { const l = m.level || 1; return '<button class="rowc" data-mem="' + esc(m.id) + '" style="--i:' + i + '">' + badge(l, 38) + '<div class="rc-t"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'Awaiting activation') + '</span></button>'; }).join('') : empty('No matching members');
       }
     },
@@ -1153,13 +1153,13 @@ window.SOLVIX_CONFIG = {
         ? '<h2 class="ph">Tasks</h2><p class="pp">Choose the task type, build it and publish. Members of the right level are notified instantly.</p>' + taskFormHtml() + '<div class="list" id="list"></div>'
         : '<h2 class="ph">My tasks</h2><p class="pp">Open a task, answer it and submit. Your result will appear here and in your notifications.</p><div class="list" id="list"></div>',
       paint() {
-        const T = D.tasks.slice().sort((a, b) => b.createdAt - a.createdAt);
+        const T = D.tasks.filter((t) => !t.deleted).slice().sort((a, b) => b.createdAt - a.createdAt);
         if (isAdmin()) {
           const qb = $('#qb'); if (qb && !qb.dataset.ready) { qb.dataset.ready = '1'; QB = [newQ()]; qbRender(); tfSync(); }
-          const mem = D.members.filter((m) => m.role !== 'admin');
+          const mem = D.members.filter((m) => m.role !== 'admin' && !m.deleted);
           $('#list').innerHTML = T.length ? T.map((t, i) => {
-            const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)), sb = D.subs.filter((s) => s.taskId === t.id), rv = sb.filter((s) => s.status === 'review').length;
-            return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> <span class="pill ok">' + sb.length + ' / ' + el.length + ' submitted</span> ' + (rv ? '<span class="pill warn">' + rv + ' need review</span> ' : '') + '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span>' + (t.type ? ' <button class="btn sm ghost" data-subs="' + t.id + '">View submissions</button>' : '') + '</div>' + badge(t.minLevel || 1, 36) + '</div>';
+            const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)), sb = D.subs.filter((s) => s.taskId === t.id && !s.deleted), rv = sb.filter((s) => s.status === 'review').length;
+            return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> <span class="pill ok">' + sb.length + ' / ' + el.length + ' submitted</span> ' + (rv ? '<span class="pill warn">' + rv + ' need review</span> ' : '') + '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span>' + (t.type ? ' <button class="btn sm ghost" data-subs="' + t.id + '">View submissions</button>' : '') + ' <button class="btn sm bad" data-deltask="' + t.id + '">Delete</button></div>' + badge(t.minLevel || 1, 36) + '</div>';
           }).join('') : empty('No tasks created yet');
           return;
         }
@@ -1229,11 +1229,31 @@ window.SOLVIX_CONFIG = {
       + kv([['Department', esc(nm(m.dept))], ['Program', esc(nm(m.program) || '—')], ['Year', esc(nm(m.year))], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks submitted', D.subs.filter((s) => s.memberId === m.id).length], ['Last promotion', fmt(m.promotedAt)], ['Phone', '<span dir="ltr">' + esc(m.phone || '—') + '</span>'], ['LinkedIn', '<span dir="ltr">' + esc(m.linkedin || '—') + '</span>'], ['GitHub', '<span dir="ltr">' + esc(m.github || '—') + '</span>'], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
       + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
       + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
-      + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '') + '</div></div>');
+      + '<div style="display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap">'
+      + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '')
+      + '<button class="btn sm bad" id="m-del">Delete member</button>'
+      + '</div></div></div>');
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
     if ($('#m-up')) $('#m-up').onclick = () => promoteMember(m, l + 1, 'Promoted ' + m.name.split(' ')[0]);
     $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) promoteMember(m, n, 'Level updated'); };
     if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null, uid: null }, 'Password and device binding were reset. The member can sign in from a new device');
+    if ($('#m-del')) $('#m-del').onclick = () => {
+      openModal('<div class="mhead"><h3>Confirm deletion</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><p class="note" style="text-align:start">Are you sure you want to delete member <b>' + esc(m.name) + '</b>? This will permanently remove their account and related submissions.</p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm bad" id="cfm-del-m">Yes, delete</button></div></div>');
+      $('#cfm-del-m').onclick = async () => {
+        $('#cfm-del-m').disabled = true;
+        try {
+          await db.set('members', m.id, { passHash: null, uid: null, deleted: true, name: '[Deleted]' });
+          const userSubs = D.subs.filter((s) => s.memberId === m.id);
+          for (const s of userSubs) {
+            await db.set('submissions', s.id, { deleted: true });
+          }
+          closeModal();
+          toast('Member deleted successfully');
+        } catch (_) {
+          toast('Could not delete member', 'bad');
+        }
+      };
+    };
   }
   async function saveSettings() {
     const A = acSet.get();
@@ -1484,13 +1504,28 @@ window.SOLVIX_CONFIG = {
   }
   const C = $('#content');
   C.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel]'); if (!t) return;
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask]'); if (!t) return;
     if (t.dataset.lang) setLang(t.dataset.lang);
     else if (t.dataset.req) openRequest(t.dataset.req);
     else if (t.dataset.mem) openMember(t.dataset.mem);
     else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
     else if (t.dataset.open) openTask(t.dataset.open);
     else if (t.dataset.subs) openSubs(t.dataset.subs);
+    else if (t.dataset.deltask) {
+      const tid = t.dataset.deltask, taskObj = D.tasks.find((x) => x.id === tid);
+      if (!taskObj) return;
+      openModal('<div class="mhead"><h3>Confirm deletion</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><p class="note" style="text-align:start">Are you sure you want to delete task <b>' + esc(taskObj.title) + '</b>? It will no longer appear to members.</p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm bad" id="cfm-del-t">Yes, delete</button></div></div>');
+      $('#cfm-del-t').onclick = async () => {
+        $('#cfm-del-t').disabled = true;
+        try {
+          await db.set('tasks', tid, { deleted: true });
+          closeModal();
+          toast('Task deleted successfully');
+        } catch (_) {
+          toast('Could not delete task', 'bad');
+        }
+      };
+    }
     else if (t.dataset.qadd) { qbRead(); if (QB.length < 30) QB.push(newQ()); qbRender(); }
     else if (t.dataset.qdel !== undefined) { qbRead(); QB.splice(+t.dataset.qdel, 1); qbRender(); }
   });
