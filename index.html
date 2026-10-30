@@ -362,6 +362,23 @@ body.guard img{-webkit-user-drag:none}
 body.shield #app,body.shield #modal{visibility:hidden}
 #wm{position:fixed;inset:0;z-index:70;pointer-events:none;background-repeat:repeat}
 @media print{body{display:none!important}}
+
+/* ===== Gamification, Timer, Resources & Forum ===== */
+.timer-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#0d1b3d;border-bottom:1px solid var(--bd);border-radius:10px 10px 0 0;font:700 14px var(--sans);color:var(--cy)}
+.timer-bar.warn{color:var(--bad);background:#260811}
+.announce-banner{position:relative;display:flex;align-items:center;gap:12px;padding:12px 18px;margin-bottom:16px;border-radius:12px;background:linear-gradient(90deg,#0a78bd,#6a38d6);color:#fff;font:600 14px var(--sans);box-shadow:0 10px 25px -8px rgba(34,208,255,.4);animation:viewIn .4s both}
+.announce-banner button{background:none;border:0;color:#fff;cursor:pointer;padding:4px}
+.leader-podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:24px 0 28px;text-align:center}
+.podium-step{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;padding:16px 8px 12px;background:linear-gradient(180deg,rgba(18,34,76,.65),rgba(9,18,44,.8));border:1px solid var(--bd);border-radius:14px;transition:.3s}
+.podium-step.p1{order:2;padding-top:28px;border-color:rgba(255,193,7,.7);box-shadow:0 0 24px -6px rgba(255,193,7,.5)}
+.podium-step.p2{order:1}
+.podium-step.p3{order:3}
+.code-hl{font-family:ui-monospace,monospace;font-size:13px;line-height:1.6}
+.code-hl .kw{color:#ff79c6;font-weight:700}
+.code-hl .str{color:#f1fa8c}
+.code-hl .num{color:#bd93f9}
+.code-hl .comm{color:#6272a4;font-style:italic}
+.badge-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:14px;font-size:11.5px;font-weight:700;background:rgba(34,208,255,.12);color:var(--cy);border:1px solid rgba(34,208,255,.3)}
 </style>
 </head>
 <body data-state="dark">
@@ -810,7 +827,7 @@ window.SOLVIX_CONFIG = {
 
   /* ---------- modal ---------- */
   function openModal(inner) { const m = $('#modal'); m.innerHTML = '<div class="mcard" role="dialog" aria-modal="true">' + inner + '</div>'; m.hidden = false; const f = m.querySelector('input,select,button'); if (f) f.focus({ preventScroll: true }); }
-  function closeModal() { $('#modal').hidden = true; $('#modal').innerHTML = ''; }
+  function closeModal() { if (timerInt) { clearInterval(timerInt); timerInt = null; } $('#modal').hidden = true; $('#modal').innerHTML = ''; }
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal' || e.target.closest('[data-close]')) closeModal(); });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
 
@@ -852,7 +869,17 @@ window.SOLVIX_CONFIG = {
   Object.assign(AR, {
     'Welcome to Solvix Kod': 'مرحباً بك في Solvix Kod',
     'Your task was graded': 'تم تصحيح مهمتك',
-    'Enter a valid value': 'أدخل قيمة صحيحة'
+    'Enter a valid value': 'أدخل قيمة صحيحة',
+    'Leaderboard': 'لوحة المتصدرين',
+    'Resources': 'المراجع والملازم',
+    'Q&A Forum': 'ساحة النقاش والأسئلة',
+    'Analytics': 'التحليلات والإحصائيات',
+    'Broadcast': 'الإذاعة والإعلانات',
+    'Announcements': 'الإعلانات الهامة',
+    'Post question': 'طرح سؤال جديد',
+    'Add resource': 'إضافة مرجع دراسي',
+    'Edit task': 'تعديل المهمة',
+    'Time remaining': 'الوقت المتبقي'
   });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
@@ -967,8 +994,26 @@ window.SOLVIX_CONFIG = {
   });
 
   /* ---------- app: shell, routing, data ---------- */
-  const D = { requests: [], members: [], tasks: [], subs: [], notifs: [] }, F = { req: 'pending', q: '', lvl: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
-  const NAV = { member: [['home', 'Home', 'home'], ['tasks', 'Tasks', 'tasks'], ['profile', 'My profile', 'user'], ['settings', 'Settings', 'cog']], admin: [['requests', 'Join requests', 'inbox'], ['members', 'Members', 'users'], ['tasks', 'Tasks', 'tasks']] };
+  const D = { requests: [], members: [], tasks: [], subs: [], notifs: [], resources: [], questions: [], announces: [] }, F = { req: 'pending', q: '', lvl: '0', resDept: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
+  const NAV = {
+    member: [
+      ['home', 'Home', 'home'],
+      ['tasks', 'Tasks', 'tasks'],
+      ['leaderboard', 'Leaderboard', 'up'],
+      ['resources', 'Resources', 'inbox'],
+      ['forum', 'Q&A Forum', 'users'],
+      ['profile', 'My profile', 'user'],
+      ['settings', 'Settings', 'cog']
+    ],
+    admin: [
+      ['requests', 'Join requests', 'inbox'],
+      ['members', 'Members', 'users'],
+      ['tasks', 'Tasks', 'tasks'],
+      ['analytics', 'Analytics', 'tasks'],
+      ['resources', 'Resources', 'inbox'],
+      ['announces', 'Broadcast', 'bell']
+    ]
+  };
   const lvl = () => Math.min(6, Math.max(1, (me && me.level) || 1));
   const isAdmin = () => me && me.role === 'admin';
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
@@ -1017,7 +1062,12 @@ window.SOLVIX_CONFIG = {
         db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); })
       );
     }
-    U.push(db.watch('tasks', (l) => { D.tasks = l; tk(); }));
+    U.push(
+      db.watch('tasks', (l) => { D.tasks = l; tk(); }),
+      db.watch('resources', (l) => { D.resources = l; tk(); }),
+      db.watch('questions', (l) => { D.questions = l; tk(); }),
+      db.watch('announces', (l) => { D.announces = l; tk(); })
+    );
   }
   function nav(v) { route.v = v; firstPaint = true; $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v)); const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v); $('#top-title').textContent = L ? tr(L[1]) : ''; $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>'; $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); paint(); $('#content').scrollTop = 0; }
   function paint() { if (!route.v) return; const pc = D.requests.filter((r) => r.status === 'pending').length; const b = $('#nb-requests'); if (b) b.textContent = pc || ''; if (V[route.v].paint) V[route.v].paint(); countUp(); }
@@ -1159,7 +1209,7 @@ window.SOLVIX_CONFIG = {
           const mem = D.members.filter((m) => m.role !== 'admin' && !m.deleted);
           $('#list').innerHTML = T.length ? T.map((t, i) => {
             const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)), sb = D.subs.filter((s) => s.taskId === t.id && !s.deleted), rv = sb.filter((s) => s.status === 'review').length;
-            return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> <span class="pill ok">' + sb.length + ' / ' + el.length + ' submitted</span> ' + (rv ? '<span class="pill warn">' + rv + ' need review</span> ' : '') + '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span>' + (t.type ? ' <button class="btn sm ghost" data-subs="' + t.id + '">View submissions</button>' : '') + ' <button class="btn sm bad" data-deltask="' + t.id + '">Delete</button></div>' + badge(t.minLevel || 1, 36) + '</div>';
+            return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> <span class="pill ok">' + sb.length + ' / ' + el.length + ' submitted</span> ' + (rv ? '<span class="pill warn">' + rv + ' need review</span> ' : '') + '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span>' + (t.type ? ' <button class="btn sm ghost" data-subs="' + t.id + '">View submissions</button>' : '') + ' <button class="btn sm ghost" data-edtask="' + t.id + '">' + tr('Edit task') + '</button> <button class="btn sm bad" data-deltask="' + t.id + '">Delete</button></div>' + badge(t.minLevel || 1, 36) + '</div>';
           }).join('') : empty('No tasks created yet');
           return;
         }
@@ -1172,11 +1222,93 @@ window.SOLVIX_CONFIG = {
       }
     },
     home: {
-      html: () => '<div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
+      html: () => '<div id="home-banner"></div><div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p><div style="margin-top:10px" id="my-badges"></div></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
       paint() {
-        const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl()), dn = mine.filter((t) => D.subs.some((s) => s.taskId === t.id)).length;
-        $('#stats').innerHTML = stat('Tasks completed', dn, 'check') + stat('Tasks available', mine.length - dn, 'tasks') + stat('Level out of 6', lvl(), 'up');
-        $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is decided by the admins based on your activity and completed tasks.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
+        const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl() && !t.deleted), dn = mine.filter((t) => D.subs.some((s) => s.taskId === t.id && !s.deleted)).length;
+        const totalXp = D.subs.filter((s) => s.memberId === me.id && s.score != null).reduce((a, b) => a + (b.score || 0), 0);
+        $('#stats').innerHTML = stat('XP Points', totalXp, 'up') + stat('Tasks completed', dn, 'check') + stat('Available tasks', mine.length - dn, 'tasks');
+        
+        const ann = D.announces.slice().sort((a,b) => b.createdAt - a.createdAt)[0];
+        $('#home-banner').innerHTML = ann ? '<div class="announce-banner"><span>📢 ' + esc(ann.text) + '</span></div>' : '';
+
+        const badges = [];
+        if (dn >= 1) badges.push('<span class="badge-tag">⚡ Fast Solver</span>');
+        if (dn >= 5) badges.push('<span class="badge-tag">🎯 Dedicated</span>');
+        if (totalXp >= 100) badges.push('<span class="badge-tag">💎 Top Performer</span>');
+        $('#my-badges').innerHTML = badges.join(' ');
+
+        $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is based on your XP, quality of submissions, and community activity.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
+      }
+    },
+    leaderboard: {
+      html: () => '<h2 class="ph">' + tr('Leaderboard') + '</h2><p class="pp">Top contributors and high-ranking students ranked by total XP points.</p><div id="podium" class="leader-podium"></div><div class="list" id="rank-list"></div>',
+      paint() {
+        const scores = {};
+        D.subs.filter((s) => !s.deleted && s.score != null).forEach((s) => {
+          scores[s.memberId] = (scores[s.memberId] || 0) + s.score;
+        });
+        const members = D.members.filter((m) => m.role !== 'admin' && !m.deleted).map((m) => ({
+          id: m.id,
+          name: m.name,
+          level: m.level || 1,
+          xp: scores[m.id] || 0,
+          tasks: D.subs.filter((s) => s.memberId === m.id && !s.deleted).length
+        })).sort((a, b) => b.xp - a.xp || b.tasks - a.tasks);
+
+        const top3 = members.slice(0, 3);
+        $('#podium').innerHTML = top3.map((m, idx) => {
+          const rank = idx + 1;
+          return '<div class="podium-step p' + rank + '">' + badge(m.level, rank === 1 ? 52 : 44) + '<b style="margin-top:6px;font-size:13px">' + esc(m.name.split(' ')[0]) + '</b><small style="color:var(--cy);font-weight:700">' + m.xp + ' XP</small><span class="pill ' + (rank === 1 ? 'warn' : 'ok') + '">#' + rank + '</span></div>';
+        }).join('');
+
+        $('#rank-list').innerHTML = members.map((m, idx) => '<div class="rowc" style="--i:' + idx + '"><b style="width:24px;color:var(--cy)">#' + (idx + 1) + '</b>' + badge(m.level, 36) + '<div class="rc-t"><b>' + esc(m.name) + '</b><small>' + m.tasks + ' tasks completed</small></div><span class="pill ok">' + m.xp + ' XP</span></div>').join('');
+      }
+    },
+    resources: {
+      html: () => '<h2 class="ph">' + tr('Resources') + '</h2><p class="pp">Textbooks, lecture notes, and cheat-sheets filtered by engineering department.</p>'
+        + (isAdmin() ? '<form class="card" id="res-form" style="margin-bottom:20px"><h3 style="margin:0 0 12px">' + tr('Add resource') + '</h3><div class="field"><label for="res-title">Title</label><input id="res-title" required></div><div class="two"><div class="field"><label for="res-dept">Department</label><select id="res-dept"></select></div><div class="field"><label for="res-link">Resource link (Drive / Cloud)</label><input id="res-link" type="url" dir="ltr" placeholder="https://" required></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' ' + tr('Add resource') + '</button></form>' : '')
+        + '<div class="chips" id="res-chips"></div><div class="list" id="res-list"></div>',
+      paint() {
+        if (isAdmin() && $('#res-dept') && !$('#res-dept').dataset.ready) {
+          $('#res-dept').dataset.ready = '1';
+          $('#res-dept').innerHTML = DEPTS.map((d) => '<option value="' + esc(d.ar) + '">' + esc(nm(d.ar)) + '</option>').join('');
+        }
+        $('#res-chips').innerHTML = '<button class="chip' + (F.resDept === '0' ? ' on' : '') + '" data-resf="0">All</button>' + DEPTS.map((d) => '<button class="chip' + (F.resDept === d.ar ? ' on' : '') + '" data-resf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
+        const list = D.resources.filter((r) => F.resDept === '0' || r.dept === F.resDept).sort((a,b) => b.createdAt - a.createdAt);
+        $('#res-list').innerHTML = list.length ? list.map((r, i) => '<div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(r.title) + '</b><br><small style="color:#9fb4d6">' + esc(nm(r.dept)) + ' · ' + fmt(r.createdAt) + '</small></div><div style="display:flex;gap:8px"><a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer" class="btn sm">' + ico('inbox', 16) + ' Open</a>' + (isAdmin() ? '<button class="btn sm bad" data-delres="' + r.id + '">' + ico('x', 16) + '</button>' : '') + '</div></div>').join('') : empty('No resources uploaded yet');
+      }
+    },
+    forum: {
+      html: () => '<h2 class="ph">' + tr('Q&A Forum') + '</h2><p class="pp">Ask technical questions and get answers from senior peers and mentors.</p>'
+        + '<form class="card" id="q-form" style="margin-bottom:20px"><h3 style="margin:0 0 12px">' + tr('Post question') + '</h3><div class="field"><label for="q-txt">Question / Code Issue</label><textarea id="q-txt" placeholder="Describe the issue or paste your snippet..." required></textarea></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' ' + tr('Post question') + '</button></form><div class="list" id="q-list"></div>',
+      paint() {
+        const list = D.questions.slice().sort((a,b) => b.createdAt - a.createdAt);
+        $('#q-list').innerHTML = list.length ? list.map((q, i) => '<div class="card" style="margin-bottom:12px;--i:' + i + '"><div class="mem-hero" style="margin-bottom:8px">' + av(q.authorName) + '<div><b>' + esc(q.authorName) + '</b> <span class="pill ' + (q.level >= 5 ? 'warn' : 'ok') + '">' + (LEVELS[q.level] ? LEVELS[q.level].ar : '') + '</span><small style="display:block;color:#8397bb">' + ago(q.createdAt) + '</small></div></div><p class="note" style="text-align:start;white-space:pre-wrap">' + esc(q.text) + '</p><div class="list" style="margin-top:10px;padding-inline-start:16px;border-inline-start:2px solid var(--bd)">'
+          + (q.replies || []).map((rp) => '<div style="margin-bottom:8px"><b>' + esc(rp.name) + ' (' + (LEVELS[rp.level] ? LEVELS[rp.level].ar : '') + '):</b> <span style="color:#cfe2ff">' + esc(rp.text) + '</span></div>').join('')
+          + '</div><div class="idrow" style="margin-top:10px"><input class="rp-in" data-qid="' + q.id + '" placeholder="Reply as mentor / peer..."><button class="btn sm ghost" data-sendrp="' + q.id + '">Reply</button></div></div>').join('') : empty('No questions posted yet');
+      }
+    },
+    analytics: {
+      html: () => '<h2 class="ph">' + tr('Analytics') + '</h2><p class="pp">Community overview, task submissions rate, and department performance metrics.</p><div class="stats" id="a-stats"></div><div class="card" id="a-charts"></div>',
+      paint() {
+        const totalSubs = D.subs.filter((s) => !s.deleted).length;
+        const totalMembers = D.members.filter((m) => m.role !== 'admin' && !m.deleted).length;
+        const activeTasks = D.tasks.filter((t) => !t.deleted).length;
+        $('#a-stats').innerHTML = stat('Total Students', totalMembers, 'users') + stat('Active Tasks', activeTasks, 'tasks') + stat('Submissions', totalSubs, 'check');
+
+        const deptCounts = {};
+        D.members.filter((m) => m.role !== 'admin' && !m.deleted).forEach((m) => {
+          deptCounts[m.dept] = (deptCounts[m.dept] || 0) + 1;
+        });
+        $('#a-charts').innerHTML = '<h3 style="margin:0 0 14px">Students per Department</h3>' + Object.keys(deptCounts).map((k) => '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><small>' + esc(nm(k)) + '</small><b>' + deptCounts[k] + '</b></div><div style="height:8px;background:#0d1b3d;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + Math.min(100, Math.round((deptCounts[k] / (totalMembers || 1)) * 100)) + '%;background:linear-gradient(90deg,var(--cy),var(--bl))"></div></div></div>').join('');
+      }
+    },
+    announces: {
+      html: () => '<h2 class="ph">' + tr('Broadcast') + '</h2><p class="pp">Post an announcement banner visible to all students on their home screen.</p>'
+        + '<form class="card" id="ann-form" style="margin-bottom:20px"><div class="field"><label for="ann-txt">Announcement Text</label><textarea id="ann-txt" placeholder="Urgent announcement or meeting reminder..." required></textarea></div><button class="btn sm" type="submit">' + ico('bell', 16) + ' Broadcast</button></form><div class="list" id="ann-list"></div>',
+      paint() {
+        const list = D.announces.slice().sort((a,b) => b.createdAt - a.createdAt);
+        $('#ann-list').innerHTML = list.length ? list.map((a, i) => '<div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(a.text) + '</b><small style="display:block;color:#8397bb">' + fmt(a.createdAt) + '</small></div><button class="btn sm bad" data-delann="' + a.id + '">' + ico('x', 16) + '</button></div>').join('') : empty('No announcements published');
       }
     },
     settings: {
@@ -1266,8 +1398,26 @@ window.SOLVIX_CONFIG = {
   const TYPE_LABEL = { quiz: 'Questions', files: 'File submission', link: 'Link submission' };
   const norm = (s) => String(s == null ? '' : s).normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
   const subOf = (tid, mid) => D.subs.find((s) => s.taskId === tid && s.memberId === (mid || (me && me.id)));
-  let QB = [], viol = 0;
+  let QB = [], viol = 0, timerInt = null;
   const examOpen = () => !$('#modal').hidden && !!$('#a-send');
+
+  function hlCode(txt) {
+    let s = esc(txt);
+    s = s.replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*)/g, '<span class="comm">$1</span>');
+    s = s.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="str">$1</span>');
+    s = s.replace(/\b(function|def|class|return|if|else|for|while|const|let|var|import|from|export|public|private|int|float|double|void)\b/g, '<span class="kw">$1</span>');
+    s = s.replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+    return s;
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
   async function keyHash(salt, qid, ans) {
     return b64(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + '|' + qid + '|' + norm(ans))));
@@ -1312,7 +1462,8 @@ window.SOLVIX_CONFIG = {
       + '<div class="field"><label for="t-desc">Description / instructions</label><textarea id="t-desc" maxlength="1000"></textarea></div>'
       + '<div class="two"><div class="field"><label for="t-type">Task type</label><select id="t-type"><option value="quiz">Questions (auto / manual grading)</option><option value="files">Code / file submission</option><option value="link">Link submission</option></select></div>'
       + '<div class="field"><label for="t-min">Minimum level</label><select id="t-min">' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '">' + l.ar + ' and above</option>').join('') + '</select></div></div>'
-      + '<div class="two"><div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" dir="ltr"></div><div class="field" id="t-pts-wrap" hidden><label for="t-pts">Max score</label><input id="t-pts" type="number" min="1" max="1000" value="100" dir="ltr"></div></div>'
+      + '<div class="two"><div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" dir="ltr"></div><div class="field"><label for="t-timelimit">Time limit (minutes, optional)</label><input id="t-timelimit" type="number" min="1" max="180" dir="ltr" placeholder="e.g. 30"></div></div>'
+      + '<div class="field" id="t-pts-wrap" hidden><label for="t-pts">Max score</label><input id="t-pts" type="number" min="1" max="1000" value="100" dir="ltr"></div>'
       + '<div id="t-quiz"><div id="qb"></div><button type="button" class="btn sm ghost" data-qadd="1">' + ico('plus', 16) + ' Add question</button></div>'
       + '<div id="t-files" hidden><div class="two"><div class="field"><label for="t-max">Max files</label><input id="t-max" type="number" min="1" max="5" value="3" dir="ltr"></div><div class="field"><label for="t-ext">Allowed extensions</label><input id="t-ext" dir="ltr" placeholder=".py,.js,.cpp,.java"></div></div></div>'
       + '<p class="error" id="t-form-err"></p><button class="btn sm" type="submit" style="margin-top:14px">' + ico('plus', 16) + ' Publish task</button></form>';
@@ -1324,8 +1475,9 @@ window.SOLVIX_CONFIG = {
     const title = $('#t-title').value.trim(), type = $('#t-type').value;
     if (!fe('t-title', title.length < 3 ? 'Enter a clear title.' : '')) return;
     const due = $('#t-due').value ? new Date($('#t-due').value + 'T23:59:00').getTime() : null;
+    const timeLimit = +$('#t-timelimit').value ? Math.min(180, Math.max(1, +$('#t-timelimit').value)) : null;
     const salt = b64(crypto.getRandomValues(new Uint8Array(12)));
-    const t = { title, desc: $('#t-desc').value.trim(), due, minLevel: +$('#t-min').value, type, salt, createdAt: Date.now() };
+    const t = { title, desc: $('#t-desc').value.trim(), due, timeLimit, minLevel: +$('#t-min').value, type, salt, createdAt: Date.now() };
     if (type === 'quiz') {
       qbRead();
       if (!QB.length) return ferr('Add at least one question.');
@@ -1362,18 +1514,46 @@ window.SOLVIX_CONFIG = {
     btn.disabled = false;
   }
 
+  function openEditTask(tid) {
+    const t = D.tasks.find((x) => x.id === tid); if (!t) return;
+    openModal('<div class="mhead"><h3>' + tr('Edit task') + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="field"><label for="ed-title">Title</label><input id="ed-title" value="' + esc(t.title) + '"></div><div class="field"><label for="ed-desc">Description</label><textarea id="ed-desc">' + esc(t.desc) + '</textarea></div><div class="field"><label for="ed-due">Due date</label><input id="ed-due" type="date" dir="ltr" value="' + (t.due ? new Date(t.due).toISOString().split('T')[0] : '') + '"></div><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm" id="ed-save">Save changes</button></div></div>');
+    $('#ed-save').onclick = async () => {
+      const title = $('#ed-title').value.trim();
+      if (!title) return toast('Title cannot be empty', 'bad');
+      const due = $('#ed-due').value ? new Date($('#ed-due').value + 'T23:59:00').getTime() : null;
+      await db.set('tasks', t.id, { title, desc: $('#ed-desc').value.trim(), due });
+      closeModal(); toast('Task updated');
+    };
+  }
+
   function openTask(tid) {
     const t = D.tasks.find((x) => x.id === tid); if (!t) return;
     if (subOf(t.id)) return toast('You have already submitted this task', 'bad');
     if (t.due && Date.now() > t.due) return toast('This task is closed', 'bad');
     viol = 0;
-    let h = '<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><span class="wide" hidden></span>' + (t.desc ? '<p class="note" style="text-align:start">' + esc(t.desc) + '</p>' : '');
+    if (timerInt) clearInterval(timerInt);
+    
+    let timerHeader = '';
+    if (t.timeLimit) {
+      timerHeader = '<div class="timer-bar" id="t-bar"><span>⏱️ ' + tr('Time remaining') + ': <b id="t-clock">' + t.timeLimit + ':00</b></span></div>';
+    }
+
+    let h = timerHeader + '<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><span class="wide" hidden></span>' + (t.desc ? '<p class="note" style="text-align:start">' + esc(t.desc) + '</p>' : '');
+    
     if (t.type === 'quiz') {
-      h += t.questions.map((q, i) => '<div class="card" style="margin-bottom:12px"><b>' + (i + 1) + '. ' + esc(q.text) + '</b> <span class="pill warn">' + q.points + ' pt</span><div style="margin-top:12px">'
-        + (q.kind === 'mcq' ? q.options.map((o, j) => '<label class="q-opt"><input type="radio" name="a-' + q.id + '" value="' + j + '"><span>' + esc(o) + '</span></label>').join('')
-          : q.kind === 'short' ? '<div class="field"><input class="a-in noPaste" data-q="' + q.id + '" maxlength="300" autocomplete="off"></div>'
-          : '<div class="field"><textarea class="a-in noPaste" data-q="' + q.id + '" maxlength="3000"></textarea></div>')
-        + '</div></div>').join('');
+      const qList = shuffle(t.questions);
+      h += qList.map((q, i) => {
+        let optHtml = '';
+        if (q.kind === 'mcq') {
+          const shuffledOpts = shuffle(q.options.map((o, idx) => ({ txt: o, origIdx: idx })));
+          optHtml = shuffledOpts.map((o) => '<label class="q-opt"><input type="radio" name="a-' + q.id + '" value="' + o.origIdx + '"><span>' + esc(o.txt) + '</span></label>').join('');
+        }
+        return '<div class="card" style="margin-bottom:12px"><b>' + (i + 1) + '. ' + esc(q.text) + '</b> <span class="pill warn">' + q.points + ' pt</span><div style="margin-top:12px">'
+          + (q.kind === 'mcq' ? optHtml
+            : q.kind === 'short' ? '<div class="field"><input class="a-in noPaste" data-q="' + q.id + '" maxlength="300" autocomplete="off"></div>'
+            : '<div class="field"><textarea class="a-in noPaste" data-q="' + q.id + '" maxlength="3000"></textarea></div>')
+          + '</div></div>';
+      }).join('');
     } else if (t.type === 'files') {
       h += '<div class="field"><label for="a-files">Files' + (t.exts ? ' (' + esc(t.exts) + ')' : '') + '</label><input id="a-files" type="file" multiple' + (t.exts ? ' accept="' + esc(t.exts) + '"' : '') + '></div><p class="note dim" style="text-align:start">Up to ' + (t.maxFiles || 1) + ' text or code files, 200 KB each.</p>';
     } else {
@@ -1382,6 +1562,22 @@ window.SOLVIX_CONFIG = {
     h += '<p class="error" id="a-form-err"></p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm" id="a-send">Submit</button></div></div>';
     openModal(h);
     $('#a-send').onclick = () => submitTask(t);
+
+    if (t.timeLimit) {
+      let remain = t.timeLimit * 60;
+      timerInt = setInterval(() => {
+        remain--;
+        const m = Math.floor(remain / 60), s = remain % 60;
+        const clock = $('#t-clock');
+        if (clock) clock.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        if (remain <= 60 && $('#t-bar')) $('#t-bar').classList.add('warn');
+        if (remain <= 0) {
+          clearInterval(timerInt);
+          toast("Time's up! Submitting your answers...", 'bad');
+          submitTask(t, true);
+        }
+      }, 1000);
+    }
   }
 
   function showResult(t, sub) {
@@ -1462,7 +1658,7 @@ window.SOLVIX_CONFIG = {
         return '<div class="card" style="margin-bottom:10px"><b>' + (i + 1) + '. ' + esc(q.text) + '</b><p class="note" style="text-align:start;margin:8px 0">' + esc(shown) + '</p><div class="idrow"><span class="pill ' + (auto ? 'ok' : 'warn') + '">' + (auto ? 'Auto' : 'Manual') + '</span><input class="g-m" data-q="' + q.id + '" type="number" min="0" max="' + q.points + '" step="0.5" dir="ltr" value="' + mk + '" aria-label="Mark"><span>/ ' + q.points + '</span></div></div>';
       }).join('');
     } else {
-      if (s.type === 'files') b += (s.files || []).map((f) => '<div class="card" style="margin-bottom:10px"><b dir="ltr">' + esc(f.name) + '</b><pre class="code" dir="ltr">' + esc(f.content) + '</pre></div>').join('');
+      if (s.type === 'files') b += (s.files || []).map((f) => '<div class="card" style="margin-bottom:10px"><b dir="ltr">' + esc(f.name) + '</b><pre class="code code-hl" dir="ltr">' + hlCode(f.content) + '</pre></div>').join('');
       else b += '<div class="card" style="margin-bottom:10px"><a dir="ltr" href="' + (/^https?:\/\//i.test(s.link || '') ? esc(s.link) : '#') + '" target="_blank" rel="noopener noreferrer">' + esc(s.link || '') + '</a></div>';
       b += '<div class="field"><label for="g-score">Score (max ' + s.max + ')</label><input id="g-score" type="number" min="0" max="' + s.max + '" step="0.5" dir="ltr" value="' + (s.score == null ? '' : s.score) + '"></div>';
     }
@@ -1504,13 +1700,28 @@ window.SOLVIX_CONFIG = {
   }
   const C = $('#content');
   C.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask]'); if (!t) return;
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann]'); if (!t) return;
     if (t.dataset.lang) setLang(t.dataset.lang);
     else if (t.dataset.req) openRequest(t.dataset.req);
     else if (t.dataset.mem) openMember(t.dataset.mem);
     else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
+    else if (t.dataset.resf) { F.resDept = t.dataset.resf; V.resources.paint(); }
     else if (t.dataset.open) openTask(t.dataset.open);
     else if (t.dataset.subs) openSubs(t.dataset.subs);
+    else if (t.dataset.edtask) openEditTask(t.dataset.edtask);
+    else if (t.dataset.delres) { db.set('resources', t.dataset.delres, { deleted: true }).then(() => toast('Resource deleted')); }
+    else if (t.dataset.delann) { db.set('announces', t.dataset.delann, { deleted: true }).then(() => toast('Announcement removed')); }
+    else if (t.dataset.sendrp) {
+      const qid = t.dataset.sendrp, inp = $('.rp-in[data-qid="' + qid + '"]');
+      const val = inp ? inp.value.trim() : '';
+      if (!val) return;
+      const qObj = D.questions.find((x) => x.id === qid);
+      if (qObj) {
+        const reps = qObj.replies || [];
+        reps.push({ name: me.name, level: me.level || 1, text: val, createdAt: Date.now() });
+        db.set('questions', qid, { replies: reps }).then(() => toast('Reply posted'));
+      }
+    }
     else if (t.dataset.deltask) {
       const tid = t.dataset.deltask, taskObj = D.tasks.find((x) => x.id === tid);
       if (!taskObj) return;
@@ -1535,7 +1746,28 @@ window.SOLVIX_CONFIG = {
     else if (e.target.id === 't-type') tfSync();
     else if (e.target.classList.contains('q-kind')) { qbRead(); qbRender(); }
   });
-  C.addEventListener('submit', (e) => { if (e.target.id === 'task-form') { e.preventDefault(); addTask(); } else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); } });
+  C.addEventListener('submit', (e) => {
+    if (e.target.id === 'task-form') { e.preventDefault(); addTask(); }
+    else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); }
+    else if (e.target.id === 'res-form') {
+      e.preventDefault();
+      db.add('resources', { title: $('#res-title').value.trim(), dept: $('#res-dept').value, link: $('#res-link').value.trim(), createdAt: Date.now() }).then(() => {
+        $('#res-form').reset(); toast('Resource added');
+      });
+    }
+    else if (e.target.id === 'q-form') {
+      e.preventDefault();
+      db.add('questions', { authorName: me.name, level: me.level || 1, text: $('#q-txt').value.trim(), replies: [], createdAt: Date.now() }).then(() => {
+        $('#q-form').reset(); toast('Question posted');
+      });
+    }
+    else if (e.target.id === 'ann-form') {
+      e.preventDefault();
+      db.add('announces', { text: $('#ann-txt').value.trim(), createdAt: Date.now() }).then(() => {
+        $('#ann-form').reset(); toast('Announcement broadcasted');
+      });
+    }
+  });
 
   /* ---------- boot ---------- */
   (async function boot() {
