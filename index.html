@@ -332,6 +332,34 @@ html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
 .promo-modal p{margin:0 0 14px;color:#b9cbe8;line-height:1.7}
 .promo-modal .field{width:100%;max-width:340px;text-align:start}
 .promo-modal .actions{display:flex;gap:10px;margin-top:8px}
+
+/* ===== Notifications visibility fixes ===== */
+.top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);background:rgba(5,10,26,.8);position:relative}
+.top b{flex:1;font-size:16px}
+#menu{display:none}
+@media (max-width:860px){#menu{display:grid}}
+.bell .badge[hidden]{display:none}
+.notif-panel{top:calc(100% + 6px)}
+.notif-icon.gold{background:linear-gradient(135deg,#ffc107,#ff9800)}
+.notif-icon.green{background:linear-gradient(135deg,#4caf50,#2e7d32)}
+
+/* ===== Task builder / submissions ===== */
+.mcard:has(.wide){width:min(760px,100%)}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.qhead select{flex:1}
+.qhead .q-pts{width:76px;flex:none;text-align:center}
+.q-opt{display:flex;align-items:center;gap:10px;margin:0 0 8px;font-size:15px;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer}
+.q-opt input[type=radio]{width:18px;height:18px;padding:0;border:0;flex:none;accent-color:#22d0ff;box-shadow:none}
+.q-opt .q-o{flex:1}
+.code{max-height:260px;overflow:auto;margin:8px 0 0;padding:12px;background:#050c20;border-radius:8px;font:12.5px/1.6 ui-monospace,monospace;white-space:pre;color:#cfe2ff}
+
+/* ===== Content protection (members only) ===== */
+body.guard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body.guard input,body.guard textarea{-webkit-user-select:text;user-select:text}
+body.guard img{-webkit-user-drag:none}
+body.shield #app,body.shield #modal{visibility:hidden}
+#wm{position:fixed;inset:0;z-index:70;pointer-events:none;background-repeat:repeat}
+@media print{body{display:none!important}}
 </style>
 </head>
 <body data-state="dark">
@@ -467,10 +495,8 @@ window.SOLVIX_CONFIG = {
     5: ['phone', 'linkedin'],  // Mentor: phone + LinkedIn
     6: ['phone', 'linkedin', 'github']  // Core: all fields
   },
-  // 3) Admin ID (first sign-in with it creates the password)
+  // 5) Admin settings: Password is set securely on first login and stored in the database.
   adminId: "278601",
-  adminSalt: "qQ6YrYylvnmPBFGAx999zQ==",
-  adminHash: "44Q+jZZer6xiHZgUR2nnrSSHXKafBI4hZyTLWvz6kGE=",
   prepYear: { ar: "الفرقة الإعدادية", en: "Preparatory Year" },
   years: [
     { ar: "الفرقة الأولى", en: "First Year" },
@@ -820,7 +846,12 @@ window.SOLVIX_CONFIG = {
     'No fields required': 'لا توجد حقول مطلوبة', 'Phone required': 'رقم الهاتف مطلوب', 'LinkedIn required': 'LinkedIn مطلوب', 'GitHub required': 'GitHub مطلوب',
     'Save changes': 'حفظ التغييرات', 'Language': 'اللغة', 'Saved': 'تم الحفظ', 'Could not save, please try again.': 'تعذر الحفظ، حاول مرة أخرى.'
   };
-  const tr = (s) => (LANG === 'ar' && AR[s]) || s;
+ const tr = (s) => (LANG === 'ar' && AR[s]) || s;
+  Object.assign(AR, {
+    'Welcome to Solvix Kod': 'مرحباً بك في Solvix Kod',
+    'Your task was graded': 'تم تصحيح مهمتك',
+    'Enter a valid value': 'أدخل قيمة صحيحة'
+  });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
   const LV_EN = LEVELS.map((o) => (o ? [o.ar, o.en, o.d] : null));
@@ -902,7 +933,7 @@ window.SOLVIX_CONFIG = {
       btn.disabled = true; let d = null;
       try { d = await db.get('members', idv); } catch (_) { btn.disabled = false; return setSt('Could not connect to the database.'); }
       btn.disabled = false;
-      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now(), salt: CONFIG.adminSalt, passHash: CONFIG.adminHash };
+      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() };
       if (!d) return fe('l-id', 'This ID is not registered.');
       if (d.role !== 'admin' && d.uid && d.uid !== db.uid()) return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
@@ -934,7 +965,7 @@ window.SOLVIX_CONFIG = {
   });
 
   /* ---------- app: shell, routing, data ---------- */
-  const D = { requests: [], members: [], tasks: [] }, F = { req: 'pending', q: '', lvl: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
+  const D = { requests: [], members: [], tasks: [], subs: [], notifs: [] }, F = { req: 'pending', q: '', lvl: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
   const NAV = { member: [['home', 'Home', 'home'], ['tasks', 'Tasks', 'tasks'], ['profile', 'My profile', 'user'], ['settings', 'Settings', 'cog']], admin: [['requests', 'Join requests', 'inbox'], ['members', 'Members', 'users'], ['tasks', 'Tasks', 'tasks']] };
   const lvl = () => Math.min(6, Math.max(1, (me && me.level) || 1));
   const isAdmin = () => me && me.role === 'admin';
@@ -943,7 +974,19 @@ window.SOLVIX_CONFIG = {
 
   function enterApp(m, instant) {
     me = m; store.setItem('svx.session', m.id); cacheMe(); if (gateUnsub) gateUnsub();
-    const go = () => { LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false; buildShell(); startData(); nav(isAdmin() ? 'requests' : 'home'); };
+    const go = () => {
+      LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
+      body.classList.toggle('guard', !isAdmin());
+      const old = $('#wm'); if (old) old.remove();
+      if (!isAdmin()) {
+        const w = document.createElement('div'); w.id = 'wm'; w.setAttribute('aria-hidden', 'true');
+        const label = esc(me.name + ' · ' + me.id);
+        const tile = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><text x="20" y="110" transform="rotate(-24 160 100)" fill="rgba(255,255,255,0.07)" font-size="15" font-family="sans-serif">' + label + '</text></svg>';
+        w.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(tile) + '")';
+        document.body.append(w);
+      }
+      buildShell(); startData(); nav(isAdmin() ? 'requests' : 'home');
+    };
     if (instant) go(); else { body.classList.add('leaving'); setTimeout(go, 650); }
   }
   function paintProfile() {
@@ -957,8 +1000,21 @@ window.SOLVIX_CONFIG = {
   }
   function startData() {
     const U = unsubs; const tk = () => paint();
-    if (isAdmin()) { let seen = null; U.push(db.watch('requests', (l) => { if (seen) l.forEach((r) => { if (r.status === 'pending' && !seen.has(r.id)) toast('New join request: ' + r.name); }); seen = new Set(l.map((r) => r.id)); D.requests = l; tk(); }), db.watch('members', (l) => { D.members = l; tk(); })); }
-    else U.push(db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); tk(); }));
+    if (isAdmin()) {
+      let seen = null, seenS = null;
+      $('#bell-btn').style.display = 'none';
+      U.push(
+        db.watch('requests', (l) => { if (seen) l.forEach((r) => { if (r.status === 'pending' && !seen.has(r.id)) toast('New join request: ' + r.name); }); seen = new Set(l.map((r) => r.id)); D.requests = l; tk(); }),
+        db.watch('members', (l) => { D.members = l; tk(); }),
+        db.watch('submissions', (l) => { if (seenS) l.forEach((s) => { if (!seenS.has(s.id)) toast('New submission: ' + s.memberName); }); seenS = new Set(l.map((s) => s.id)); D.subs = l; tk(); })
+      );
+    } else {
+      U.push(
+        db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); if (me.pendingPromotion) checkPromotion(); tk(); }),
+        db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }),
+        db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); })
+      );
+    }
     U.push(db.watch('tasks', (l) => { D.tasks = l; tk(); }));
   }
   function nav(v) { route.v = v; firstPaint = true; $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v)); const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v); $('#top-title').textContent = L ? tr(L[1]) : ''; $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>'; $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); paint(); $('#content').scrollTop = 0; }
@@ -966,6 +1022,17 @@ window.SOLVIX_CONFIG = {
   $('#side').addEventListener('click', (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); } });
   $('#menu').onclick = () => { $('#side').classList.add('open'); $('#scrim').classList.add('open'); };
   $('#scrim').onclick = () => { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); };
+  $('#bell-btn').onclick = (e) => {
+    e.stopPropagation();
+    const p = $('#notif-panel'), open = !p.classList.contains('open');
+    if (open) { p.classList.add('open'); $('#bell-btn').classList.add('on'); } else closeNotifs();
+  };
+  document.addEventListener('click', (e) => { if (!e.target.closest('#notif-panel') && !e.target.closest('#bell-btn')) closeNotifs(); });
+  $('#notif-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-nid]'); if (!b) return;
+    const n = (D.notifs || []).find((x) => x.id === b.dataset.nid); if (!n) return;
+    closeNotifs(); nav(notifTarget(n));
+  });
 
   function levelUp(n) {
     const o = document.createElement('div'); o.className = 'lvlup l' + n; o.setAttribute('role', 'alertdialog');
@@ -974,56 +1041,58 @@ window.SOLVIX_CONFIG = {
   }
 
   /* ===== Notifications System ===== */
-  let notifs = [];
-
-  function addNotif(type, title, body, meta = {}) {
-    if (!me || !me.id) return;
-    const notif = { id: 'n' + Date.now() + Math.random().toString(36).slice(2, 6), type, title, body, meta, read: false, createdAt: Date.now() };
-    const existing = (me.notifications || []);
-    existing.unshift(notif);
-    const updated = existing.slice(0, 50);
-    db.set('members', me.id, { notifications: updated }).catch(() => {});
+  function notifyMember(to, type, meta) {
+    return db.add('notifs', { to, type, meta: meta || {}, read: false, createdAt: Date.now() }).catch(() => {});
   }
 
-  function markRead(nid) {
-    if (!me || !me.notifications) return;
-    const idx = me.notifications.findIndex(n => n.id === nid);
-    if (idx >= 0 && !me.notifications[idx].read) {
-      me.notifications[idx].read = true;
-      db.set('members', me.id, { notifications: me.notifications }).catch(() => {});
-    }
+  function notifText(n) {
+    const m = n.meta || {};
+    if (n.type === 'accepted') return [tr('Your request was accepted'), tr('Welcome to Solvix Kod')];
+    if (n.type === 'promotion') return [tr('You have been promoted'), tr('You have been promoted to') + ' ' + (LEVELS[m.level] ? LEVELS[m.level].ar : '')];
+    if (n.type === 'graded') return [tr('Your task was graded'), (m.title || '') + ' · ' + m.score + ' / ' + m.max];
+    return [tr('New task available'), m.title || ''];
+  }
+
+  function notifTarget(n) {
+    return n.type === 'accepted' ? 'home' : n.type === 'promotion' ? 'profile' : 'tasks';
   }
 
   function paintNotifs() {
-    notifs = (me && me.notifications) || [];
-    const unread = notifs.filter(n => !n.read).length;
-    const badge = $('#bell-badge');
-    if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.hidden = false; }
-    else { badge.hidden = true; }
+    const list = (D.notifs || []).slice().sort((a, b) => b.createdAt - a.createdAt).slice(0, 50);
+    const unread = list.filter((n) => !n.read).length, bd = $('#bell-badge');
+    bd.textContent = unread > 9 ? '9+' : String(unread); bd.hidden = !unread;
+    $('#notif-title').textContent = tr('Notifications');
+    $('#notif-list').innerHTML = list.length ? list.map((n) => {
+      const tx = notifText(n), ic = n.type === 'promotion' ? 'up' : n.type === 'accepted' ? 'check' : 'tasks';
+      const cl = n.type === 'promotion' ? ' gold' : (n.type === 'task' || n.type === 'graded') ? ' green' : '';
+      return '<button class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + esc(n.id) + '"><div class="notif-icon' + cl + '">' + ico(ic, 20) + '</div><div class="notif-body"><b>' + esc(tx[0]) + '</b><small>' + esc(tx[1]) + '</small><div class="time">' + ago(n.createdAt) + '</div></div></button>';
+    }).join('') : '<div class="notif-empty">' + tr('No notifications yet') + '</div>';
+  }
 
-    const list = $('#notif-list');
-    if (notifs.length === 0) {
-      list.innerHTML = '<div class="notif-empty">' + tr('No notifications yet') + '</div>';
-    } else {
-      list.innerHTML = notifs.map(n => {
-        const icon = n.type === 'accepted' ? 'check' : n.type === 'promotion' ? 'up' : 'tasks';
-        const iconClass = n.type === 'accepted' ? '' : n.type === 'promotion' ? ' promo' : ' task';
-        return '<button class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + n.id + '"><div class="notif-icon' + iconClass + '">' + ico(icon, 20) + '</div><div class="notif-body"><b>' + esc(n.title) + '</b><small>' + esc(n.body) + '</small><div class="time">' + ago(n.createdAt) + '</div></div></button>';
-      }).join('');
-    }
+  function closeNotifs() {
+    const p = $('#notif-panel'); if (!p || !p.classList.contains('open')) return;
+    p.classList.remove('open'); $('#bell-btn').classList.remove('on');
+    (D.notifs || []).filter((n) => !n.read).forEach((n) => { db.set('notifs', n.id, { read: true }).catch(() => {}); });
+  }
+
+  async function promoteMember(m, n, msg) {
+    const need = (CONFIG.promotionFields[n] || []).filter((f) => !m[f]);
+    const up = n > (m.level || 1);
+    await db.set('members', m.id, { level: n, promotedAt: Date.now(), pendingPromotion: up && need.length ? { level: n } : null });
+    if (up) await notifyMember(m.id, 'promotion', { level: n });
+    closeModal(); toast(msg);
   }
 
   function checkPromotion() {
-    if (!me || !me.pendingPromotion) return;
+    if (!me || !me.pendingPromotion || $('#promo-submit')) return;
     const pp = me.pendingPromotion;
-    const fields = CONFIG.promotionFields[pp.level] || [];
-    if (fields.length === 0) {
-      db.set('members', me.id, { pendingPromotion: null }).catch(() => {});
-      return;
-    }
+    const fields = (CONFIG.promotionFields[pp.level] || []).filter((f) => !me[f]);
+    if (!fields.length) { db.set('members', me.id, { pendingPromotion: null }).catch(() => {}); return; }
 
     const fieldMap = { phone: 'Phone number', linkedin: 'LinkedIn profile', github: 'GitHub profile' };
-    const fieldInputs = fields.map(f =>
+    const reqMsg = { phone: 'Phone is required', linkedin: 'LinkedIn profile is required', github: 'GitHub profile is required' };
+    const rules = { phone: /^\+?[0-9\s-]{8,16}$/, linkedin: /^https?:\/\/([a-z0-9-]+\.)?linkedin\.com\/\S+$/i, github: /^https?:\/\/(www\.)?github\.com\/\S+$/i };
+    const fieldInputs = fields.map((f) =>
       '<div class="field"><label for="pf-' + f + '">' + tr(fieldMap[f]) + '</label><input id="pf-' + f + '" type="' + (f === 'phone' ? 'tel' : 'url') + '" dir="ltr" placeholder="' + (f === 'phone' ? '+20...' : 'https://...') + '" aria-describedby="pf-' + f + '-err"><p class="error" id="pf-' + f + '-err"></p></div>'
     ).join('');
 
@@ -1034,26 +1103,17 @@ window.SOLVIX_CONFIG = {
     $('#promo-submit').onclick = async () => {
       const data = {};
       let valid = true;
-      fields.forEach(f => {
-        const inp = $('#pf-' + f);
-        const val = inp.value.trim();
-        const err = $('#pf-' + f + '-err');
-        if (!val) {
-          err.textContent = tr(fieldMap[f] + ' is required');
-          inp.setAttribute('aria-invalid', 'true');
-          valid = false;
-        } else {
-          data[f] = val;
-          err.textContent = '';
-          inp.setAttribute('aria-invalid', 'false');
-        }
+      fields.forEach((f) => {
+        const inp = $('#pf-' + f), val = inp.value.trim(), err = $('#pf-' + f + '-err');
+        let msg = '';
+        if (!val) msg = tr(reqMsg[f]); else if (!rules[f].test(val)) msg = tr('Enter a valid value');
+        err.textContent = msg; inp.setAttribute('aria-invalid', String(!!msg));
+        if (msg) valid = false; else data[f] = val;
       });
-
       if (!valid) return;
 
       $('#promo-submit').disabled = true;
       $('#promo-submit').textContent = '...';
-
       try {
         await db.set('members', me.id, Object.assign({}, data, { pendingPromotion: null }));
         closeModal();
@@ -1088,19 +1148,31 @@ window.SOLVIX_CONFIG = {
     },
     tasks: {
       html: () => isAdmin()
-        ? '<h2 class="ph">Tasks</h2><p class="pp">Create a task and it will instantly appear to members of the right level.</p><form class="card" id="task-form" novalidate style="margin-bottom:20px"><div class="field"><label for="t-title">Task title</label><input id="t-title" maxlength="80"><p class="error" id="t-title-err"></p></div><div class="field"><label for="t-desc">Description</label><textarea id="t-desc" maxlength="600"></textarea></div><div class="two"><div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" dir="ltr"></div><div class="field"><label for="t-min">Minimum level</label><select id="t-min">' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '">' + l.ar + ' and above</option>').join('') + '</select></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' Publish task</button></form><div class="list" id="list"></div>'
-        : '<h2 class="ph">My tasks</h2><p class="pp">Tasks available for your level. Complete them and press "Done".</p><div class="list" id="list"></div>',
+        ? '<h2 class="ph">Tasks</h2><p class="pp">Choose the task type, build it and publish. Members of the right level are notified instantly.</p>' + taskFormHtml() + '<div class="list" id="list"></div>'
+        : '<h2 class="ph">My tasks</h2><p class="pp">Open a task, answer it and submit. Your result will appear here and in your notifications.</p><div class="list" id="list"></div>',
       paint() {
         const T = D.tasks.slice().sort((a, b) => b.createdAt - a.createdAt);
-        if (isAdmin()) { const mem = D.members.filter((m) => m.role !== 'admin'); $('#list').innerHTML = T.length ? T.map((t, i) => { const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)); const dn = el.filter((m) => m.done && m.done[t.id]).length; return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill ok">' + dn + ' / ' + el.length + ' completed</span> <span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span></div>' + badge(t.minLevel || 1, 36) + '</div>'; }).join('') : empty('No tasks created yet'); return; }
+        if (isAdmin()) {
+          const qb = $('#qb'); if (qb && !qb.dataset.ready) { qb.dataset.ready = '1'; QB = [newQ()]; qbRender(); tfSync(); }
+          const mem = D.members.filter((m) => m.role !== 'admin');
+          $('#list').innerHTML = T.length ? T.map((t, i) => {
+            const el = mem.filter((m) => (m.level || 1) >= (t.minLevel || 1)), sb = D.subs.filter((s) => s.taskId === t.id), rv = sb.filter((s) => s.status === 'review').length;
+            return '<div class="card tcard" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p><span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> <span class="pill ok">' + sb.length + ' / ' + el.length + ' submitted</span> ' + (rv ? '<span class="pill warn">' + rv + ' need review</span> ' : '') + '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'No deadline') + '</span>' + (t.type ? ' <button class="btn sm ghost" data-subs="' + t.id + '">View submissions</button>' : '') + '</div>' + badge(t.minLevel || 1, 36) + '</div>';
+          }).join('') : empty('No tasks created yet');
+          return;
+        }
         const mine = T.filter((t) => (t.minLevel || 1) <= lvl());
-        $('#list').innerHTML = mine.length ? mine.map((t, i) => { const dn = me.done && me.done[t.id]; return '<div class="card tcard' + (dn ? ' done' : '') + '" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p>' + (dn ? '<span class="pill ok">Completed · ' + fmt(dn) + '</span>' : '<button class="btn sm" data-done="' + t.id + '">' + ico('check', 16) + ' Done</button> <span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'Open') + '</span>') + '</div></div>'; }).join('') : empty('No tasks for your level right now');
+        $('#list').innerHTML = mine.length ? mine.map((t, i) => {
+          const s = subOf(t.id), closed = !s && t.due && Date.now() > t.due;
+          const st = s ? (s.status === 'graded' ? '<span class="pill ok">Score ' + s.score + ' / ' + s.max + '</span>' : '<span class="pill warn">Submitted · awaiting review</span>') : closed ? '<span class="pill bad">Closed</span>' : '<span class="pill warn">' + (t.due ? 'Until ' + fmt(t.due) : 'Open') + '</span>';
+          return '<div class="card tcard' + (s ? ' done' : '') + '" style="--i:' + i + '"><div style="flex:1"><h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p>' + (s && s.feedback ? '<p>Feedback: ' + esc(s.feedback) + '</p>' : '') + '<span class="pill">' + (TYPE_LABEL[t.type] || 'Info only') + '</span> ' + st + (!s && !closed && t.type ? ' <button class="btn sm" data-open="' + t.id + '">Open task</button>' : '') + '</div></div>';
+        }).join('') : empty('No tasks for your level right now');
       }
     },
     home: {
       html: () => '<div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
       paint() {
-        const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl()), dn = mine.filter((t) => me.done && me.done[t.id]).length;
+        const mine = D.tasks.filter((t) => (t.minLevel || 1) <= lvl()), dn = mine.filter((t) => D.subs.some((s) => s.taskId === t.id)).length;
         $('#stats').innerHTML = stat('Tasks completed', dn, 'check') + stat('Tasks available', mine.length - dn, 'tasks') + stat('Level out of 6', lvl(), 'up');
         $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is decided by the admins based on your activity and completed tasks.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
       }
@@ -1121,7 +1193,17 @@ window.SOLVIX_CONFIG = {
   };
 
   /* ---------- admin actions ---------- */
-  const genId = () => { let id; do { id = 'SVX-' + String(new Date().getFullYear()).slice(2) + String(Math.floor(Math.random() * 9000) + 1000); } while (D.members.some((m) => m.id === id)); return id; };
+  const genId = () => {
+    let id;
+    const yearPrefix = String(new Date().getFullYear()).slice(2);
+    do {
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      const randNum = 1000 + (arr[0] % 9000);
+      id = 'SVX-' + yearPrefix + randNum;
+    } while (D.members.some((m) => m.id === id));
+    return id;
+  };
   function openRequest(id) {
     const r = D.requests.find((x) => x.id === id); if (!r) return; const p = PILL[r.status];
     openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['Department', esc(nm(r.dept))], ['Program', esc(nm(r.program) || '—')], ['Year', esc(nm(r.year))], ['Request date', fmt(r.createdAt)], ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
@@ -1135,19 +1217,20 @@ window.SOLVIX_CONFIG = {
       $('#rq-ok').disabled = true;
       await db.set('members', mid, { id: mid, name: r.name, dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} });
       await db.set('requests', r.id, { status: 'approved', memberId: mid, decidedAt: Date.now() });
+      await notifyMember(mid, 'accepted', {});
       closeModal(); toast('Accepted. Give this ID to the student: ' + mid);
     };
   }
   function openMember(id) {
     const m = D.members.find((x) => x.id === id); if (!m) return; const l = m.level || 1, dn = Object.keys(m.done || {}).length;
     openModal('<div class="mhead"><h3>Member details</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(m.name) + '</h3><code>' + esc(m.id) + '</code></div></div>'
-      + kv([['Department', esc(nm(m.dept))], ['Program', esc(nm(m.program) || '—')], ['Year', esc(nm(m.year))], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks completed', dn], ['Last promotion', fmt(m.promotedAt)], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
+      + kv([['Department', esc(nm(m.dept))], ['Program', esc(nm(m.program) || '—')], ['Year', esc(nm(m.year))], ['Level', LEVELS[l].ar + ' · ' + LEVELS[l].en], ['Account', m.passHash ? 'Active' : 'Not signed up yet'], ['Joined', fmt(m.createdAt)], ['Tasks submitted', D.subs.filter((s) => s.memberId === m.id).length], ['Last promotion', fmt(m.promotedAt)], ['Phone', '<span dir="ltr">' + esc(m.phone || '—') + '</span>'], ['LinkedIn', '<span dir="ltr">' + esc(m.linkedin || '—') + '</span>'], ['GitHub', '<span dir="ltr">' + esc(m.github || '—') + '</span>'], ['Request no.', '<span dir="ltr">' + esc((m.requestId || '—').slice(-6).toUpperCase()) + '</span>']])
       + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
       + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
       + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '') + '</div></div>');
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
-    if ($('#m-up')) $('#m-up').onclick = () => upd({ level: l + 1, promotedAt: Date.now() }, 'Promoted ' + m.name.split(' ')[0]);
-    $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) upd({ level: n, promotedAt: Date.now() }, 'Level updated'); };
+    if ($('#m-up')) $('#m-up').onclick = () => promoteMember(m, l + 1, 'Promoted ' + m.name.split(' ')[0]);
+    $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) promoteMember(m, n, 'Level updated'); };
     if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null, uid: null }, 'Password and device binding were reset. The member can sign in from a new device');
   }
   async function saveSettings() {
@@ -1157,17 +1240,264 @@ window.SOLVIX_CONFIG = {
     try { await db.set('members', me.id, { dept: A.dept, program: A.program, year: A.year }); toast(tr('Saved')); }
     catch (_) { toast(tr('Could not save, please try again.'), 'bad'); }
   }
-  async function markDone(tid) { await db.set('members', me.id, { done: Object.assign({}, me.done || {}, { [tid]: Date.now() }) }); toast('Well done! Your achievement was recorded'); }
+  /* ---------- tasks engine: builder, submissions, grading ---------- */
+  const TYPE_LABEL = { quiz: 'Questions', files: 'File submission', link: 'Link submission' };
+  const norm = (s) => String(s == null ? '' : s).normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
+  const subOf = (tid, mid) => D.subs.find((s) => s.taskId === tid && s.memberId === (mid || (me && me.id)));
+  let QB = [], viol = 0;
+  const examOpen = () => !$('#modal').hidden && !!$('#a-send');
+
+  async function keyHash(salt, qid, ans) {
+    return b64(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + '|' + qid + '|' + norm(ans))));
+  }
+
+  const newQ = (kind) => ({ kind: kind || 'mcq', text: '', pts: 1, opts: ['', '', '', ''], correct: 0, ans: '' });
+
+  function qbRead() {
+    const old = QB;
+    QB = $$('.qblock').map((el, i) => {
+      const o = old[i] || newQ(), os = $$('.q-o', el), an = el.querySelector('.q-ans'), rc = el.querySelector('input[type=radio]:checked');
+      return {
+        kind: el.querySelector('.q-kind').value,
+        text: el.querySelector('.q-text').value,
+        pts: +el.querySelector('.q-pts').value || 1,
+        opts: os.length ? os.map((x) => x.value) : o.opts,
+        correct: os.length ? (rc ? +rc.value : 0) : o.correct,
+        ans: an ? an.value : o.ans
+      };
+    });
+  }
+
+  function qbRender() {
+    const box = $('#qb'); if (!box) return;
+    box.innerHTML = QB.map((q, i) => '<div class="card qblock" style="margin-bottom:12px"><div class="qhead"><b>Q' + (i + 1) + '</b><select class="q-kind" aria-label="Question type"><option value="mcq"' + (q.kind === 'mcq' ? ' selected' : '') + '>Multiple choice (auto)</option><option value="short"' + (q.kind === 'short' ? ' selected' : '') + '>Short answer</option><option value="essay"' + (q.kind === 'essay' ? ' selected' : '') + '>Written answer (manual)</option></select><input class="q-pts" type="number" min="1" max="100" value="' + q.pts + '" dir="ltr" aria-label="Points"><button type="button" class="icon" data-qdel="' + i + '" aria-label="Remove question">' + ico('x') + '</button></div><div class="field"><textarea class="q-text" maxlength="500" placeholder="Question text">' + esc(q.text) + '</textarea></div>'
+      + (q.kind === 'mcq'
+        ? q.opts.map((o, j) => '<label class="q-opt"><input type="radio" name="qc' + i + '" value="' + j + '"' + (q.correct === j ? ' checked' : '') + '><input class="q-o" maxlength="150" placeholder="Option ' + (j + 1) + '" value="' + esc(o) + '"></label>').join('') + '<p class="note dim" style="text-align:start;margin:4px 0 0">Select the radio next to the correct option. Leave unused options empty.</p>'
+        : q.kind === 'short'
+          ? '<div class="field"><input class="q-ans" maxlength="300" placeholder="Accepted answers separated by | (leave empty to grade manually)" value="' + esc(q.ans) + '"></div>'
+          : '<p class="note dim" style="text-align:start;margin:0">You will grade this answer manually.</p>')
+      + '</div>').join('');
+  }
+
+  function tfSync() {
+    const t = $('#t-type').value;
+    $('#t-quiz').hidden = t !== 'quiz'; $('#t-files').hidden = t !== 'files'; $('#t-pts-wrap').hidden = t === 'quiz';
+  }
+
+  function taskFormHtml() {
+    return '<form class="card" id="task-form" novalidate style="margin-bottom:20px">'
+      + '<div class="field"><label for="t-title">Task title</label><input id="t-title" maxlength="80"><p class="error" id="t-title-err"></p></div>'
+      + '<div class="field"><label for="t-desc">Description / instructions</label><textarea id="t-desc" maxlength="1000"></textarea></div>'
+      + '<div class="two"><div class="field"><label for="t-type">Task type</label><select id="t-type"><option value="quiz">Questions (auto / manual grading)</option><option value="files">Code / file submission</option><option value="link">Link submission</option></select></div>'
+      + '<div class="field"><label for="t-min">Minimum level</label><select id="t-min">' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '">' + l.ar + ' and above</option>').join('') + '</select></div></div>'
+      + '<div class="two"><div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" dir="ltr"></div><div class="field" id="t-pts-wrap" hidden><label for="t-pts">Max score</label><input id="t-pts" type="number" min="1" max="1000" value="100" dir="ltr"></div></div>'
+      + '<div id="t-quiz"><div id="qb"></div><button type="button" class="btn sm ghost" data-qadd="1">' + ico('plus', 16) + ' Add question</button></div>'
+      + '<div id="t-files" hidden><div class="two"><div class="field"><label for="t-max">Max files</label><input id="t-max" type="number" min="1" max="5" value="3" dir="ltr"></div><div class="field"><label for="t-ext">Allowed extensions</label><input id="t-ext" dir="ltr" placeholder=".py,.js,.cpp,.java"></div></div></div>'
+      + '<p class="error" id="t-form-err"></p><button class="btn sm" type="submit" style="margin-top:14px">' + ico('plus', 16) + ' Publish task</button></form>';
+  }
+
   async function addTask() {
-    const title = $('#t-title').value.trim(); if (!fe('t-title', title.length < 3 ? 'Enter a clear title.' : '')) return;
+    const ferr = (m) => { fe('t-form', m); return false; };
+    ferr('');
+    const title = $('#t-title').value.trim(), type = $('#t-type').value;
+    if (!fe('t-title', title.length < 3 ? 'Enter a clear title.' : '')) return;
     const due = $('#t-due').value ? new Date($('#t-due').value + 'T23:59:00').getTime() : null;
-    await db.add('tasks', { title, desc: $('#t-desc').value.trim(), due, minLevel: +$('#t-min').value, createdAt: Date.now() });
-    $('#task-form').reset(); toast('Task published');
+    const salt = b64(crypto.getRandomValues(new Uint8Array(12)));
+    const t = { title, desc: $('#t-desc').value.trim(), due, minLevel: +$('#t-min').value, type, salt, createdAt: Date.now() };
+    if (type === 'quiz') {
+      qbRead();
+      if (!QB.length) return ferr('Add at least one question.');
+      const qs = [];
+      for (let i = 0; i < QB.length; i++) {
+        const q = QB[i], n = i + 1, text = q.text.trim();
+        if (text.length < 3) return ferr('Question ' + n + ' needs a clear text.');
+        const o = { id: 'q' + n, kind: q.kind, text, points: Math.min(100, Math.max(1, Math.round(q.pts))), keys: [] };
+        if (q.kind === 'mcq') {
+          const idx = []; q.opts.forEach((x, j) => { if (x.trim()) idx.push(j); });
+          if (idx.length < 2 || idx.indexOf(q.correct) < 0) return ferr('Question ' + n + ' needs at least 2 options and a valid correct option.');
+          o.options = idx.map((j) => q.opts[j].trim());
+          o.keys = [await keyHash(salt, o.id, String(idx.indexOf(q.correct)))];
+        } else if (q.kind === 'short') {
+          const acc = q.ans.split('|').map(norm).filter(Boolean);
+          o.keys = await Promise.all(acc.map((a) => keyHash(salt, o.id, a)));
+        }
+        qs.push(o);
+      }
+      t.questions = qs; t.max = qs.reduce((a, q) => a + q.points, 0); t.auto = qs.every((q) => q.keys.length > 0);
+    } else if (type === 'files') {
+      t.maxFiles = Math.min(5, Math.max(1, +$('#t-max').value || 1));
+      t.exts = $('#t-ext').value.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean).map((x) => (x[0] === '.' ? x : '.' + x)).join(',');
+      t.max = Math.min(1000, Math.max(1, +$('#t-pts').value || 100));
+    } else {
+      t.max = Math.min(1000, Math.max(1, +$('#t-pts').value || 100));
+    }
+    const btn = $('#task-form button[type=submit]'); btn.disabled = true;
+    try {
+      await db.add('tasks', t);
+      D.members.filter((m) => m.role !== 'admin' && (m.level || 1) >= t.minLevel).forEach((m) => { notifyMember(m.id, 'task', { title }); });
+      $('#task-form').reset(); QB = [newQ()]; qbRender(); tfSync(); toast('Task published');
+    } catch (err) { console.error(err); ferr('Could not publish the task. Check the connection and try again.'); }
+    btn.disabled = false;
+  }
+
+  function openTask(tid) {
+    const t = D.tasks.find((x) => x.id === tid); if (!t) return;
+    if (subOf(t.id)) return toast('You have already submitted this task', 'bad');
+    if (t.due && Date.now() > t.due) return toast('This task is closed', 'bad');
+    viol = 0;
+    let h = '<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><span class="wide" hidden></span>' + (t.desc ? '<p class="note" style="text-align:start">' + esc(t.desc) + '</p>' : '');
+    if (t.type === 'quiz') {
+      h += t.questions.map((q, i) => '<div class="card" style="margin-bottom:12px"><b>' + (i + 1) + '. ' + esc(q.text) + '</b> <span class="pill warn">' + q.points + ' pt</span><div style="margin-top:12px">'
+        + (q.kind === 'mcq' ? q.options.map((o, j) => '<label class="q-opt"><input type="radio" name="a-' + q.id + '" value="' + j + '"><span>' + esc(o) + '</span></label>').join('')
+          : q.kind === 'short' ? '<div class="field"><input class="a-in noPaste" data-q="' + q.id + '" maxlength="300" autocomplete="off"></div>'
+          : '<div class="field"><textarea class="a-in noPaste" data-q="' + q.id + '" maxlength="3000"></textarea></div>')
+        + '</div></div>').join('');
+    } else if (t.type === 'files') {
+      h += '<div class="field"><label for="a-files">Files' + (t.exts ? ' (' + esc(t.exts) + ')' : '') + '</label><input id="a-files" type="file" multiple' + (t.exts ? ' accept="' + esc(t.exts) + '"' : '') + '></div><p class="note dim" style="text-align:start">Up to ' + (t.maxFiles || 1) + ' text or code files, 200 KB each.</p>';
+    } else {
+      h += '<div class="field"><label for="a-link">Link</label><input id="a-link" dir="ltr" placeholder="https://github.com/..."></div>';
+    }
+    h += '<p class="error" id="a-form-err"></p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm" id="a-send">Submit</button></div></div>';
+    openModal(h);
+    $('#a-send').onclick = () => submitTask(t);
+  }
+
+  function showResult(t, sub) {
+    openModal('<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody">' + (sub.status === 'graded' ? '<div class="idbox"><small>Your score</small><b>' + sub.score + ' / ' + sub.max + '</b></div>' : '<p class="note">Your submission was received. You will be notified as soon as it is graded.</p>') + '</div>');
+  }
+
+  async function submitTask(t) {
+    const btn = $('#a-send'), er = (m) => { fe('a-form', m); return false; };
+    er('');
+    if (t.due && Date.now() > t.due) return er('This task is closed.');
+    const sid = t.id + '_' + me.id;
+    const sub = { taskId: t.id, memberId: me.id, memberName: me.name, type: t.type, max: t.max, violations: viol, submittedAt: Date.now() };
+    if (t.type === 'quiz') {
+      const ans = {};
+      t.questions.forEach((q) => {
+        if (q.kind === 'mcq') { const r = document.querySelector('input[name="a-' + q.id + '"]:checked'); ans[q.id] = r ? r.value : ''; }
+        else { const el = document.querySelector('.a-in[data-q="' + q.id + '"]'); ans[q.id] = el ? el.value.trim() : ''; }
+      });
+      const blank = Object.keys(ans).filter((k) => ans[k] === '').length;
+      if (blank && btn.dataset.warned !== '1') { btn.dataset.warned = '1'; return er(blank + ' unanswered question(s). Press Submit again to confirm.'); }
+      let score = 0, manual = false; sub.answers = ans; sub.marks = {};
+      for (const q of t.questions) {
+        if (q.keys && q.keys.length) {
+          const ok = ans[q.id] !== '' && q.keys.indexOf(await keyHash(t.salt, q.id, ans[q.id])) >= 0;
+          sub.marks[q.id] = ok ? q.points : 0; if (ok) score += q.points;
+        } else { sub.marks[q.id] = null; manual = true; }
+      }
+      sub.score = score; sub.status = manual ? 'review' : 'graded';
+      if (!manual) sub.gradedAt = Date.now();
+    } else if (t.type === 'files') {
+      const fl = [...(($('#a-files') || {}).files || [])];
+      if (!fl.length) return er('Choose at least one file.');
+      if (fl.length > (t.maxFiles || 1)) return er('You can upload up to ' + (t.maxFiles || 1) + ' files.');
+      const ex = (t.exts || '').split(',').filter(Boolean); let total = 0; sub.files = [];
+      for (const f of fl) {
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        if (ex.length && ex.indexOf(ext) < 0) return er(f.name + ' is not an allowed file type.');
+        if (f.size > 200 * 1024) return er(f.name + ' is larger than 200 KB.');
+        total += f.size; if (total > 700 * 1024) return er('The files are too large in total.');
+        const content = await f.text();
+        if (content.indexOf('\u0000') >= 0) return er(f.name + ' is not a text file.');
+        sub.files.push({ name: f.name, size: f.size, content });
+      }
+      sub.score = null; sub.status = 'review';
+    } else {
+      const u = ($('#a-link').value || '').trim();
+      if (!/^https?:\/\/[^\s]+\.[^\s]+$/i.test(u)) return er('Enter a valid link starting with https://');
+      sub.link = u; sub.score = null; sub.status = 'review';
+    }
+    btn.disabled = true;
+    try {
+      const ex = await db.get('submissions', sid);
+      if (ex) { closeModal(); return toast('You have already submitted this task', 'bad'); }
+      await db.set('submissions', sid, sub);
+      if (sub.status === 'graded') notifyMember(me.id, 'graded', { title: t.title, score: sub.score, max: sub.max });
+      showResult(t, sub);
+    } catch (err) { console.error(err); btn.disabled = false; er('Could not submit. Check the connection and try again.'); }
+  }
+
+  function openSubs(tid) {
+    const t = D.tasks.find((x) => x.id === tid); if (!t) return;
+    const L = D.subs.filter((s) => s.taskId === tid).sort((a, b) => b.submittedAt - a.submittedAt);
+    openModal('<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><span class="wide" hidden></span><div class="list">'
+      + (L.length ? L.map((s, i) => '<button class="rowc" data-sub="' + esc(s.id) + '" style="--i:' + i + '">' + av(s.memberName) + '<div class="rc-t"><b>' + esc(s.memberName) + '</b><small>' + esc(s.memberId) + (s.violations ? ' · ' + s.violations + ' focus losses' : '') + '</small></div><span class="rc-m">' + ago(s.submittedAt) + '</span><span class="pill ' + (s.status === 'graded' ? 'ok' : 'warn') + '">' + (s.status === 'graded' ? s.score + ' / ' + s.max : 'Needs review') + '</span></button>').join('') : empty('No submissions yet'))
+      + '</div>' + (L.length ? '<div class="mfoot"><button class="btn sm ghost" id="s-csv">Export CSV</button></div>' : '') + '</div>');
+    $$('[data-sub]', $('#modal')).forEach((b) => { b.onclick = () => openGrade(b.dataset.sub); });
+    if ($('#s-csv')) $('#s-csv').onclick = () => exportCsv(t, L);
+  }
+
+  function openGrade(sid) {
+    const s = D.subs.find((x) => x.id === sid), t = s && D.tasks.find((x) => x.id === s.taskId); if (!s || !t) return;
+    let b = '<span class="wide" hidden></span><div class="mem-hero">' + av(s.memberName) + '<div><h3>' + esc(s.memberName) + '</h3><code>' + esc(s.memberId) + '</code></div></div>';
+    if (s.type === 'quiz') {
+      b += t.questions.map((q, i) => {
+        const a = (s.answers || {})[q.id], auto = q.keys && q.keys.length;
+        const shown = q.kind === 'mcq' ? (a !== '' && a != null && q.options[+a] !== undefined ? q.options[+a] : '—') : (a || '—');
+        const mk = s.marks && s.marks[q.id] != null ? s.marks[q.id] : '';
+        return '<div class="card" style="margin-bottom:10px"><b>' + (i + 1) + '. ' + esc(q.text) + '</b><p class="note" style="text-align:start;margin:8px 0">' + esc(shown) + '</p><div class="idrow"><span class="pill ' + (auto ? 'ok' : 'warn') + '">' + (auto ? 'Auto' : 'Manual') + '</span><input class="g-m" data-q="' + q.id + '" type="number" min="0" max="' + q.points + '" step="0.5" dir="ltr" value="' + mk + '" aria-label="Mark"><span>/ ' + q.points + '</span></div></div>';
+      }).join('');
+    } else {
+      if (s.type === 'files') b += (s.files || []).map((f) => '<div class="card" style="margin-bottom:10px"><b dir="ltr">' + esc(f.name) + '</b><pre class="code" dir="ltr">' + esc(f.content) + '</pre></div>').join('');
+      else b += '<div class="card" style="margin-bottom:10px"><a dir="ltr" href="' + (/^https?:\/\//i.test(s.link || '') ? esc(s.link) : '#') + '" target="_blank" rel="noopener noreferrer">' + esc(s.link || '') + '</a></div>';
+      b += '<div class="field"><label for="g-score">Score (max ' + s.max + ')</label><input id="g-score" type="number" min="0" max="' + s.max + '" step="0.5" dir="ltr" value="' + (s.score == null ? '' : s.score) + '"></div>';
+    }
+    b += '<div class="field"><label for="g-fb">Feedback (optional)</label><textarea id="g-fb" maxlength="600">' + esc(s.feedback || '') + '</textarea></div><p class="error" id="g-err"></p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm" id="g-save">Save grade</button></div>';
+    openModal('<div class="mhead"><h3>' + esc(t.title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody">' + b + '</div>');
+    $('#g-save').onclick = async () => {
+      const gerr = (m) => { $('#g-err').textContent = m; };
+      gerr('');
+      let score = 0, marks = null;
+      if (s.type === 'quiz') {
+        marks = {};
+        for (const q of t.questions) {
+          const v = $('.g-m[data-q="' + q.id + '"]').value;
+          if (v === '') return gerr('Enter a mark for every question.');
+          const n = Math.min(q.points, Math.max(0, +v)); marks[q.id] = n; score += n;
+        }
+      } else {
+        const v = $('#g-score').value;
+        if (v === '') return gerr('Enter a score.');
+        score = Math.min(s.max, Math.max(0, +v));
+      }
+      const d = { score, status: 'graded', feedback: $('#g-fb').value.trim(), gradedAt: Date.now() };
+      if (marks) d.marks = marks;
+      $('#g-save').disabled = true;
+      try {
+        await db.set('submissions', s.id, d);
+        await notifyMember(s.memberId, 'graded', { title: t.title, score, max: s.max });
+        closeModal(); toast('Grade saved and sent to ' + s.memberName.split(' ')[0]);
+      } catch (_) { $('#g-save').disabled = false; gerr('Could not save, please try again.'); }
+    };
+  }
+
+  function exportCsv(t, L) {
+    const q = (v) => { let x = String(v == null ? '' : v); if (/^[=+\-@]/.test(x)) x = "'" + x; return '"' + x.replace(/"/g, '""') + '"'; };
+    const rows = [['Name', 'ID', 'Status', 'Score', 'Max', 'Focus losses', 'Submitted at']].concat(L.map((s) => [s.memberName, s.memberId, s.status, s.score == null ? '' : s.score, s.max, s.violations || 0, new Date(s.submittedAt).toISOString()]));
+    const blob = new Blob(['\ufeff' + rows.map((r) => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'results-' + t.id + '.csv';
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
   const C = $('#content');
-  C.addEventListener('click', (e) => { const t = e.target.closest('[data-req],[data-mem],[data-f],[data-done],[data-lang]'); if (!t) return; if (t.dataset.lang) setLang(t.dataset.lang); else if (t.dataset.req) openRequest(t.dataset.req); else if (t.dataset.mem) openMember(t.dataset.mem); else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); } else if (t.dataset.done) markDone(t.dataset.done); });
+  C.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel]'); if (!t) return;
+    if (t.dataset.lang) setLang(t.dataset.lang);
+    else if (t.dataset.req) openRequest(t.dataset.req);
+    else if (t.dataset.mem) openMember(t.dataset.mem);
+    else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
+    else if (t.dataset.open) openTask(t.dataset.open);
+    else if (t.dataset.subs) openSubs(t.dataset.subs);
+    else if (t.dataset.qadd) { qbRead(); if (QB.length < 30) QB.push(newQ()); qbRender(); }
+    else if (t.dataset.qdel !== undefined) { qbRead(); QB.splice(+t.dataset.qdel, 1); qbRender(); }
+  });
   C.addEventListener('input', (e) => { if (e.target.id === 'q') { F.q = e.target.value.trim(); V.members.paint(); } });
-  C.addEventListener('change', (e) => { if (e.target.id === 'fl') { F.lvl = e.target.value; V.members.paint(); } });
+  C.addEventListener('change', (e) => {
+    if (e.target.id === 'fl') { F.lvl = e.target.value; V.members.paint(); }
+    else if (e.target.id === 't-type') tfSync();
+    else if (e.target.classList.contains('q-kind')) { qbRead(); qbRender(); }
+  });
   C.addEventListener('submit', (e) => { if (e.target.id === 'task-form') { e.preventDefault(); addTask(); } else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); } });
 
   /* ---------- boot ---------- */
@@ -1176,13 +1506,16 @@ window.SOLVIX_CONFIG = {
     const sid = store.getItem('svx.session');
     if (sid) {
       try {
-        let c = null; try { c = JSON.parse(store.getItem('svx.me') || 'null'); } catch (_) {}
-        if (c && c.id === sid && (c.role === 'admin' || !c.uid || c.uid === db.uid())) { enterApp(c, true); return; }   // instant: use the saved copy, live data syncs in the background
         const m = await db.get('members', sid);
-        if (m && m.uid && m.uid !== db.uid()) { store.removeItem('svx.session'); }
-        else if ((m && m.passHash) || sid === CONFIG.adminId.toUpperCase()) {
-          const d = m || { id: sid, role: 'admin', name: 'Admin', level: 6, salt: CONFIG.adminSalt, passHash: CONFIG.adminHash };
-          if (d.passHash) { enterApp(d, true); return; }
+        if (m && m.uid && m.uid !== db.uid()) {
+          store.removeItem('svx.session');
+          store.removeItem('svx.me');
+        } else if (m && m.passHash) {
+          enterApp(m, true);
+          return;
+        } else {
+          store.removeItem('svx.session');
+          store.removeItem('svx.me');
         }
       } catch (_) {}
     }
@@ -1191,6 +1524,43 @@ window.SOLVIX_CONFIG = {
   })();
 
   draw(); place();
+
+  /* ---------- content protection (members only) ---------- */
+  (() => {
+    const on = () => body.classList.contains('guard');
+    const inField = (t) => !!(t && t.closest && t.closest('input,textarea'));
+    let lost = false;
+    const hide = () => { if (!on()) return; body.classList.add('shield'); if (!lost) { lost = true; if (examOpen()) viol++; } };
+    const show = () => { lost = false; body.classList.remove('shield'); };
+    addEventListener('blur', hide);
+    addEventListener('focus', show);
+    addEventListener('pageshow', show);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); else show(); });
+    ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => addEventListener(ev, () => { if (body.classList.contains('shield') && document.hasFocus()) show(); }, true));
+
+    const stop = (e) => { if (on() && !inField(e.target)) e.preventDefault(); };
+    ['copy', 'cut', 'selectstart', 'dragstart'].forEach((ev) => document.addEventListener(ev, stop));
+    document.addEventListener('contextmenu', (e) => { if (on()) e.preventDefault(); });
+
+    const noPaste = (e) => { if (on() && e.target.closest && e.target.closest('.noPaste')) { e.preventDefault(); toast('Pasting is disabled in answers', 'bad'); } };
+    document.addEventListener('paste', noPaste);
+    document.addEventListener('drop', noPaste);
+    document.addEventListener('beforeinput', (e) => { if (on() && /^insertFrom(Paste|Drop)/.test(e.inputType || '') && e.target.closest && e.target.closest('.noPaste')) e.preventDefault(); });
+
+    addEventListener('keydown', (e) => {
+      if (!on()) return;
+      const k = (e.key || '').toLowerCase(), mod = e.ctrlKey || e.metaKey;
+      if (mod && (k === 'p' || k === 's' || k === 'u')) e.preventDefault();
+      if (mod && (k === 'c' || k === 'x' || k === 'a') && !inField(e.target)) e.preventDefault();
+    });
+    addEventListener('keyup', (e) => {
+      if (on() && e.key === 'PrintScreen') {
+        try { navigator.clipboard.writeText(' '); } catch (_) {}
+        if (examOpen()) viol++;
+        toast('Screenshots are not allowed', 'bad');
+      }
+    });
+  })();
 
   /* ---------- block pull-to-refresh (app feel) ---------- */
   (() => {
@@ -1283,7 +1653,7 @@ window.SOLVIX_CONFIG = {
     } finally { checking = false; }
   }
   checkUpdate();
-  setInterval(checkUpdate, 30000);
+  setInterval(checkUpdate, 300000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
   addEventListener('online', checkUpdate);
   addEventListener('focus', checkUpdate);
