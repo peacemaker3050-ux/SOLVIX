@@ -409,6 +409,8 @@ input[type=color]{height:40px;padding:2px;border:1px solid var(--bd);border-radi
 .cer-bar{position:absolute;top:max(10px,env(safe-area-inset-top));inset-inline:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:3;flex-wrap:wrap}
 .cer-tag{font:700 12px var(--sans);color:var(--cy);padding:5px 12px;border:1px solid rgba(34,208,255,.4);border-radius:20px;background:rgba(34,208,255,.08)}
 .cer-ctl{display:flex;gap:8px}
+.cer-banner{font:700 clamp(16px,4.4vw,24px)/1.4 var(--sans);text-align:center;color:#fff;padding:8px 20px;border-radius:30px;background:linear-gradient(90deg,#0a78bd,#6a38d6);box-shadow:0 0 30px -4px rgba(34,208,255,.7);animation:cerBan .8s cubic-bezier(.2,.9,.2,1.2) both}
+@keyframes cerBan{from{opacity:0;transform:translateY(-14px) scale(.8)}}
 .cer-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;margin:auto;padding-top:54px}
 .cer-badge{--bs:clamp(90px,20vh,150px);width:var(--bs);height:var(--bs);flex:none;perspective:900px}
 .cer-b3d{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:cerSpin 8s linear infinite}
@@ -436,6 +438,39 @@ input[type=color]{height:40px;padding:2px;border:1px solid var(--bd);border-radi
 .cer-extra.show{opacity:1}
 .cer-x-mine{font-weight:700;font-size:16px;color:#fff}
 .cer-x-foot{color:#8397bb;font-size:12px}
+/* ===== v2 ceremony: cinematic intro, engraved stone plate, premium frames ===== */
+.cer-stage{background:radial-gradient(70% 55% at 50% 40%,rgba(255,186,64,.10),rgba(2,6,17,.97) 72%),#020611}
+.cer-stage.intro{overflow:hidden}
+.cer-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+.cer-wrap{z-index:2}
+.cer-badge{position:relative;z-index:3;transform-origin:50% 50%;transition:transform 1.15s cubic-bezier(.22,1,.36,1)}
+.cer-badge::before{content:"";position:absolute;inset:-38%;border-radius:50%;background:radial-gradient(circle,rgba(255,206,100,.55),rgba(255,150,30,.14) 46%,transparent 70%);opacity:.38;transition:opacity .8s;pointer-events:none}
+.cer-badge.pre{opacity:0;transition:none;transform:translate(var(--dx,0),var(--dy,0)) scale(.12)}
+.cer-badge.big{transform:translate(var(--dx,0),var(--dy,0)) scale(var(--sc,2))}
+.cer-badge.big::before{opacity:1}
+.cer-badge.pop{transition:transform .6s cubic-bezier(.2,1.7,.4,1),opacity .2s}
+.cer-plate{margin-top:-30px;padding:54px 24px 26px;opacity:0;transform:translateY(26px) scale(.96);background:linear-gradient(180deg,rgba(10,18,36,.55),rgba(3,6,14,.74)),var(--stone,#1d232b);transition:opacity .9s,transform .9s cubic-bezier(.2,.9,.2,1),box-shadow 1s,border-color 1s}
+.cer-plate.show{opacity:1;transform:none}
+.cer-hdr{color:#ffd978;letter-spacing:.14em;text-shadow:0 0 10px rgba(255,190,70,.5)}
+.cer-row .ch{transition:color .5s,text-shadow .8s}
+.cer-row .ch.hot{color:#fff6d6;text-shadow:0 0 10px #ffb43a,0 0 24px #ff7a1a;transition:none}
+.cer-row .ch.on{color:#aab6c3;text-shadow:0 -1px 1px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.18)}
+.cer-plate.win .cer-r-title .ch.on{color:#ffe08a;text-shadow:0 0 14px rgba(255,190,70,.8),0 1px 1px rgba(0,0,0,.9)}
+.cer-plate.win .cer-r-name .ch.on{color:#fff;text-shadow:0 0 14px var(--c1),0 0 30px var(--c2),0 1px 1px rgba(0,0,0,.8)}
+.cer-plate.win .cer-r-desc .ch.on,.cer-plate.win .cer-r-lbl .ch.on{color:#d9e6f5;text-shadow:0 0 8px rgba(120,200,255,.5),0 1px 1px rgba(0,0,0,.8)}
+@keyframes frSweep{from{background-position:100% 0}to{background-position:0 0}}
+.frm-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:12px;margin-top:12px}
+.frm-opt{position:relative;height:76px;padding:0 0 8px;display:flex;align-items:flex-end;justify-content:center;border:0;border-radius:6px;background:#0a1226;color:#cfe3ff;font:600 11px var(--sans);cursor:pointer;transition:transform .2s}
+.frm-opt:hover{transform:translateY(-2px)}
+.frm-opt .nm{position:relative;z-index:4}
+.frm-opt[data-fr]::after{inset:2px;border-width:13px}
+.frm-opt[data-frm="solid"]{border:1.5px solid #22d0ff}
+.frm-opt[data-frm="double"]{border:1.5px solid #22d0ff;outline:1px solid #8a5cff;outline-offset:-6px}
+.frm-opt[data-frm="glow"]{border:1.5px solid #22d0ff;box-shadow:0 0 16px -2px #22d0ff}
+.frm-opt[data-frm="dashed"]{border:2px dashed #22d0ff}
+.frm-opt[data-frm="solid"],.frm-opt[data-frm="double"],.frm-opt[data-frm="glow"],.frm-opt[data-frm="dashed"]{border-radius:12px}
+#tg-root:has(#tg-frame option[value="solid"]:checked) .frm-opt[data-frm="solid"],#tg-root:has(#tg-frame option[value="double"]:checked) .frm-opt[data-frm="double"],#tg-root:has(#tg-frame option[value="glow"]:checked) .frm-opt[data-frm="glow"],#tg-root:has(#tg-frame option[value="dashed"]:checked) .frm-opt[data-frm="dashed"]{outline:2px solid #ffd35c;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.cer-badge{transition:none}.cer-plate{transition:opacity .3s}.awc::before,.cer-plate::before{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.cer-b3d{animation:none}.cer-plate.shake{animation:none}}
 </style>
 </head>
@@ -1142,6 +1177,7 @@ window.SOLVIX_CONFIG = {
       ['leaderboard', 'Leaderboard', 'up'],
       ['resources', 'Resources', 'inbox'],
       ['forum', 'Q&A Forum', 'users'],
+      ['vault', 'Trophies Vault', 'trophy'],
       ['profile', 'My profile', 'user'],
       ['settings', 'Settings', 'cog']
     ],
@@ -1333,11 +1369,12 @@ window.SOLVIX_CONFIG = {
     if (n.type === 'accepted') return [tr('Your request was accepted'), tr('Welcome to Solvix Kod')];
     if (n.type === 'promotion') return [tr('You have been promoted'), tr('You have been promoted to') + ' ' + (LEVELS[m.level] ? LEVELS[m.level].ar : '')];
     if (n.type === 'graded') return [tr('Your task was graded'), (m.title || '') + ' · ' + m.score + ' / ' + m.max];
+    if (n.type === 'award') return ['🏆 New trophy', m.title || ''];
     return [tr('New task available'), m.title || ''];
   }
 
   function notifTarget(n) {
-    return n.type === 'accepted' ? 'home' : n.type === 'promotion' ? 'profile' : 'tasks';
+    return n.type === 'accepted' ? 'home' : n.type === 'promotion' ? 'profile' : n.type === 'award' ? 'vault' : 'tasks';
   }
 
   function paintNotifs() {
@@ -1346,7 +1383,7 @@ window.SOLVIX_CONFIG = {
     bd.textContent = unread > 9 ? '9+' : String(unread); bd.hidden = !unread;
     $('#notif-title').textContent = tr('Notifications');
     $('#notif-list').innerHTML = list.length ? list.map((n) => {
-      const tx = notifText(n), ic = n.type === 'promotion' ? 'up' : n.type === 'accepted' ? 'check' : 'tasks';
+      const tx = notifText(n), ic = n.type === 'promotion' ? 'up' : n.type === 'accepted' ? 'check' : n.type === 'award' ? 'trophy' : 'tasks';
       const cl = n.type === 'promotion' ? ' gold' : (n.type === 'task' || n.type === 'graded') ? ' green' : '';
       return '<button class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + esc(n.id) + '"><div class="notif-icon' + cl + '">' + ico(ic, 20) + '</div><div class="notif-body"><b>' + esc(tx[0]) + '</b><small>' + esc(tx[1]) + '</small><div class="time">' + ago(n.createdAt) + '</div></div></button>';
     }).join('') : '<div class="notif-empty">' + tr('No notifications yet') + '</div>';
@@ -1592,19 +1629,65 @@ window.SOLVIX_CONFIG = {
     book: '<path d="M26 32C36 30 44 32 50 38C56 32 64 30 74 32V68C64 66 56 68 50 74C44 68 36 66 26 68ZM50 38V74"/>'
   };
   const ICON_LABEL = { bolt: 'Lightning', target: 'Target', rocket: 'Rocket', columns: 'Columns', bulb: 'Idea', bug: 'Bug', star: 'Star', code: 'Code', crown: 'Crown', flame: 'Flame', chip: 'Chip', book: 'Book' };
-  const FRAMES = ['solid', 'double', 'glow', 'dashed'];
+  const FRAMES = ['hud', 'royal', 'neon', 'circuit', 'crimson', 'golden', 'solid', 'double', 'glow', 'dashed'];
+  const FRAME_LABEL = { hud: 'HUD Tech', royal: 'Royal Gold', neon: 'Neon Duo', circuit: 'Circuit', crimson: 'Crimson Crest', golden: 'Gold Bar', solid: 'Classic', double: 'Double', glow: 'Glow', dashed: 'Dashed' };
   const PRESETS = [
-    { name: 'Legendary Code', shape: 'hex', icon: 'bolt', c1: '#22d0ff', c2: '#8a5cff', frame: 'glow' },
-    { name: 'Bug Hunter', shape: 'shield', icon: 'bug', c1: '#3d8bff', c2: '#9bc2ff', frame: 'solid' },
-    { name: 'Speed Coder', shape: 'diamond', icon: 'rocket', c1: '#8a6bff', c2: '#22d0ff', frame: 'double' },
-    { name: 'Gold Architect', shape: 'octagon', icon: 'columns', c1: '#ffc65c', c2: '#22d0ff', frame: 'double' },
-    { name: 'Active Contributor', shape: 'circle', icon: 'bulb', c1: '#35c4ff', c2: '#8a5cff', frame: 'dashed' },
-    { name: 'Star Student', shape: 'circle', icon: 'star', c1: '#c25cff', c2: '#efc4ff', frame: 'glow' },
-    { name: 'Core Builder', shape: 'octagon', icon: 'chip', c1: '#2f6bff', c2: '#22d0ff', frame: 'solid' },
-    { name: 'Knowledge Seeker', shape: 'diamond', icon: 'book', c1: '#7e98c4', c2: '#9aeaff', frame: 'dashed' },
-    { name: 'Clean Code', shape: 'hex', icon: 'code', c1: '#3be3b0', c2: '#22d0ff', frame: 'double' },
-    { name: 'Community Crown', shape: 'shield', icon: 'crown', c1: '#8fe8ff', c2: '#c25cff', frame: 'glow' }
+    { name: 'Legendary Code', shape: 'hex', icon: 'bolt', c1: '#22d0ff', c2: '#8a5cff', frame: 'hud' },
+    { name: 'Bug Hunter', shape: 'shield', icon: 'bug', c1: '#3d8bff', c2: '#9bc2ff', frame: 'crimson' },
+    { name: 'Speed Coder', shape: 'diamond', icon: 'rocket', c1: '#8a6bff', c2: '#22d0ff', frame: 'neon' },
+    { name: 'Gold Architect', shape: 'octagon', icon: 'columns', c1: '#ffc65c', c2: '#22d0ff', frame: 'royal' },
+    { name: 'Active Contributor', shape: 'circle', icon: 'bulb', c1: '#35c4ff', c2: '#8a5cff', frame: 'circuit' },
+    { name: 'Star Student', shape: 'circle', icon: 'star', c1: '#c25cff', c2: '#efc4ff', frame: 'golden' },
+    { name: 'Core Builder', shape: 'octagon', icon: 'chip', c1: '#2f6bff', c2: '#22d0ff', frame: 'hud' },
+    { name: 'Knowledge Seeker', shape: 'diamond', icon: 'book', c1: '#7e98c4', c2: '#9aeaff', frame: 'circuit' },
+    { name: 'Clean Code', shape: 'hex', icon: 'code', c1: '#3be3b0', c2: '#22d0ff', frame: 'circuit' },
+    { name: 'Community Crown', shape: 'shield', icon: 'crown', c1: '#8fe8ff', c2: '#c25cff', frame: 'royal' }
   ];
+  /* ----- premium card frames: 9-slice SVG borders drawn in code and injected once (no image files) ----- */
+  (function injectFrames() {
+    const sym = (g) => g + '<g transform="matrix(-1 0 0 1 120 0)">' + g + '</g><g transform="matrix(1 0 0 -1 0 120)">' + g + '</g><g transform="matrix(-1 0 0 -1 120 120)">' + g + '</g>';
+    const P = (d, s, w, o) => '<path d="' + d + '" fill="none" stroke="' + s + '" stroke-width="' + w + '"' + (o ? ' ' + o : '') + '/>';
+    const gold = '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4b8"/><stop offset=".45" stop-color="#e6ae2c"/><stop offset="1" stop-color="#8a5508"/></linearGradient>';
+    const img = (defs, g, glow) => {
+      const s = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><defs>' + defs + '<filter id="b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="' + (glow || 1.6) + '"/></filter></defs>'
+        + (glow ? '<g filter="url(#b)" opacity=".9">' + sym(g) + '</g>' : '') + sym(g) + '</svg>';
+      return 'url("data:image/svg+xml,' + encodeURIComponent(s) + '")';
+    };
+    const F = {
+      hud: { glow: 'rgba(54,207,255,.55)', tint: 'rgba(5,22,44,.5)', bg: 'linear-gradient(180deg,rgba(7,24,46,.92),rgba(3,9,22,.96))',
+        img: img('', P('M5 60V18L18 5H60', '#36cfff', 1.7) + P('M11 60V22L22 11H60', '#36cfff', 1, 'stroke-opacity=".45"') + P('M5 36V21M21 5H36', '#e3fbff', 3.6, 'stroke-linecap="square"') + '<rect x="14.5" y="14.5" width="5" height="5" fill="#e3fbff" transform="rotate(45 17 17)"/>', 1.4) },
+      royal: { glow: 'rgba(255,196,64,.5)', tint: 'rgba(30,18,44,.5)', bg: 'radial-gradient(120% 70% at 50% 0,rgba(255,200,80,.16),transparent 60%),linear-gradient(180deg,#1b1530,#0a0716)',
+        img: img(gold, P('M5 60V22Q5 5 22 5H60', 'url(#g)', 2.6) + P('M12 60V27Q12 12 27 12H60', '#f6d77a', 1, 'stroke-opacity=".6"') + '<path d="M3 15L15 3L27 15L15 27Z" fill="url(#g)" stroke="#5a3704" stroke-width="1"/><path d="M9 15L15 9L21 15L15 21Z" fill="#1a1230" stroke="#fff0b0" stroke-width=".8"/><circle cx="15" cy="15" r="1.8" fill="#ffe27a"/><circle cx="36" cy="8.5" r="1.3" fill="#ffe27a"/><circle cx="8.5" cy="36" r="1.3" fill="#ffe27a"/>') },
+      neon: { glow: 'rgba(255,79,216,.5)', tint: 'rgba(28,8,44,.5)', bg: 'linear-gradient(180deg,#1a0a33,#080314)',
+        img: img('', P('M5 60V22Q5 5 22 5H60', '#ff4fd8', 2) + P('M11 60V27Q11 11 27 11H60', '#8a6bff', 1.5) + '<circle cx="22" cy="22" r="2.4" fill="#fff"/>' + P('M5 40V32M40 5H32', '#fff', 2.4, 'stroke-linecap="round"'), 2.4) },
+      circuit: { glow: 'rgba(46,230,166,.5)', tint: 'rgba(4,28,26,.5)', bg: 'linear-gradient(180deg,#07211f,#030b0c)',
+        img: img('', P('M5 60V30H12V13H30V5H60', '#2ee6a6', 1.6) + P('M11 60V37H19V19H37V11H60', '#2ee6a6', 1, 'stroke-opacity=".45"') + '<circle cx="12" cy="30" r="2.2" fill="#aaffe0"/><circle cx="30" cy="13" r="2.2" fill="#aaffe0"/><rect x="5" y="5" width="7" height="7" fill="none" stroke="#aaffe0" stroke-width="1.4"/>', 1.2) },
+      crimson: { glow: 'rgba(255,90,77,.5)', tint: 'rgba(40,8,12,.5)', bg: 'linear-gradient(180deg,#2a0c12,#0c0306)',
+        img: img('<linearGradient id="r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a5a"/><stop offset="1" stop-color="#7a0f1c"/></linearGradient>', '<path d="M4 4H36L4 36Z" fill="url(#r)" stroke="#ffc857" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 10H24L10 24Z" fill="#ffc857" fill-opacity=".92"/>' + P('M42 5H60', '#ff5a4d', 2.2) + P('M5 42V60', '#ff5a4d', 2.2) + P('M46 11H60', '#ffc857', 1) + P('M11 46V60', '#ffc857', 1), 1.4) },
+      golden: { glow: 'rgba(255,205,92,.5)', tint: 'rgba(24,16,6,.5)', bg: 'radial-gradient(120% 70% at 50% 0,rgba(255,210,100,.14),transparent 60%),linear-gradient(180deg,#1c1508,#0a0703)',
+        img: img(gold, '<path d="M0 0H60V8H8V60H0Z" fill="url(#g)"/>' + P('M10.5 60V10.5H60', '#3b2503', 1.2) + P('M1.4 60V1.4H60', '#fff6c8', .9, 'stroke-opacity=".75"') + '<circle cx="4" cy="4" r="2.4" fill="#5a3704"/><circle cx="3.6" cy="3.6" r="1" fill="#ffe9a0"/>' + P('M17 36V17H36', '#ffd35c', 2.2, 'stroke-linecap="square"')) }
+    };
+    const stone = '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160"><defs><filter id="n" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".6" numOctaves="4" seed="9" stitchTiles="stitch"/><feColorMatrix values=".30 0 0 0 .07 0 .33 0 0 .08 0 0 .38 0 .09 0 0 0 0 1"/></filter><filter id="m" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".02 .05" numOctaves="3" seed="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 -.25"/></filter></defs><rect width="240" height="160" fill="#262c33"/><rect width="240" height="160" filter="url(#n)"/><rect width="240" height="160" filter="url(#m)" opacity=".55"/><path d="M0 1.5H240M0 81.5H240M1.5 0V80M121.5 0V80M61.5 80V160M181.5 80V160" stroke="#07090c" stroke-width="3.2" fill="none"/><path d="M0 4H240M0 84H240M4 0V80M124 0V80M64 80V160M184 80V160" stroke="#5b6670" stroke-opacity=".35" stroke-width="1" fill="none"/></svg>';
+    const css = [':root{--stone:url("data:image/svg+xml,' + encodeURIComponent(stone) + '")}'];
+    Object.keys(F).forEach((k) => {
+      const f = F[k], s = '[data-fr="' + k + '"]';
+      css.push(
+        '.awc' + s + ',.cer-plate' + s + '{border:0;border-radius:6px;box-shadow:0 0 36px -8px ' + f.glow + ',inset 0 0 44px rgba(0,0,0,.45)}',
+        '.awc' + s + '{background:' + f.bg + ';padding:44px 36px 30px}',
+        '.cer-plate' + s + '{background:linear-gradient(180deg,' + f.tint + ',rgba(2,5,12,.78)),var(--stone,#1d232b);padding:56px 36px 32px}',
+        '.cer-plate.win' + s + '{box-shadow:0 0 90px -8px ' + f.glow + ',inset 0 0 60px -18px ' + f.glow + '}',
+        '.awc' + s + '::after,.cer-plate' + s + '::after,.frm-opt' + s + '::after{content:"";position:absolute;inset:5px;border:30px solid transparent;border-image:' + f.img + ' 40 / 30px stretch;pointer-events:none;z-index:3}',
+        '.awc' + s + '::before,.cer-plate' + s + '::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.13) 50%,transparent 58%) 0 0/250% 100%;animation:frSweep 6s linear infinite}',
+        '#tg-root:has(#tg-frame option[value="' + k + '"]:checked) .frm-opt[data-frm="' + k + '"]{outline:2px solid #ffd35c;outline-offset:3px}'
+      );
+    });
+    const st = document.createElement('style'); st.id = 'svx-frames'; st.textContent = css.join('\n'); document.head.appendChild(st);
+    document.addEventListener('click', (e) => {            // visual frame picker in the Trophies Studio
+      const b = e.target.closest && e.target.closest('.frm-opt[data-frm]'), sel = document.getElementById('tg-frame');
+      if (!b || !sel) return;
+      sel.value = b.dataset.frm; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  })();
   const CARD_MAX = { hdr: 60, lbl: 40, name: 80, title: 60, desc: 400, thanks: 300, date: 40, issuer: 60 };
 
   const cleanDesign = (d) => {
@@ -1628,14 +1711,24 @@ window.SOLVIX_CONFIG = {
   let GID = 0;
   function badgeSvg(d, size) {
     d = cleanDesign(d);
-    const g = 'bgx' + (++GID), sh = SHAPES[d.shape], inner = 'translate(50 50) scale(.84) translate(-50 -50)';
-    return '<svg class="bdg-x" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" role="img" aria-label="' + esc(d.name) + '" style="filter:drop-shadow(0 0 7px ' + d.c1 + ')"><defs><linearGradient id="' + g + '" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="92" y2="92"><stop offset="0" stop-color="' + d.c1 + '"/><stop offset="1" stop-color="' + d.c2 + '"/></linearGradient></defs>'
-      + '<path d="' + sh + '" fill="#0b1636" stroke="url(#' + g + ')" stroke-width="4" stroke-linejoin="round"/>'
-      + '<path d="' + sh + '" transform="' + inner + '" fill="url(#' + g + ')" fill-opacity=".16" stroke="url(#' + g + ')" stroke-width="1.4" stroke-opacity=".7"/>'
-      + '<g fill="none" stroke="url(#' + g + ')" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">' + ICONS[d.icon] + '</g></svg>';
+    const k = 'bgx' + (++GID), sh = SHAPES[d.shape], sc = (n) => 'translate(50 50) scale(' + n + ') translate(-50 -50)';
+    return '<svg class="bdg-x" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" role="img" aria-label="' + esc(d.name) + '" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,.55)) drop-shadow(0 0 8px rgba(255,196,64,.5))"><defs>'
+      + '<linearGradient id="' + k + 'g" gradientUnits="userSpaceOnUse" x1="14" y1="4" x2="86" y2="98"><stop offset="0" stop-color="#fff4b8"/><stop offset=".22" stop-color="#f7c948"/><stop offset=".5" stop-color="#b97a10"/><stop offset=".74" stop-color="#ffe27a"/><stop offset="1" stop-color="#8a5508"/></linearGradient>'
+      + '<linearGradient id="' + k + 'h" gradientUnits="userSpaceOnUse" x1="86" y1="4" x2="14" y2="98"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#9a6410"/><stop offset="1" stop-color="#fff0b0"/></linearGradient>'
+      + '<radialGradient id="' + k + 'p" cx="50%" cy="40%" r="64%"><stop offset="0" stop-color="' + d.c1 + '" stop-opacity=".6"/><stop offset=".5" stop-color="#10224d"/><stop offset="1" stop-color="#050c20"/></radialGradient>'
+      + '<linearGradient id="' + k + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+      + '<clipPath id="' + k + 'c"><path d="' + sh + '"/></clipPath></defs>'
+      + '<path d="' + sh + '" fill="url(#' + k + 'g)" stroke="#6b4206" stroke-width="1.3" stroke-linejoin="round"/>'
+      + '<path d="' + sh + '" transform="' + sc(.95) + '" fill="none" stroke="#fff3b0" stroke-opacity=".75" stroke-width=".9" stroke-linejoin="round"/>'
+      + '<path d="' + sh + '" transform="' + sc(.9) + '" fill="#4a2c03" stroke="url(#' + k + 'h)" stroke-width="1.4" stroke-linejoin="round"/>'
+      + '<path d="' + sh + '" transform="' + sc(.92) + '" fill="none" stroke="#ffe9a0" stroke-opacity=".8" stroke-width="1" stroke-dasharray="1.2 3.4" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '<path d="' + sh + '" transform="' + sc(.84) + '" fill="url(#' + k + 'p)" stroke="url(#' + k + 'g)" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<g fill="none" stroke="' + d.c1 + '" stroke-opacity=".32" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">' + ICONS[d.icon] + '</g>'
+      + '<g fill="none" stroke="url(#' + k + 'g)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">' + ICONS[d.icon] + '</g>'
+      + '<g clip-path="url(#' + k + 'c)"><path d="M-10 -10H110V40Q60 30 -10 62Z" fill="url(#' + k + 's)" opacity=".45"/></g></svg>';
   }
   function cardHtml(c, d) {
-    return '<div class="awc awc-f-' + d.frame + '" style="--c1:' + d.c1 + ';--c2:' + d.c2 + '">'
+    return '<div class="awc awc-f-' + d.frame + '" data-fr="' + d.frame + '" style="--c1:' + d.c1 + ';--c2:' + d.c2 + '">'
       + '<div class="awc-hdr" dir="auto">' + esc(c.hdr) + '</div>'
       + '<div class="awc-bdg">' + badgeSvg(d, 96) + '</div>'
       + '<div class="awc-title" dir="auto">' + (esc(c.title) || '—') + '</div>'
@@ -1645,7 +1738,7 @@ window.SOLVIX_CONFIG = {
       + '<p class="awc-thanks" dir="auto">' + esc(c.thanks) + '</p>'
       + '<div class="awc-foot"><span dir="auto">' + esc(c.date) + '</span><span dir="auto">' + esc(c.issuer) + '</span></div></div>';
   }
-  const ceremonyPayload = (c, d, extra) => Object.assign({ badgeSvg: badgeSvg(d, 140), hdr: c.hdr, title: c.title, desc: c.desc, label: c.lbl, name: c.name, thanks: c.thanks, date: c.date, issuer: c.issuer, c1: d.c1, c2: d.c2 }, extra || {});
+  const ceremonyPayload = (c, d, extra) => Object.assign({ badgeSvg: badgeSvg(d, 140), hdr: c.hdr, title: c.title, desc: c.desc, label: c.lbl, name: c.name, thanks: c.thanks, date: c.date, issuer: c.issuer, c1: d.c1, c2: d.c2, frame: d.frame }, extra || {});
 
   /* ----- student vault ----- */
   function paintVault() {
@@ -1666,11 +1759,27 @@ window.SOLVIX_CONFIG = {
   }
 
   /* ----- listeners (student: own awards only; everyone: live feed) ----- */
+  const seenKey = () => 'svx.awseen.' + (me ? me.id : '');
+  const seenGet = () => { try { return JSON.parse(store.getItem(seenKey()) || '[]'); } catch (_) { return []; } };
+  function markShown(id) {
+    if (AW.shown.has(id)) return false;
+    AW.shown.add(id);
+    try { store.setItem(seenKey(), JSON.stringify([...AW.shown].slice(-200))); } catch (_) {}
+    return true;
+  }
   function startAwardsData(tk) {
     const subs = [];
+    AW.shown = isAdmin() ? new Set() : new Set(seenGet());
     AW.bootAt = Date.now(); AW.seen = null; AW.loaded = false; AW.err = '';
     if (isAdmin()) subs.push(db.watch('badgeDefs', (l) => { D.badgeDefs = l; tk(); }, null, null, () => toast('Could not load badge designs.', 'bad')));
-    else subs.push(db.watch('awards', (l) => { D.awards = l.filter((a) => a.to === me.id); AW.loaded = true; AW.err = ''; tk(); }, 'to', me.id, () => { AW.err = 'Could not load your trophies. Check your connection and try again.'; tk(); }));
+    else subs.push(db.watch('awards', (l) => {
+      D.awards = l.filter((a) => a.to === me.id); AW.loaded = true; AW.err = '';
+      D.awards.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).forEach((a) => {
+        if (!markShown(a.id)) return;
+        AW.pending.push(ceremonyPayload(cleanCard(a.card), cleanDesign(a.design), { tag: 'NEW TROPHY', banner: 'A new trophy has been delivered', mine: true }));
+      });
+      flushAwards(); tk();
+    }, 'to', me.id, () => { AW.err = 'Could not load your trophies. Check your connection and try again.'; tk(); }));
     subs.push(db.watch('awardFeed', onFeed, null, null, () => toast('Live award announcements are unavailable.', 'bad')));
     if (!AW.timer) AW.timer = setInterval(flushAwards, 2500);
     return subs;
@@ -1680,15 +1789,19 @@ window.SOLVIX_CONFIG = {
     l.forEach((a) => {
       if (AW.seen.has(a.id)) return; AW.seen.add(a.id);
       if (!a.createdAt || a.createdAt < AW.bootAt - 60000) return;
-      AW.pending.push(ceremonyPayload(cleanCard(a.card), cleanDesign(a.design), { tag: 'LIVE AWARD', autoClose: 9000, mine: !isAdmin() && a.to === me.id }));
+      const mineA = !isAdmin() && a.to === me.id;
+      if (mineA && !markShown(a.id)) return;
+      AW.pending.push(ceremonyPayload(cleanCard(a.card), cleanDesign(a.design), mineA
+        ? { tag: 'NEW TROPHY', banner: 'A new trophy has been delivered', mine: true }
+        : { tag: 'LIVE AWARD', autoClose: 9000 }));
     });
     flushAwards();
   }
   function flushAwards() {
     if (!AW.pending.length) return;
     if ($('#a-send') && !$('#modal').hidden) return;     // never interrupt a task or exam in progress
+    if (!window.SvxCeremony) return;
     const q = AW.pending.splice(0);
-    if (!window.SvxCeremony) { console.error('Ceremony engine is not loaded'); return; }
     q.forEach((p) => window.SvxCeremony.enqueue(p));
   }
 
@@ -1769,6 +1882,7 @@ window.SOLVIX_CONFIG = {
     catch (err) { console.error(err); closeModal(); return tgStatus('The award was NOT saved: ' + (err.code || err.message)); }
     try { await db.set('awardFeed', id, { awardId: id, to: m.id, toName, badgeId: s.badgeId, card, design, createdAt: now }); }
     catch (err) { console.error(err); closeModal(); return tgStatus('The award was saved to the student vault, but the live announcement failed: ' + (err.code || err.message)); }
+    notifyMember(m.id, 'award', { title: card.title });
     closeModal(); tgStatus(''); toast('Award sent to ' + toName.split(' ')[0]);
   }
 
@@ -1780,7 +1894,7 @@ window.SOLVIX_CONFIG = {
       + '<div class="field"><label for="tg-bname">Badge name</label><input id="tg-bname" maxlength="40" dir="auto"></div>'
       + '<div class="two"><div class="field"><label for="tg-shape">Shape</label><select id="tg-shape">' + tgOpts(SHAPES, SHAPE_LABEL) + '</select></div><div class="field"><label for="tg-icon">Icon</label><select id="tg-icon">' + tgOpts(ICONS, ICON_LABEL) + '</select></div></div>'
       + '<div class="two"><div class="field"><label for="tg-c1">Primary colour</label><input id="tg-c1" type="color"></div><div class="field"><label for="tg-c2">Accent colour</label><input id="tg-c2" type="color"></div></div>'
-      + '<div class="field"><label for="tg-frame">Card frame</label><select id="tg-frame">' + FRAMES.map((f) => '<option value="' + f + '">' + f.charAt(0).toUpperCase() + f.slice(1) + '</option>').join('') + '</select></div>'
+      + '<div class="field"><label for="tg-frame">Card frame</label><select id="tg-frame">' + FRAMES.map((f) => '<option value="' + f + '">' + FRAME_LABEL[f] + '</option>').join('') + '</select><div class="frm-pick">' + FRAMES.map((f) => '<button type="button" class="frm-opt" data-fr="' + f + '" data-frm="' + f + '" aria-label="' + FRAME_LABEL[f] + '"><span class="nm">' + FRAME_LABEL[f] + '</span></button>').join('') + '</div></div>'
       + '<button type="button" class="btn sm ghost" data-tg="save-design">Save badge design</button></div>'
       + '<div class="card"><h3 style="margin:0 0 14px">2 · Award card</h3>'
       + '<div class="field"><label for="tg-member">Student</label><select id="tg-member"></select></div>'
@@ -1807,6 +1921,11 @@ window.SOLVIX_CONFIG = {
       }
       tgFillMembers(); tgRefresh();
     }
+  };
+
+  V.vault = {
+    html: () => '<h2 class="ph">' + tr('Trophies Vault') + '</h2><p class="pp">All the trophies you have earned. Tap one to replay its ceremony.</p><div class="card"><div class="vault-grid" id="my-vault-list"></div></div>',
+    paint() { paintVault(); }
   };
 
   const CT = $('#content');
@@ -2438,6 +2557,7 @@ try {
 
 <!-- Award ceremony stage + engine (self-contained; the app calls window.SvxCeremony) -->
 <div class="cer-stage" id="cer-stage" hidden role="dialog" aria-modal="true" aria-label="Award ceremony">
+  <canvas class="cer-fx" id="cer-fx" aria-hidden="true"></canvas>
   <div class="cer-bar">
     <span class="cer-tag" id="cer-tag"></span>
     <div class="cer-ctl">
@@ -2447,7 +2567,8 @@ try {
     </div>
   </div>
   <div class="cer-wrap">
-    <div class="cer-badge"><div class="cer-b3d" id="cer-b3d"></div></div>
+    <div class="cer-banner" id="cer-banner" hidden></div>
+    <div class="cer-badge" id="cer-badge"><div class="cer-b3d" id="cer-b3d"></div></div>
     <div class="cer-plate" id="cer-plate">
       <canvas class="cer-cv" id="cer-cv"></canvas>
       <div class="cer-hdr" id="cer-hdr"></div>
@@ -2462,11 +2583,15 @@ try {
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var stage = $('cer-stage'), plate = $('cer-plate'), cv = $('cer-cv'), g2 = cv.getContext('2d');
+  var stage = $('cer-stage'), plate = $('cer-plate'), cv = $('cer-cv'), g2 = cv.getContext('2d'), fxc = $('cer-fx'), gf = fxc.getContext('2d'), badgeEl = $('cer-badge');
   var linesEl = $('cer-lines'), extraEl = $('cer-extra'), b3d = $('cer-b3d'), tagEl = $('cer-tag'), hdrEl = $('cer-hdr');
   var doneBtn = $('cer-done'), muteBtn = $('cer-mute'), skipBtn = $('cer-skip'), closeBtn = $('cer-close');
   var token = 0, isOpen = false, skipping = false, queue = [], parts = [], rings = [], waits = [], raf = 0, lastT = 0, autoT = 0;
   var laser = { x: 0, y: 0, tx: 0, ty: 0, on: false };
+  var fxp = [], motes = [], bolts = [], boltT = 0, flash = 0;
+  var light = { on: false, a: 0, ta: 0, cx: 0, cy: 0, amp: 100 };
+  var rib = { on: false, k: 0, t: 0, cx: 0, cy: 0, R: 120 };
+  var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   /* ---------- synthesised audio only (no speech, no samples) ---------- */
   var ac = null, master = null, muted = false, hum = null;
@@ -2486,6 +2611,14 @@ try {
     s.buffer = noiseBuf(dur + 0.05); fl.type = type; fl.frequency.value = f; fl.Q.value = q; env(g, t, 0.003, peak, dur);
     s.connect(fl); fl.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.05);
   }
+  function sweep(f0, f1, peak, dur) {
+    if (skipping || !audio()) return;
+    var t = ac.currentTime, s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf(dur + 0.05); fl.type = 'bandpass'; fl.Q.value = 1.2;
+    fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    env(g, t, dur * 0.4, peak, dur * 0.6);
+    s.connect(fl); fl.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.05);
+  }
   function tone(type, f0, f1, peak, a, dec, when) {
     if (skipping || !audio()) return;
     var t = ac.currentTime + (when || 0), o = ac.createOscillator(), g = ac.createGain();
@@ -2497,6 +2630,10 @@ try {
     sizzle: function () { burst('highpass', 5000, 0.7, 0.07, 0.12); },
     impact: function () { tone('sine', 110, 38, 0.7, 0.005, 0.6); burst('lowpass', 420, 0.8, 0.5, 0.35); },
     hit: function () { tone('sine', 70, 35, 0.6, 0.004, 0.45); },
+    zap: function () { burst('highpass', 2500, 0.8, 0.35, 0.5); tone('sawtooth', 220, 40, 0.16, 0.005, 0.5); for (var i = 0; i < 12; i++) setTimeout(function () { burst('bandpass', 1500 + Math.random() * 5000, 5, 0.12, 0.05); }, i * 45 + Math.random() * 30); },
+    boom: function () { tone('sine', 120, 34, 0.8, 0.004, 0.9); burst('lowpass', 500, 0.8, 0.6, 0.5); },
+    whoosh: function () { sweep(300, 3200, 0.25, 0.9); },
+    shimmer: function () { [1568, 2093, 2637, 3136].forEach(function (f, i) { tone('sine', f, 0, 0.05, 0.01, 1.3, i * 0.08); }); },
     chime: function () { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach(function (f, i) { tone('triangle', f, 0, 0.12, 0.01, 1.5, i * 0.13); tone('sine', f * 2, 0, 0.03, 0.01, 1.1, i * 0.13); }); }
   };
   function humOn() {
@@ -2526,42 +2663,125 @@ try {
     if (ac && master) { try { master.disconnect(); } catch (e) {} master = ac.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(ac.destination); }
   }
 
-  /* ---------- canvas: laser beam, sparks, dust, shockwaves ---------- */
-  function size() { var r = plate.getBoundingClientRect(), k = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.max(1, r.width * k); cv.height = Math.max(1, r.height * k); g2.setTransform(k, 0, 0, k, 0, 0); }
+  /* ---------- plate canvas: laser beam, sparks, smoke, shockwaves ---------- */
+  function size() {
+    var k = Math.min(2, window.devicePixelRatio || 1), r = plate.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    cv.width = Math.max(1, r.width * k); cv.height = Math.max(1, r.height * k); g2.setTransform(k, 0, 0, k, 0, 0);
+    fxc.width = Math.max(1, s.width * k); fxc.height = Math.max(1, s.height * k); gf.setTransform(k, 0, 0, k, 0, 0);
+  }
   function spawn(x, y, n, kind) {
     for (var i = 0; i < n && parts.length < 420; i++) {
-      var a = Math.random() * 6.283, sp = kind === 'spark' ? 60 + Math.random() * 190 : kind === 'burst' ? 80 + Math.random() * 260 : 8 + Math.random() * 26;
-      parts.push({ k: kind, x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (kind === 'spark' ? 60 : 0), life: 0,
-        max: kind === 'dust' ? 1.4 + Math.random() : 0.45 + Math.random() * 0.5, r: kind === 'dust' ? 1.5 + Math.random() * 2.2 : 0.8 + Math.random() * 1.4,
-        c: kind === 'dust' ? 'rgba(170,200,235,' : kind === 'burst' ? 'rgba(150,225,255,' : 'rgba(255,175,90,' });
+      var a = Math.random() * 6.283, sp = kind === 'spark' ? 60 + Math.random() * 190 : kind === 'burst' ? 80 + Math.random() * 260 : kind === 'smoke' ? 6 + Math.random() * 14 : 8 + Math.random() * 26;
+      parts.push({ k: kind, x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (kind === 'spark' ? 60 : kind === 'smoke' ? 26 : 0), life: 0,
+        max: kind === 'dust' ? 1.4 + Math.random() : kind === 'smoke' ? 1.3 + Math.random() * 0.9 : 0.45 + Math.random() * 0.5,
+        r: kind === 'dust' ? 1.5 + Math.random() * 2.2 : kind === 'smoke' ? 5 + Math.random() * 6 : 0.8 + Math.random() * 1.4,
+        c: kind === 'dust' ? 'rgba(170,200,235,' : kind === 'burst' ? 'rgba(255,215,120,' : 'rgba(255,175,90,' });
     }
   }
   function ring(x, y) { rings.push({ x: x, y: y, t: 0 }); }
-  function frame(t) {
-    raf = 0; if (!isOpen) return;
-    var dt = Math.min(0.05, (t - lastT) / 1000) || 0.016; lastT = t;
+  function spawnGold(x, y, n, spd) {                              // golden shower on the stage canvas
+    for (var i = 0; i < n && fxp.length < 520; i++) {
+      var a = Math.random() * 6.283, sp = spd * (0.25 + Math.random() * 0.75);
+      fxp.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0, max: 0.9 + Math.random() * 1.3, r: 0.8 + Math.random() * 1.7 });
+    }
+  }
+  function drawPlate(dt) {
     var W = plate.clientWidth, H = plate.clientHeight, k = Math.min(1, dt * 14);
     g2.globalCompositeOperation = 'lighter'; g2.clearRect(0, 0, W, H);
     laser.x += (laser.tx - laser.x) * k; laser.y += (laser.ty - laser.y) * k;
     if (laser.on) {
-      var fl = 0.85 + Math.random() * 0.15;
-      g2.lineCap = 'round'; g2.beginPath(); g2.moveTo(W / 2, -4); g2.lineTo(laser.x, laser.y);
-      g2.strokeStyle = 'rgba(255,50,100,' + (0.35 * fl) + ')'; g2.lineWidth = 5; g2.stroke();
-      g2.strokeStyle = 'rgba(255,255,255,' + (0.9 * fl) + ')'; g2.lineWidth = 1.4; g2.stroke();
-      var rg = g2.createRadialGradient(laser.x, laser.y, 0, laser.x, laser.y, 16);
-      rg.addColorStop(0, 'rgba(255,255,255,.95)'); rg.addColorStop(0.35, 'rgba(255,90,120,.6)'); rg.addColorStop(1, 'rgba(255,60,100,0)');
-      g2.fillStyle = rg; g2.beginPath(); g2.arc(laser.x, laser.y, 16, 0, 6.283); g2.fill();
+      var fl = 0.85 + Math.random() * 0.15, ox = W + 14, oy = -14;
+      g2.lineCap = 'round'; g2.beginPath(); g2.moveTo(ox, oy); g2.lineTo(laser.x, laser.y);
+      g2.strokeStyle = 'rgba(255,120,30,' + (0.4 * fl) + ')'; g2.lineWidth = 6; g2.stroke();
+      g2.strokeStyle = 'rgba(255,236,205,' + (0.95 * fl) + ')'; g2.lineWidth = 1.5; g2.stroke();
+      var rg = g2.createRadialGradient(laser.x, laser.y, 0, laser.x, laser.y, 18);
+      rg.addColorStop(0, 'rgba(255,255,235,.98)'); rg.addColorStop(0.35, 'rgba(255,150,50,.65)'); rg.addColorStop(1, 'rgba(255,100,20,0)');
+      g2.fillStyle = rg; g2.beginPath(); g2.arc(laser.x, laser.y, 18, 0, 6.283); g2.fill();
     }
     for (var i = parts.length - 1; i >= 0; i--) {
       var q = parts[i]; q.life += dt; if (q.life >= q.max) { parts.splice(i, 1); continue; }
       q.x += q.vx * dt; q.y += q.vy * dt;
+      if (q.k === 'smoke') {
+        q.vx *= 0.985; q.vy *= 0.985;
+        g2.globalCompositeOperation = 'source-over'; g2.fillStyle = 'rgba(178,162,142,' + (0.2 * (1 - q.life / q.max)).toFixed(3) + ')';
+        g2.beginPath(); g2.arc(q.x, q.y, q.r + q.life * 16, 0, 6.283); g2.fill(); g2.globalCompositeOperation = 'lighter'; continue;
+      }
       if (q.k === 'dust') { q.vx *= 0.98; q.vy = q.vy * 0.98 - 4 * dt; } else { q.vy += 420 * dt; q.vx *= 0.99; }
       g2.fillStyle = q.c + (1 - q.life / q.max).toFixed(3) + ')'; g2.beginPath(); g2.arc(q.x, q.y, q.r, 0, 6.283); g2.fill();
     }
     for (var j = rings.length - 1; j >= 0; j--) {
       var r = rings[j]; r.t += dt; if (r.t > 0.8) { rings.splice(j, 1); continue; }
-      g2.strokeStyle = 'rgba(34,208,255,' + (0.7 * (1 - r.t / 0.8)).toFixed(3) + ')'; g2.lineWidth = 2; g2.beginPath(); g2.arc(r.x, r.y, r.t * 260, 0, 6.283); g2.stroke();
+      g2.strokeStyle = 'rgba(255,200,100,' + (0.7 * (1 - r.t / 0.8)).toFixed(3) + ')'; g2.lineWidth = 2; g2.beginPath(); g2.arc(r.x, r.y, r.t * 260, 0, 6.283); g2.stroke();
     }
+  }
+
+  /* ---------- stage canvas: lightning, energy ribbons, golden sparks, floating motes ---------- */
+  function makeBolt(W, amp, jag) {
+    var pts = [], n = 64, p1 = Math.random() * 6.283, p2 = Math.random() * 6.283, p3 = Math.random() * 6.283, f1 = 5 + Math.random() * 3, f2 = 11 + Math.random() * 5, f3 = 26 + Math.random() * 10;
+    for (var i = 0; i <= n; i++) {
+      var x = i / n, u = Math.abs(x - 0.5) * 2, e = 0.12 + u * 0.95;      // calm at the badge, wider towards the edges
+      var y = Math.sin(x * f1 + p1) * 0.55 + Math.sin(x * f2 + p2) * 0.3 + Math.sin(x * f3 + p3) * 0.12 * jag + (Math.random() - 0.5) * 0.1 * jag;
+      pts.push([-20 + (W + 40) * x, light.cy + y * amp * e]);
+    }
+    return pts;
+  }
+  function drawLight(W, dt) {
+    light.a += (light.ta - light.a) * Math.min(1, dt * 5);
+    if (light.ta === 0 && light.a < 0.02) light.on = false;
+    if (!light.on) return;
+    boltT -= dt;
+    if (boltT <= 0) {
+      boltT = 0.05;
+      bolts = [{ p: makeBolt(W, light.amp, 1), c: 'rgba(110,200,255,', w: 5, a: 0.9 }, { p: makeBolt(W, light.amp * 0.8, 1.6), c: 'rgba(255,200,90,', w: 2.2, a: 0.9 }, { p: makeBolt(W, light.amp * 1.1, 1.2), c: 'rgba(150,170,255,', w: 3, a: 0.7 }];
+    }
+    gf.lineJoin = 'round';
+    bolts.forEach(function (b) {
+      var P = b.p; gf.beginPath(); gf.moveTo(P[0][0], P[0][1]);
+      for (var i = 1; i < P.length - 1; i++) gf.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + P[i + 1][0]) / 2, (P[i][1] + P[i + 1][1]) / 2);   // smoothed through the points
+      gf.strokeStyle = b.c + (0.28 * light.a * b.a).toFixed(3) + ')'; gf.lineWidth = b.w * 3; gf.stroke();
+      gf.strokeStyle = b.c + (0.8 * light.a * b.a).toFixed(3) + ')'; gf.lineWidth = b.w; gf.stroke();
+      gf.strokeStyle = 'rgba(255,255,255,' + (0.95 * light.a * b.a).toFixed(3) + ')'; gf.lineWidth = Math.max(1, b.w * 0.3); gf.stroke();
+    });
+  }
+  function drawRibbons(dt) {
+    rib.k += ((rib.on ? 1 : 0) - rib.k) * Math.min(1, dt * 3);
+    if (rib.k < 0.01) return;
+    rib.t += dt; var R = rib.R * rib.k;
+    [[0, 1, 1.3, 0.34, '255,206,90'], [2.1, 1.35, 1.18, 0.3, '255,170,50'], [4.2, -1.1, 1.42, 0.4, '120,190,255']].forEach(function (c) {
+      var phi = c[0] + rib.t * c[1] * 0.7, th0 = rib.t * c[1] * 3.4, rx = R * c[2], ry = R * c[3], cs = Math.cos(phi), sn = Math.sin(phi), px = 0, py = 0, dir = c[1] > 0 ? 1 : -1;
+      gf.lineCap = 'round';
+      for (var i = 0; i < 48; i++) {
+        var th = th0 - i * 0.075 * dir, ex = rx * Math.cos(th), ey = ry * Math.sin(th), x = rib.cx + ex * cs - ey * sn, y = rib.cy + ex * sn + ey * cs, f = 1 - i / 48;
+        if (i) { gf.strokeStyle = 'rgba(' + c[4] + ',' + (f * f * 0.95 * rib.k).toFixed(3) + ')'; gf.lineWidth = 0.8 + f * 4.2; gf.beginPath(); gf.moveTo(px, py); gf.lineTo(x, y); gf.stroke(); }
+        px = x; py = y;
+      }
+    });
+  }
+  function drawFx(dt, tt) {
+    var W = stage.clientWidth, H = stage.clientHeight;
+    gf.globalCompositeOperation = 'lighter'; gf.clearRect(0, 0, W, H);
+    motes.forEach(function (m) {                                    // slow golden dust drifting across the whole stage
+      m.x += m.vx * dt; m.y += m.vy * dt; if (m.y < -4) { m.y = H + 4; m.x = Math.random() * W; } if (m.x < -4) m.x = W + 4; if (m.x > W + 4) m.x = -4;
+      gf.fillStyle = 'rgba(255,205,100,' + (0.25 + 0.5 * Math.abs(Math.sin(tt * 1.6 + m.ph))).toFixed(3) + ')'; gf.beginPath(); gf.arc(m.x, m.y, m.r, 0, 6.283); gf.fill();
+    });
+    if (flash > 0.01) {
+      var fr = Math.max(W, H) * 0.55, fg = gf.createRadialGradient(light.cx, light.cy, 0, light.cx, light.cy, fr);
+      fg.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, flash).toFixed(3) + ')'); fg.addColorStop(0.2, 'rgba(150,215,255,' + (flash * 0.5).toFixed(3) + ')'); fg.addColorStop(1, 'rgba(40,120,255,0)');
+      gf.fillStyle = fg; gf.fillRect(0, 0, W, H); flash -= dt * 1.7;
+    }
+    drawLight(W, dt); drawRibbons(dt);
+    gf.lineCap = 'round';
+    for (var i = fxp.length - 1; i >= 0; i--) {
+      var q = fxp[i]; q.life += dt; if (q.life >= q.max) { fxp.splice(i, 1); continue; }
+      var f = Math.pow(0.05, dt); q.vx *= f; q.vy = q.vy * f + 70 * dt; q.x += q.vx * dt; q.y += q.vy * dt;
+      gf.strokeStyle = 'rgba(255,205,90,' + (1 - q.life / q.max).toFixed(3) + ')'; gf.lineWidth = q.r;
+      gf.beginPath(); gf.moveTo(q.x, q.y); gf.lineTo(q.x - q.vx * 0.035, q.y - q.vy * 0.035); gf.stroke();
+    }
+  }
+  function frame(t) {
+    raf = 0; if (!isOpen) return;
+    var dt = Math.min(0.05, (t - lastT) / 1000) || 0.016; lastT = t;
+    drawPlate(dt); drawFx(dt, t / 1000);
     raf = requestAnimationFrame(frame);
   }
 
@@ -2585,7 +2805,7 @@ try {
   }
   async function engrave(my, rowEl, per) {
     var chs = rowEl.querySelectorAll('.ch');
-    if (!laser.on) { laser.x = plate.clientWidth / 2; laser.y = 0; }
+    if (!laser.on) { laser.x = plate.clientWidth + 14; laser.y = -14; }
     laser.on = true; humOn();
     for (var i = 0; i < chs.length; i++) {
       if (!alive(my)) { laser.on = false; humOff(); return false; }
@@ -2598,7 +2818,7 @@ try {
       if (!alive(my)) { laser.on = false; humOff(); return false; }
       c.className = 'ch hot';
       (function (el) { setTimeout(function () { if (el.className === 'ch hot') el.className = 'ch on'; }, 420); })(c);
-      spawn(laser.tx, laser.ty, 5, 'spark'); spawn(laser.tx, laser.ty + 4, 2, 'dust');
+      spawn(laser.tx, laser.ty, 5, 'spark'); spawn(laser.tx, laser.ty + 4, 2, 'dust'); if (i % 2 === 0) spawn(laser.tx, laser.ty, 1, 'smoke');
       snd.tick(); if (i % 3 === 0) snd.sizzle();
       await sleep(per * 0.45);
     }
@@ -2606,13 +2826,49 @@ try {
   }
   function shake() { plate.classList.remove('shake'); void plate.offsetWidth; plate.classList.add('shake'); }
 
+  /* ---------- cinematic intro: lightning, golden burst, orbiting energy ribbons, badge flies to its seat ---------- */
+  function badgeAim() {
+    badgeEl.style.transition = 'none'; badgeEl.style.transform = 'none';
+    var nr = badgeEl.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    badgeEl.style.transition = ''; badgeEl.style.transform = '';
+    var sx = sr.left + sr.width / 2, sy = sr.top + Math.min(sr.height * 0.46, sr.height / 2), sc = Math.max(1.2, Math.min(3, Math.min(sr.width, sr.height) * 0.4 / nr.width));
+    badgeEl.style.setProperty('--dx', (sx - (nr.left + nr.width / 2)) + 'px');
+    badgeEl.style.setProperty('--dy', (sy - (nr.top + nr.height / 2)) + 'px');
+    badgeEl.style.setProperty('--sc', sc);
+    light.cx = rib.cx = sx - sr.left; light.cy = rib.cy = sy - sr.top;
+    rib.R = Math.min(nr.width * sc / 2, sr.width * 0.27);
+    light.amp = Math.min(sr.height * 0.2, 120);
+  }
+  function introEnd() { light.on = false; light.a = 0; light.ta = 0; rib.on = false; stage.classList.remove('intro'); }
+  async function intro(my) {
+    plate.classList.remove('show'); stage.classList.add('intro'); stage.scrollTop = 0;
+    if (skipping || reduced.matches) { badgeEl.className = 'cer-badge'; plate.classList.add('show'); introEnd(); return true; }
+    badgeAim(); badgeEl.className = 'cer-badge pre'; void badgeEl.offsetWidth; humOn();
+    if (!(await nap(my, 350))) return false;
+    light.on = true; light.a = 1; light.ta = 1; flash = 0.9; snd.zap();                      // lightning tears across the screen
+    if (!(await nap(my, 330))) return false;
+    badgeEl.className = 'cer-badge big pop'; spawnGold(light.cx, light.cy, 170, 520); flash = 1.2; snd.boom(); snd.shimmer();   // badge materialises in a golden burst
+    rib.on = true; rib.t = 0; snd.whoosh();
+    if (!(await nap(my, 700))) return false;
+    spawnGold(light.cx, light.cy, 80, 380);
+    if (!(await nap(my, 1300))) return false;
+    light.ta = 0;                                                                              // lightning dies out
+    if (!(await nap(my, 500))) return false;
+    rib.on = false; humOff(); snd.whoosh();
+    badgeEl.className = 'cer-badge'; plate.classList.add('show');                              // badge flies to its seat, the stone plate rises
+    if (!(await nap(my, 1150))) return false;
+    introEnd(); return true;
+  }
+
   /* ---------- the ceremony ---------- */
   async function run(p, my) {
     var rows = linesEl.children, rTitle = rows[0], rDesc = rows[1], rLbl = rows[2], rName = rows[3];
+    hdrEl.style.opacity = 0;
+    if (!(await intro(my))) return;
     hdrEl.style.opacity = 1;
-    if (!(await nap(my, 1000))) return;
+    if (!(await nap(my, 500))) return;
     snd.impact(); shake(); ring(plate.clientWidth / 2, 6); spawn(plate.clientWidth / 2, 6, 30, 'burst');
-    if (!(await nap(my, 1200))) return;
+    if (!(await nap(my, 1000))) return;
     if (!(await engrave(my, rTitle, 150))) return;
     if (!(await nap(my, 800))) return;
     if (!(await engrave(my, rDesc, 62))) return;
@@ -2626,19 +2882,24 @@ try {
     rName.classList.remove('suspense');
     if (!(await engrave(my, rName, 240))) return;
     if (!(await nap(my, 600))) return;
-    var pr = plate.getBoundingClientRect(), nr = rName.getBoundingClientRect(), x = plate.clientWidth / 2, y = nr.top - pr.top + nr.height / 2;
+    var pr = plate.getBoundingClientRect(), nr = rName.getBoundingClientRect(), sr = stage.getBoundingClientRect(), x = plate.clientWidth / 2, y = nr.top - pr.top + nr.height / 2;
     plate.classList.add('win'); extraEl.classList.add('show');
     snd.impact(); snd.chime(); spawn(x, y, 70, 'burst'); ring(x, y); setTimeout(function () { if (isOpen) ring(x, y); }, 250);
+    spawnGold(nr.left - sr.left + nr.width / 2, nr.top - sr.top + nr.height / 2, 110, 440);
     doneBtn.hidden = false; skipBtn.hidden = true;
     if (p.autoClose) autoT = setTimeout(function () { if (alive(my)) close(); }, p.autoClose);
   }
 
   function start(p) {
     token++; var my = token; isOpen = true; skipping = false; clearTimeout(autoT);
-    parts = []; rings = []; laser.on = false;
+    parts = []; rings = []; fxp = []; bolts = []; flash = 0; laser.on = false; light.on = false; light.a = light.ta = 0; rib.on = false; rib.k = 0;
     stage.hidden = false; tagEl.textContent = p.tag || '';
+    var bn = $('cer-banner'); bn.hidden = true; bn.textContent = '';
+    if (p.banner) { bn.textContent = '🏆 ' + p.banner; bn.hidden = false; }
     hdrEl.textContent = p.hdr || ''; hdrEl.style.opacity = 0;
     plate.className = 'cer-plate'; plate.style.setProperty('--c1', p.c1); plate.style.setProperty('--c2', p.c2);
+    if (p.frame) plate.setAttribute('data-fr', p.frame); else plate.removeAttribute('data-fr');
+    badgeEl.className = 'cer-badge pre';
     extraEl.className = 'cer-extra'; extraEl.textContent = '';
     doneBtn.hidden = true; doneBtn.textContent = p.preview ? 'Close preview' : 'Continue'; skipBtn.hidden = false;
     b3d.textContent = '';
@@ -2654,14 +2915,17 @@ try {
     if (p.mine) add('cer-x-mine', 'Congratulations!');
     if (cut) add('', p.desc);
     add('', p.thanks); add('cer-x-foot', [p.date, p.issuer].filter(Boolean).join('  ·  '));
-    size(); audio(); lastT = performance.now(); if (!raf) raf = requestAnimationFrame(frame);
+    size();
+    var W = stage.clientWidth, H = stage.clientHeight; motes = [];
+    for (var m = 0; m < 46; m++) motes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 8, vy: -4 - Math.random() * 10, r: 0.6 + Math.random() * 1.6, ph: Math.random() * 6.283 });
+    audio(); lastT = performance.now(); if (!raf) raf = requestAnimationFrame(frame);
     closeBtn.focus({ preventScroll: true });
-    run(p, my).catch(function (e) { console.error('Ceremony failed', e); if (alive(my)) { doneBtn.hidden = false; skipBtn.hidden = true; } });
+    run(p, my).catch(function (e) { console.error('Ceremony failed', e); if (alive(my)) { badgeEl.className = 'cer-badge'; plate.classList.add('show'); introEnd(); doneBtn.hidden = false; skipBtn.hidden = true; } });
   }
   function close(noQueue) {
     if (!isOpen) return;
-    isOpen = false; token++; clearTimeout(autoT); laser.on = false; silence(); wakeAll();
-    stage.hidden = true; parts = []; rings = []; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    isOpen = false; token++; clearTimeout(autoT); laser.on = false; light.on = false; rib.on = false; silence(); wakeAll();
+    stage.hidden = true; stage.classList.remove('intro'); parts = []; rings = []; fxp = []; if (raf) { cancelAnimationFrame(raf); raf = 0; }
     if (!noQueue && queue.length) setTimeout(function () { if (!isOpen && queue.length) start(queue.shift()); }, 700);
   }
 
