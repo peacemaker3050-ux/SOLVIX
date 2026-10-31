@@ -1202,7 +1202,39 @@ window.SOLVIX_CONFIG = {
   const isAdmin = () => !!(me && me.role === 'admin' && db && db.isAdminSession && db.isAdminSession());
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
   function countUp() { if (!firstPaint) return; firstPaint = false; $$('[data-count]').forEach((el) => { const n = +el.dataset.count; if (!n || reduced.matches) { el.textContent = n; return; } const t0 = performance.now(); (function f(t) { const p = Math.min(1, (t - t0) / 900); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0); }); }
+let swReg = null;
+if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    reloading = true; location.reload();
+  });
 
+  navigator.serviceWorker.register('./sw.js').then((reg) => {
+    swReg = reg;
+    const ask = () => showUpdateBar(() => reg.waiting && reg.waiting.postMessage('SKIP_WAITING'));
+    if (reg.waiting && navigator.serviceWorker.controller) ask();
+    reg.addEventListener('updatefound', () => {
+      const w = reg.installing;
+      w.addEventListener('statechange', () => {
+        if (w.state === 'installed' && navigator.serviceWorker.controller) ask();
+      });
+    });
+    setInterval(() => reg.update().catch(() => {}), 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch((e) => console.warn('SW register failed', e));
+}
+
+function showUpdateBar(onUpdate) {
+  if (document.getElementById('upd')) return;
+  const d = document.createElement('div');
+  d.id = 'upd'; d.setAttribute('role', 'status');
+  d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;background:#0b1630;border:1px solid #22d0ff;border-radius:12px;color:#fff;font:600 14px/1.6 Cairo,Inter,system-ui,sans-serif';
+  d.innerHTML = '<span>يوجد تحديث جديد للتطبيق</span><button class="btn" style="padding:8px 14px">تحديث الآن</button>';
+  d.querySelector('button').onclick = () => { d.querySelector('button').disabled = true; onUpdate(); };
+  document.body.append(d);
+}
   async function initPushNotifications() {
     try {
       const permission = await Notification.requestPermission();
@@ -1210,9 +1242,11 @@ window.SOLVIX_CONFIG = {
         const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
         const { getMessaging, getToken } = await import(B + 'firebase-messaging.js');
         const messaging = getMessaging();
-        const token = await getToken(messaging, {
-          vapidKey: 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c'
-        });
+const reg = swReg || await navigator.serviceWorker.ready;
+const token = await getToken(messaging, {
+  vapidKey: 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c',
+  serviceWorkerRegistration: reg
+});
         if (token && me) {
           await db.set('members', me.id, { fcmToken: token });
         }
@@ -2513,6 +2547,7 @@ window.SOLVIX_CONFIG = {
     const old = document.getElementById('fatal'); if (old) old.remove();
     const d = document.createElement('div'); d.id = 'fatal'; d.setAttribute('role', 'alert');
     d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;text-align:center;background:#1a0b14;border:1px solid #ff8fa3;border-radius:12px;color:#fff;font:600 14px/1.7 Cairo,Inter,system-ui,sans-serif';
+        d.innerHTML = '<span>تعذر الاتصال بالخادم</span><code></code><button class="btn">إعادة المحاولة</button>';
     d.querySelector('code').textContent = code;
     d.querySelector('button').onclick = () => location.reload();
     document.body.append(d);
