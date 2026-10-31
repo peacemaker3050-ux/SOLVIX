@@ -863,10 +863,16 @@ window.SOLVIX_CONFIG = {
     await adminAuth.authStateReady();
     if (adminAuth.currentUser && adminAuth.currentUser.uid === CONFIG.adminUid) { fdb = adminDb; auth = adminAuth; adminOn = true; }
     else if (adminAuth.currentUser) await A.signOut(adminAuth);
-    if (!adminOn) { await studentAuth.authStateReady(); if (!studentAuth.currentUser) await A.signInAnonymously(studentAuth); }
+    if (!adminOn) {
+  await studentAuth.authStateReady();
+  if (!studentAuth.currentUser) {
+    try { await A.signInAnonymously(studentAuth); }
+    catch (e) { console.error('Anonymous sign-in failed', e); }
+  }
+}
     const m = (d) => Object.assign({}, d.data(), { id: d.id });
     return {
-      uid: () => auth.currentUser.uid,
+      uid: () => (auth.currentUser ? auth.currentUser.uid : ''),
       isAdminSession: () => !!(adminOn && adminAuth.currentUser && adminAuth.currentUser.uid === CONFIG.adminUid),
       signInAdmin: async (email, pw) => {
         const u = (await A.signInWithEmailAndPassword(adminAuth, email, pw)).user.uid;
@@ -1035,6 +1041,7 @@ window.SOLVIX_CONFIG = {
   }
   $('#apply-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!db) return toast('لا يوجد اتصال بقاعدة البيانات', 'bad');
     const name = $('#a-name').value.trim().replace(/\s+/g, ' '), A = acA.get(), dept = A.dept, program = A.program, year = A.year;
     const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-prog', A.progNeeded && !program ? 'Choose a program.' : ''), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
@@ -1051,6 +1058,7 @@ window.SOLVIX_CONFIG = {
   $('#l-back').onclick = (e) => { e.preventDefault(); resetLogin(); };
   lf.addEventListener('submit', async (e) => {
     e.preventDefault(); setSt('');
+    if (!db) return setSt('لا يوجد اتصال بقاعدة البيانات، أعد المحاولة.');
     if (Date.now() < lock) return setSt('Too many attempts. Try again shortly.');
     if (db.isAdminSession && db.isAdminSession()) return setSt('An administrator session is active. Sign out first.');
     if (!(window.crypto && crypto.subtle)) return setSt('Your browser does not support the required encryption. Open the page over HTTPS.');
@@ -2378,15 +2386,23 @@ window.SOLVIX_CONFIG = {
     root.classList.remove('restoring'); body.classList.remove('in-app');
     const old = document.getElementById('fatal'); if (old) old.remove();
     const d = document.createElement('div'); d.id = 'fatal'; d.setAttribute('role', 'alert');
-    d.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:#030818;color:#fff;font:600 16px/1.8 Cairo,Inter,system-ui,sans-serif';
-    d.innerHTML = '<div style="font-size:42px">⚠️</div><div>تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم أعد المحاولة.</div><div style="color:#9fb4d6;font-size:14px;direction:ltr">Could not connect to the database. Check your connection and try again.</div><code style="color:#ff9db0;font-size:12px;direction:ltr"></code><button class="btn sm" style="width:auto;padding:10px 24px">إعادة المحاولة / Retry</button>';
+    d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;text-align:center;background:#1a0b14;border:1px solid #ff8fa3;border-radius:12px;color:#fff;font:600 14px/1.7 Cairo,Inter,system-ui,sans-serif';
     d.querySelector('code').textContent = code;
     d.querySelector('button').onclick = () => location.reload();
     document.body.append(d);
   }
   (async function boot() {
-    try { db = await initDB(); }
-    catch (e) { showFatal(e && e.message ? e.message : 'DB_ERROR'); return; }
+try {
+  db = await Promise.race([
+    initDB(),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('DB_TIMEOUT')), 12000))
+  ]);
+} catch (e) {
+  showFatal(e && e.message ? e.message : 'DB_ERROR');
+  root.classList.remove('restoring');
+  showView('apply');
+  return;
+}
     if (db.isAdminSession && db.isAdminSession()) {
       enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() }, true);
       return;
