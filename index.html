@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SOLVIX</title>
 <meta name="theme-color" content="#020611">
-<script>try{if(localStorage.getItem('svx.session')){document.documentElement.classList.add('restoring');setTimeout(function(){document.documentElement.classList.remove('restoring')},8000)}}catch(e){}</script>
+<script>try{if(localStorage.getItem('svx.session')||localStorage.getItem('svx.adm')){document.documentElement.classList.add('restoring');setTimeout(function(){document.documentElement.classList.remove('restoring')},8000)}}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -379,6 +379,64 @@ body.shield #app,body.shield #modal{visibility:hidden}
 .code-hl .num{color:#bd93f9}
 .code-hl .comm{color:#6272a4;font-style:italic}
 .badge-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:14px;font-size:11.5px;font-weight:700;background:rgba(34,208,255,.12);color:var(--cy);border:1px solid rgba(34,208,255,.3)}
+
+/* ===== Badges & Achievements ===== */
+input[type=color]{height:40px;padding:2px;border:1px solid var(--bd);border-radius:8px;background:transparent;cursor:pointer}
+.awc{--c1:#22d0ff;--c2:#8a5cff;position:relative;padding:22px 18px 16px;text-align:center;border-radius:16px;border:1.5px solid var(--c1);background:linear-gradient(180deg,#0d1b3d,#050c20);background:radial-gradient(120% 70% at 50% 0,color-mix(in srgb,var(--c1) 24%,transparent),transparent 62%),linear-gradient(180deg,#0d1b3d,#050c20);box-shadow:0 0 28px -10px var(--c1);overflow:hidden}
+.awc-f-double{outline:1px solid var(--c2);outline-offset:-8px}
+.awc-f-glow{box-shadow:0 0 44px -6px var(--c1),inset 0 0 34px -14px var(--c2)}
+.awc-f-dashed{border-style:dashed;border-width:2px}
+.awc-hdr{font:700 11px/1.4 var(--sans);color:var(--c1);text-transform:uppercase}
+.awc-bdg{display:grid;place-items:center;margin:12px 0 8px}
+.awc-title{font:700 20px/1.35 "Cairo",var(--sans);color:#fff}
+.awc-lbl{margin-top:10px;font:500 12px var(--sans);color:#8fb4e8}
+.awc-name{font:700 24px/1.35 "Cairo",var(--sans);background:linear-gradient(90deg,var(--c1),var(--c2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.awc-desc{margin:10px 0 6px;color:#d6e6ff;font-size:14px;line-height:1.8}
+.awc-thanks{margin:0 0 12px;color:#9fb4d6;font-size:13px;line-height:1.7;font-style:italic}
+.awc-foot{display:flex;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid rgba(120,190,255,.2);color:#8397bb;font-size:12px}
+.vault-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px}
+.vault-grid .empty{grid-column:1/-1}
+.vault-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;text-align:center;font:inherit;color:inherit;cursor:pointer;background:linear-gradient(180deg,rgba(18,34,76,.5),rgba(9,18,44,.55));border:1px solid var(--bd);border-radius:12px;transition:.2s}
+.vault-item:hover{border-color:rgba(80,170,255,.5);transform:translateY(-2px)}
+.vault-item b{font-size:13.5px;line-height:1.4}.vault-item small{color:#8397bb;font-size:11.5px}
+.tg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:18px;align-items:start}
+.tg-side{position:sticky;top:0}
+.tg-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+@media (max-width:980px){.tg-grid{grid-template-columns:1fr}.tg-side{order:-1;position:static}}
+/* award ceremony */
+.cer-stage{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));overflow:auto;background:radial-gradient(80% 60% at 50% 30%,rgba(47,107,255,.22),rgba(2,6,17,.97) 70%);backdrop-filter:blur(8px);animation:fadeIn .5s ease}
+.cer-stage[hidden],.cer-stage [hidden]{display:none!important}
+.cer-bar{position:absolute;top:max(10px,env(safe-area-inset-top));inset-inline:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:3;flex-wrap:wrap}
+.cer-tag{font:700 12px var(--sans);color:var(--cy);padding:5px 12px;border:1px solid rgba(34,208,255,.4);border-radius:20px;background:rgba(34,208,255,.08)}
+.cer-ctl{display:flex;gap:8px}
+.cer-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;margin:auto;padding-top:54px}
+.cer-badge{--bs:clamp(90px,20vh,150px);width:var(--bs);height:var(--bs);flex:none;perspective:900px}
+.cer-b3d{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:cerSpin 8s linear infinite}
+.cer-b3d .ly{position:absolute;inset:0}
+.cer-b3d .ly svg{width:100%;height:100%}
+@keyframes cerSpin{from{transform:rotateX(-10deg) rotateY(0)}to{transform:rotateX(-10deg) rotateY(360deg)}}
+.cer-plate{--c1:#22d0ff;--c2:#8a5cff;position:relative;width:min(580px,94vw);padding:26px 20px 22px;border-radius:16px;text-align:center;overflow:hidden;background:linear-gradient(180deg,#142447,#081024);border:2px solid var(--line);box-shadow:0 0 60px -10px rgba(34,208,255,.35),inset 0 0 40px rgba(0,0,0,.5);transition:box-shadow 1s,border-color 1s}
+.cer-plate.win{border-color:var(--c1);box-shadow:0 0 80px -6px var(--c1),inset 0 0 50px -16px var(--c2)}
+.cer-plate.shake{animation:cerShake .5s}
+@keyframes cerShake{0%,100%{transform:none}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,-2px)}80%{transform:translate(2px,2px)}}
+.cer-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.cer-hdr{position:relative;z-index:1;margin-bottom:12px;font:700 11px/1.4 var(--sans);color:var(--c1);text-transform:uppercase;transition:opacity 1s}
+.cer-lines{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px}
+.cer-row{position:relative;line-height:1.5;word-break:break-word;color:#dff6ff}
+.cer-r-lbl{font:600 12px var(--sans);color:#8fb4e8}
+.cer-r-title{font:700 clamp(20px,5.2vw,30px)/1.3 "Cairo",var(--sans)}
+.cer-r-desc{font:500 clamp(13px,3.4vw,16px)/1.7 "Cairo",var(--sans)}
+.cer-r-name{font:700 clamp(22px,6vw,34px)/1.3 "Cairo",var(--sans)}
+.cer-row .ch{color:transparent;white-space:pre-wrap;transition:color .4s,text-shadow .6s}
+.cer-row .ch.hot{color:#fff;text-shadow:0 0 14px #ff6b3d,0 0 28px #ff3d6b;transition:none}
+.cer-row .ch.on{color:#dff6ff;text-shadow:0 0 10px rgba(34,208,255,.8)}
+.cer-row.suspense::before{content:"? ? ? ? ?";position:absolute;inset-inline:0;color:rgba(143,180,232,.55);animation:cerPulse 1s ease-in-out infinite}
+@keyframes cerPulse{50%{opacity:.25}}
+.cer-extra{position:relative;z-index:1;margin-top:16px;display:flex;flex-direction:column;gap:6px;opacity:0;transition:opacity 1.2s;font:500 13px/1.7 "Cairo",var(--sans);color:#b9cbe8}
+.cer-extra.show{opacity:1}
+.cer-x-mine{font-weight:700;font-size:16px;color:#fff}
+.cer-x-foot{color:#8397bb;font-size:12px}
+@media (prefers-reduced-motion:reduce){.cer-b3d{animation:none}.cer-plate.shake{animation:none}}
 </style>
 </head>
 <body data-state="dark">
@@ -516,6 +574,8 @@ window.SOLVIX_CONFIG = {
   },
   // 5) Admin settings: Password is set securely on first login and stored in the database.
   adminId: "278601",
+  // Firebase Auth UID of the dedicated administrator account (Email/Password). It is not a secret; authorization must be enforced by Firebase rules, not by this value.
+  adminUid: "9EtEMz2EuCbbSGzyHFVFYHq3maX2",
   prepYear: { ar: "الفرقة الإعدادية", en: "Preparatory Year" },
   years: [
     { ar: "الفرقة الأولى", en: "First Year" },
@@ -790,31 +850,57 @@ window.SOLVIX_CONFIG = {
       get: async (c, i) => { const v = rd(c)[i]; return v ? Object.assign({}, v, { id: i }) : null; },
       set: async (c, i, d) => { const o = rd(c); o[i] = Object.assign({}, o[i] || {}, d); wr(c, o); },
       add: async (c, d) => { const i = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); const o = rd(c); o[i] = d; wr(c, o); return i; },
-      watch: (c, cb) => sub(c, () => cb(list(c))),
+      watch: (c, cb, field = null, value = null) => sub(c, () => { let l = list(c); if (field) l = l.filter((d) => d[field] === value); cb(l); }),
       watchDoc: (c, i, cb) => sub(c, () => { const v = rd(c)[i]; cb(v ? Object.assign({}, v, { id: i }) : null); })
     };
   }
   async function firebaseDB(cfg) {
     const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
     const { initializeApp } = await import(B + 'firebase-app.js'); const F = await import(B + 'firebase-firestore.js'); const A = await import(B + 'firebase-auth.js');
-    const app = initializeApp(cfg), fdb = F.getFirestore(app), auth = A.getAuth(app);
-    await auth.authStateReady();
-    if (!auth.currentUser) await A.signInAnonymously(auth);
+    const app = initializeApp(cfg), adminApp = initializeApp(cfg, 'solvix-admin');
+    const studentDb = F.getFirestore(app), studentAuth = A.getAuth(app), adminDb = F.getFirestore(adminApp), adminAuth = A.getAuth(adminApp);
+    let fdb = studentDb, auth = studentAuth, adminOn = false;
+    await adminAuth.authStateReady();
+    if (adminAuth.currentUser && adminAuth.currentUser.uid === CONFIG.adminUid) { fdb = adminDb; auth = adminAuth; adminOn = true; }
+    else if (adminAuth.currentUser) await A.signOut(adminAuth);
+    if (!adminOn) { await studentAuth.authStateReady(); if (!studentAuth.currentUser) await A.signInAnonymously(studentAuth); }
     const m = (d) => Object.assign({}, d.data(), { id: d.id });
     return {
       uid: () => auth.currentUser.uid,
+      isAdminSession: () => !!(adminOn && adminAuth.currentUser && adminAuth.currentUser.uid === CONFIG.adminUid),
+      signInAdmin: async (email, pw) => {
+        const u = (await A.signInWithEmailAndPassword(adminAuth, email, pw)).user.uid;
+        if (u === CONFIG.adminUid) { fdb = adminDb; auth = adminAuth; adminOn = true; } else { await A.signOut(adminAuth); }
+        return u;
+      },
+      signOutAdmin: async () => { if (adminAuth.currentUser) await A.signOut(adminAuth); adminOn = false; fdb = studentDb; auth = studentAuth; },
       list: async (c) => (await F.getDocs(F.collection(fdb, c))).docs.map(m),
       get: async (c, i) => { const s = await F.getDoc(F.doc(fdb, c, i)); return s.exists() ? m(s) : null; },
       set: (c, i, d) => F.setDoc(F.doc(fdb, c, i), d, { merge: true }),
       add: async (c, d) => (await F.addDoc(F.collection(fdb, c), d)).id,
-      watch: (c, cb) => F.onSnapshot(F.collection(fdb, c), (s) => cb(s.docs.map(m))),
+      watch: (c, cb, field = null, value = null, onErr = null) => {
+  const ref = F.collection(fdb, c);
+  const target = field
+    ? F.query(ref, F.where(field, '==', value))
+    : ref;
+  return F.onSnapshot(target, (s) => cb(s.docs.map(m)), (err) => { console.error('Listener failed: ' + c, err); if (onErr) onErr(err); });
+},
       watchDoc: (c, i, cb) => F.onSnapshot(F.doc(fdb, c, i), (s) => cb(s.exists() ? m(s) : null))
     };
   }
   async function initDB() {
     const f = CONFIG.firebase || {};
-    if (f.apiKey && f.projectId) { try { return await firebaseDB(f); } catch (e) { console.warn('Firebase unavailable, using local demo data', e); } }
-    return localDB();
+    const demo = CONFIG.demo === true;           // Demo لا يعمل إلا بتفعيل صريح
+    if (f.apiKey && f.projectId) {
+      try { return await firebaseDB(f); }
+      catch (e) {
+        console.error('Firebase initialization failed', e);
+        if (demo) { console.warn('Demo mode enabled explicitly: using local demo data'); return localDB(); }
+        const err = new Error('FIREBASE_INIT_FAILED'); err.cause = e; throw err;
+      }
+    }
+    if (demo) return localDB();
+    throw new Error('FIREBASE_NOT_CONFIGURED');
   }
 
   /* ---------- passwords: PBKDF2 hash, never stored in plain text ---------- */
@@ -953,35 +1039,70 @@ window.SOLVIX_CONFIG = {
     const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-prog', A.progNeeded && !program ? 'Choose a program.' : ''), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
     const b = $('#a-submit'); b.disabled = true; b.textContent = 'Sending…';
-    try { const id = await db.add('requests', { name, dept, program, year, status: 'pending', createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
+    try { const id = await db.add('requests', { name, dept, program, year, status: 'pending', uid: db.uid(), createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
     catch (err) { console.error(err); toast('Could not send: ' + (err.code || err.message), 'bad'); }
     b.disabled = false; b.textContent = 'Send join request';
   });
 
   let lstep = 'id', ld = null, fails = 0, lock = 0;
+  const isAdminRec = (m) => !!m && (m.role === 'admin' || String(m.id || '').toUpperCase() === String(CONFIG.adminId || '').toUpperCase());
   const lf = $('#login-form'), setSt = (m) => { $('#l-status').textContent = m || ''; };
   function resetLogin() { lstep = 'id'; ld = null; lf.reset(); $('#l-id').readOnly = false; $('#l-pw-wrap').hidden = $('#l-pw2-wrap').hidden = $('#l-back').hidden = true; $('#l-new').hidden = false; $('#l-pw-label').textContent = 'Password'; $('#l-submit').textContent = 'Continue'; setSt(''); ['l-id', 'l-pw', 'l-pw2'].forEach((i) => fe(i, '')); $('#l-id').focus(); }
   $('#l-back').onclick = (e) => { e.preventDefault(); resetLogin(); };
   lf.addEventListener('submit', async (e) => {
     e.preventDefault(); setSt('');
     if (Date.now() < lock) return setSt('Too many attempts. Try again shortly.');
+    if (db.isAdminSession && db.isAdminSession()) return setSt('An administrator session is active. Sign out first.');
     if (!(window.crypto && crypto.subtle)) return setSt('Your browser does not support the required encryption. Open the page over HTTPS.');
     const btn = $('#l-submit');
     if (lstep === 'id') {
+      const rawId = $('#l-id').value.trim();
+      if (rawId.indexOf('@') > 0) {
+        if (!fe('l-id', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawId) ? '' : 'Enter a valid email.')) return;
+        lstep = 'admin'; $('#l-id').value = rawId.toLowerCase(); $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true; btn.textContent = 'Sign in'; $('#l-pw').focus(); return;
+      }
       const idv = $('#l-id').value.trim().toUpperCase();
       if (!fe('l-id', /^[A-Z0-9-]{4,24}$/.test(idv) ? '' : 'Enter a valid ID.')) return;
+      if (idv === String(CONFIG.adminId || '').toUpperCase()) return fe('l-id', 'This account is not available.');
       btn.disabled = true; let d = null;
-      try { d = await db.get('members', idv); } catch (_) { btn.disabled = false; return setSt('Could not connect to the database.'); }
+      try { d = await db.get('members', idv); }
+      catch (err) {
+        btn.disabled = false;
+        if (err && err.code === 'permission-denied') return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
+        return setSt('Could not connect to the database.');
+      }
       btn.disabled = false;
-      if (!d && idv === CONFIG.adminId.toUpperCase()) d = { id: idv, role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() };
-      if (!d) return fe('l-id', 'This ID is not registered.');
-      if (d.role !== 'admin' && d.uid && d.uid !== db.uid()) return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
+      if (!d || d.deleted) return fe('l-id', 'This ID is not registered.');
+      if (isAdminRec(d)) return fe('l-id', 'This account is not available.');
+      if (d.uid && d.uid !== db.uid()) return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
       if (d.passHash) { lstep = 'pw'; btn.textContent = 'Sign in'; }
       else { lstep = 'setup'; $('#l-pw2-wrap').hidden = false; $('#l-pw-label').textContent = 'Create a new password'; $('#l-pw').autocomplete = 'new-password'; btn.textContent = 'Save password and sign in'; setSt('Welcome ' + d.name.split(' ')[0] + '! This is your first time, choose a password and use it to sign in from now on.'); }
       $('#l-pw').focus(); return;
     }
     const pw = $('#l-pw').value;
+    if (lstep !== 'admin' && (!ld || isAdminRec(ld))) { resetLogin(); return setSt('This account is not available.'); }
+    if (lstep === 'admin') {
+      if (!fe('l-pw', pw ? '' : 'Enter your password.')) return;
+      if (!db.signInAdmin) return setSt('Email sign-in is not available in demo mode.');
+      btn.disabled = true;
+      let uid = '';
+      try { uid = await db.signInAdmin($('#l-id').value, pw); }
+      catch (err) {
+        btn.disabled = false;
+        if (err && err.code === 'auth/operation-not-allowed') return setSt('Email/Password sign-in is not enabled in Firebase Console.');
+        if (err && err.code === 'auth/network-request-failed') return setSt('Could not connect. Check your internet connection.');
+        if (++fails >= 5) { lock = Date.now() + 30000; fails = 0; }
+        return fe('l-pw', 'Incorrect email or password.');
+      }
+      if (uid !== CONFIG.adminUid) {
+        try { await db.signOutAdmin(); } catch (_) {}
+        btn.disabled = false;
+        return fe('l-pw', 'This account is not authorized.');
+      }
+      btn.disabled = false; fails = 0;
+      return enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() });
+    }
     if (lstep === 'pw') {
       if (!fe('l-pw', pw ? '' : 'Enter your password.')) return;
       btn.disabled = true; const hh = await hashPw(pw, unb(ld.salt)); btn.disabled = false;
@@ -1022,11 +1143,12 @@ window.SOLVIX_CONFIG = {
       ['tasks', 'Tasks', 'tasks'],
       ['analytics', 'Analytics', 'tasks'],
       ['resources', 'Resources', 'inbox'],
-      ['announces', 'Broadcast', 'bell']
+      ['announces', 'Broadcast', 'bell'],
+      ['trophies', 'Trophies Studio', 'trophy']
     ]
   };
   const lvl = () => Math.min(6, Math.max(1, (me && me.level) || 1));
-  const isAdmin = () => me && me.role === 'admin';
+  const isAdmin = () => !!(me && me.role === 'admin' && db && db.isAdminSession && db.isAdminSession());
   const stat = (l, n, i) => '<div class="card stat">' + ico(i, 22) + '<b data-count="' + n + '">' + (firstPaint ? 0 : n) + '</b><span>' + l + '</span></div>';
   function countUp() { if (!firstPaint) return; firstPaint = false; $$('[data-count]').forEach((el) => { const n = +el.dataset.count; if (!n || reduced.matches) { el.textContent = n; return; } const t0 = performance.now(); (function f(t) { const p = Math.min(1, (t - t0) / 900); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); })(t0); }); }
 
@@ -1050,7 +1172,11 @@ window.SOLVIX_CONFIG = {
   }
 
   function enterApp(m, instant) {
-    me = m; store.setItem('svx.session', m.id); cacheMe(); if (gateUnsub) gateUnsub();
+    if (m && m.role === 'admin' && !(db.isAdminSession && db.isAdminSession())) {
+      store.removeItem('svx.session'); store.removeItem('svx.me'); store.removeItem('svx.adm');
+      toast('This account is not available.', 'bad'); return;
+    }
+    me = m; store.setItem((db.isAdminSession && db.isAdminSession()) ? 'svx.adm' : 'svx.session', m.id); cacheMe(); if (gateUnsub) gateUnsub();
     const go = () => {
       LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
       body.classList.toggle('guard', !isAdmin());
@@ -1094,15 +1220,16 @@ window.SOLVIX_CONFIG = {
     } else {
       U.push(
         db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); if (me.pendingPromotion) checkPromotion(); tk(); }),
-        db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }),
-        db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); })
+                db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }, 'memberId', me.id),
+        db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); }, 'to', me.id)
       );
     }
     U.push(
       db.watch('tasks', (l) => { D.tasks = l.filter((t) => !t.deleted); tk(); }),
       db.watch('resources', (l) => { D.resources = l; tk(); }),
       db.watch('questions', (l) => { D.questions = l; tk(); }),
-      db.watch('announces', (l) => { D.announces = l; tk(); })
+      db.watch('announces', (l) => { D.announces = l; tk(); }),
+      ...startAwardsData(tk)
     );
   }
   function nav(v, fromHistory) {
@@ -1120,7 +1247,7 @@ window.SOLVIX_CONFIG = {
     $('#content').scrollTop = 0;
   }
   function paint() { if (!route.v) return; const pc = D.requests.filter((r) => r.status === 'pending').length; const b = $('#nb-requests'); if (b) b.textContent = pc || ''; if (V[route.v].paint) V[route.v].paint(); countUp(); }
-  $('#side').addEventListener('click', (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); } });
+  $('#side').addEventListener('click', async (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); const adm = !!(db.isAdminSession && db.isAdminSession()); if (adm) { store.removeItem('svx.adm'); try { await db.signOutAdmin(); } catch (_) {} } else { store.removeItem('svx.session'); } store.removeItem('svx.me'); location.reload(); } });
   $('#menu').onclick = () => {
     history.pushState({ side: true }, '');
     $('#side').classList.add('open');
@@ -1318,7 +1445,8 @@ window.SOLVIX_CONFIG = {
       }
     },
     home: {
-      html: () => '<div id="home-banner"></div><div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p><div style="margin-top:10px" id="my-badges"></div></div></div><div class="stats" id="stats"></div><div class="card" id="next"></div>',
+      html: () => '<div id="home-banner"></div><div class="card hero"><div class="aura l' + lvl() + '">' + badge(lvl(), 112) + '</div><div><h2>Welcome, ' + esc(me.name.split(' ')[0]) + '</h2><p>Your current level <b>' + LEVELS[lvl()].ar + '</b> · ' + LEVELS[lvl()].en + '. ' + LEVELS[lvl()].d + '.</p><div style="margin-top:10px" id="my-badges"></div></div></div><div class="stats" id="stats"></div>'
+        + '<div class="card"><h3>' + tr('Trophies Vault') + '</h3><div class="vault-grid" id="my-vault-list"></div></div><div class="card" id="next"></div>',
       paint() {
         const activeTasks = D.tasks.filter((t) => !t.deleted && (t.minLevel || 1) <= lvl());
         const dn = activeTasks.filter((t) => D.subs.some((s) => s.taskId === t.id && !s.deleted)).length;
@@ -1334,6 +1462,8 @@ window.SOLVIX_CONFIG = {
         if (dn >= 5) badges.push('<span class="badge-tag">🎯 Dedicated</span>');
         if (totalXp >= 100) badges.push('<span class="badge-tag">💎 Top Performer</span>');
         $('#my-badges').innerHTML = badges.join(' ');
+
+        paintVault();
 
         $('#next').innerHTML = lvl() < 6 ? '<div class="pr-flow" style="justify-content:center">' + badge(lvl(), 52) + ico('up', 22) + badge(lvl() + 1, 52) + '</div><p class="note" style="margin:14px 0 0">Next level: <b>' + LEVELS[lvl() + 1].ar + '</b>. Promotion is based on your XP, quality of submissions, and community activity.</p>' : '<p class="note" style="margin:0">You are at the highest level in the community.</p>';
       }
@@ -1364,7 +1494,7 @@ window.SOLVIX_CONFIG = {
     },
     resources: {
       html: () => '<h2 class="ph">' + tr('Resources') + '</h2><p class="pp">Textbooks, lecture notes, and cheat-sheets filtered by engineering department.</p>'
-        + (isAdmin() ? '<form class="card" id="res-form" style="margin-bottom:20px"><h3 style="margin:0 0 12px">' + tr('Add resource') + '</h3><div class="field"><label for="res-title">Title</label><input id="res-title" required></div><div class="two"><div class="field"><label for="res-dept">Department</label><select id="res-dept"></select></div><div class="field"><label for="res-link">Resource link (Drive / Cloud)</label><input id="res-link" type="url" dir="ltr" placeholder="https://" required></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' ' + tr('Add resource') + '</button></form>' : '')
+        + (isAdmin() ? '<form class="card" id="res-form" style="margin-bottom:20px"><h3 style="margin:0 0 12px">' + tr('Add resource') + '</h3><div class="field"><label for="res-title">Title</label><input id="res-title" required></div><div class="two"><div class="field"><label for="res-dept">Department</label><select id="res-dept"></select></div><div class="field"><label for="res-link">Resource link (Cloudinary / Drive)</label><input id="res-link" type="url" dir="ltr" placeholder="https://" required></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' ' + tr('Add resource') + '</button></form>' : '')
         + '<div class="chips" id="res-chips"></div><div class="list" id="res-list"></div>',
       paint() {
         if (isAdmin() && $('#res-dept') && !$('#res-dept').dataset.ready) {
@@ -1373,7 +1503,7 @@ window.SOLVIX_CONFIG = {
         }
         $('#res-chips').innerHTML = '<button class="chip' + (F.resDept === '0' ? ' on' : '') + '" data-resf="0">All</button>' + DEPTS.map((d) => '<button class="chip' + (F.resDept === d.ar ? ' on' : '') + '" data-resf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
         const list = D.resources.filter((r) => F.resDept === '0' || r.dept === F.resDept).sort((a,b) => b.createdAt - a.createdAt);
-        $('#res-list').innerHTML = list.length ? list.map((r, i) => '<div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(r.title) + '</b><br><small style="color:#9fb4d6">' + esc(nm(r.dept)) + ' · ' + fmt(r.createdAt) + '</small></div><div style="display:flex;gap:8px"><a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer" class="btn sm">' + ico('inbox', 16) + ' Open</a>' + (isAdmin() ? '<button class="btn sm bad" data-delres="' + r.id + '">' + ico('x', 16) + '</button>' : '') + '</div></div>').join('') : empty('No resources uploaded yet');
+        $('#res-list').innerHTML = list.length ? list.map((r, i) => '<div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(r.title) + '</b><br><small style="color:#9fb4d6">' + esc(nm(r.dept)) + ' · ' + fmt(r.createdAt) + '</small></div><div style="display:flex;gap:8px"><button class="btn sm ghost" data-preview="' + esc(r.link) + '" data-title="' + esc(r.title) + '">Preview</button><a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer" class="btn sm">Open</a>' + (isAdmin() ? '<button class="btn sm bad" data-delres="' + r.id + '">' + ico('x', 16) + '</button>' : '') + '</div></div>').join('') : empty('No resources uploaded yet');
       }
     },
     forum: {
@@ -1424,7 +1554,264 @@ window.SOLVIX_CONFIG = {
       html: () => { const l = lvl(); return '<h2 class="ph">' + tr('My profile') + '</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([[tr('Department'), esc(nm(me.dept) || '—')], [tr('Program'), esc(nm(me.program) || '—')], [tr('Year'), esc(nm(me.year) || '—')], [tr('Level'), LEVELS[l].ar], [tr('Joined'), fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">' + tr('Level journey') + '</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
     }
   };
+    /* ===== Badges & Achievements: Trophies Studio, Vault, live award feed ===== */
+  IC.trophy = 'M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3';
+  Object.assign(AR, { 'Trophies Studio': 'استوديو الأوسمة', 'Trophies Vault': 'خزنة أوسمتي' });
+  D.badgeDefs = []; D.awards = [];
+  const AW = { loaded: false, err: '', seen: null, pending: [], bootAt: 0, timer: 0 }, TG = { lastName: '' };
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const HEX = /^#[0-9a-fA-F]{6}$/, BID = /^b([1-9]|10)$/;
+  const SHAPES = {
+    hex: 'M50 4L90 27V73L50 96L10 73V27Z',
+    shield: 'M50 4L88 16V52C88 74 70 90 50 97C30 90 12 74 12 52V16Z',
+    circle: 'M50 4A46 46 0 0 1 50 96A46 46 0 0 1 50 4Z',
+    diamond: 'M50 3L95 50L50 97L5 50Z',
+    octagon: 'M32 5H68L95 32V68L68 95H32L5 68V32Z'
+  };
+  const SHAPE_LABEL = { hex: 'Hexagon', shield: 'Shield', circle: 'Circle', diamond: 'Diamond', octagon: 'Octagon' };
+  const ICONS = {
+    bolt: '<path d="M56 20L34 54H49L43 80L67 44H52Z"/>',
+    target: '<circle cx="50" cy="50" r="22"/><circle cx="50" cy="50" r="10"/><path d="M50 20V30M50 70V80M20 50H30M70 50H80"/>',
+    rocket: '<path d="M50 22C62 33 64 50 58 64H42C36 50 38 33 50 22Z"/><circle cx="50" cy="44" r="5"/><path d="M42 64L33 74M58 64L67 74M46 70V80M54 70V80"/>',
+    columns: '<path d="M26 72H74M30 72V46M43 72V46M57 72V46M70 72V46M24 46H76L50 28Z"/>',
+    bulb: '<path d="M42 64H58M44 72H56M50 24C37 24 31 36 36 47C38 53 42 55 42 64H58C58 55 62 53 64 47C69 36 63 24 50 24Z"/>',
+    bug: '<ellipse cx="50" cy="55" rx="12" ry="17"/><path d="M50 38V72M38 49L27 43M62 49L73 43M38 62L27 68M62 62L73 68M44 37L40 28M56 37L60 28"/>',
+    star: '<path d="M50 22L57 42L78 42L61 54L68 74L50 62L32 74L39 54L22 42L43 42Z"/>',
+    code: '<path d="M40 34L24 50L40 66M60 34L76 50L60 66M54 30L46 70"/>',
+    crown: '<path d="M26 68H74L78 34L61 50L50 28L39 50L22 34Z"/>',
+    flame: '<path d="M50 22C55 36 68 40 66 57C64 70 36 72 34 57C33 48 41 44 43 34C46 39 48 41 50 22Z"/>',
+    chip: '<rect x="34" y="34" width="32" height="32" rx="4"/><path d="M42 26V34M50 26V34M58 26V34M42 66V74M50 66V74M58 66V74M26 42H34M26 50H34M26 58H34M66 42H74M66 50H74M66 58H74"/>',
+    book: '<path d="M26 32C36 30 44 32 50 38C56 32 64 30 74 32V68C64 66 56 68 50 74C44 68 36 66 26 68ZM50 38V74"/>'
+  };
+  const ICON_LABEL = { bolt: 'Lightning', target: 'Target', rocket: 'Rocket', columns: 'Columns', bulb: 'Idea', bug: 'Bug', star: 'Star', code: 'Code', crown: 'Crown', flame: 'Flame', chip: 'Chip', book: 'Book' };
+  const FRAMES = ['solid', 'double', 'glow', 'dashed'];
+  const PRESETS = [
+    { name: 'Legendary Code', shape: 'hex', icon: 'bolt', c1: '#22d0ff', c2: '#8a5cff', frame: 'glow' },
+    { name: 'Bug Hunter', shape: 'shield', icon: 'bug', c1: '#3d8bff', c2: '#9bc2ff', frame: 'solid' },
+    { name: 'Speed Coder', shape: 'diamond', icon: 'rocket', c1: '#8a6bff', c2: '#22d0ff', frame: 'double' },
+    { name: 'Gold Architect', shape: 'octagon', icon: 'columns', c1: '#ffc65c', c2: '#22d0ff', frame: 'double' },
+    { name: 'Active Contributor', shape: 'circle', icon: 'bulb', c1: '#35c4ff', c2: '#8a5cff', frame: 'dashed' },
+    { name: 'Star Student', shape: 'circle', icon: 'star', c1: '#c25cff', c2: '#efc4ff', frame: 'glow' },
+    { name: 'Core Builder', shape: 'octagon', icon: 'chip', c1: '#2f6bff', c2: '#22d0ff', frame: 'solid' },
+    { name: 'Knowledge Seeker', shape: 'diamond', icon: 'book', c1: '#7e98c4', c2: '#9aeaff', frame: 'dashed' },
+    { name: 'Clean Code', shape: 'hex', icon: 'code', c1: '#3be3b0', c2: '#22d0ff', frame: 'double' },
+    { name: 'Community Crown', shape: 'shield', icon: 'crown', c1: '#8fe8ff', c2: '#c25cff', frame: 'glow' }
+  ];
+  const CARD_MAX = { hdr: 60, lbl: 40, name: 80, title: 60, desc: 400, thanks: 300, date: 40, issuer: 60 };
 
+  const cleanDesign = (d) => {
+    d = d || {};
+    return {
+      name: String(d.name == null ? '' : d.name).slice(0, 40),
+      shape: has(SHAPES, d.shape) ? d.shape : 'hex',
+      icon: has(ICONS, d.icon) ? d.icon : 'star',
+      c1: HEX.test(d.c1) ? d.c1 : '#22d0ff',
+      c2: HEX.test(d.c2) ? d.c2 : '#8a5cff',
+      frame: FRAMES.indexOf(d.frame) >= 0 ? d.frame : 'solid'
+    };
+  };
+  const cleanCard = (c) => {
+    c = c || {}; const o = {};
+    Object.keys(CARD_MAX).forEach((k) => { o[k] = String(c[k] == null ? '' : c[k]).slice(0, CARD_MAX[k]); });
+    return o;
+  };
+  const badgeDef = (id) => { const i = +id.slice(1) - 1, saved = D.badgeDefs.find((x) => x.id === id); return cleanDesign(Object.assign({}, PRESETS[i], saved || {})); };
+
+  let GID = 0;
+  function badgeSvg(d, size) {
+    d = cleanDesign(d);
+    const g = 'bgx' + (++GID), sh = SHAPES[d.shape], inner = 'translate(50 50) scale(.84) translate(-50 -50)';
+    return '<svg class="bdg-x" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" role="img" aria-label="' + esc(d.name) + '" style="filter:drop-shadow(0 0 7px ' + d.c1 + ')"><defs><linearGradient id="' + g + '" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="92" y2="92"><stop offset="0" stop-color="' + d.c1 + '"/><stop offset="1" stop-color="' + d.c2 + '"/></linearGradient></defs>'
+      + '<path d="' + sh + '" fill="#0b1636" stroke="url(#' + g + ')" stroke-width="4" stroke-linejoin="round"/>'
+      + '<path d="' + sh + '" transform="' + inner + '" fill="url(#' + g + ')" fill-opacity=".16" stroke="url(#' + g + ')" stroke-width="1.4" stroke-opacity=".7"/>'
+      + '<g fill="none" stroke="url(#' + g + ')" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">' + ICONS[d.icon] + '</g></svg>';
+  }
+  function cardHtml(c, d) {
+    return '<div class="awc awc-f-' + d.frame + '" style="--c1:' + d.c1 + ';--c2:' + d.c2 + '">'
+      + '<div class="awc-hdr" dir="auto">' + esc(c.hdr) + '</div>'
+      + '<div class="awc-bdg">' + badgeSvg(d, 96) + '</div>'
+      + '<div class="awc-title" dir="auto">' + (esc(c.title) || '—') + '</div>'
+      + '<div class="awc-lbl" dir="auto">' + esc(c.lbl) + '</div>'
+      + '<div class="awc-name" dir="auto">' + (esc(c.name) || '—') + '</div>'
+      + '<p class="awc-desc" dir="auto">' + esc(c.desc) + '</p>'
+      + '<p class="awc-thanks" dir="auto">' + esc(c.thanks) + '</p>'
+      + '<div class="awc-foot"><span dir="auto">' + esc(c.date) + '</span><span dir="auto">' + esc(c.issuer) + '</span></div></div>';
+  }
+  const ceremonyPayload = (c, d, extra) => Object.assign({ badgeSvg: badgeSvg(d, 140), hdr: c.hdr, title: c.title, desc: c.desc, label: c.lbl, name: c.name, thanks: c.thanks, date: c.date, issuer: c.issuer, c1: d.c1, c2: d.c2 }, extra || {});
+
+  /* ----- student vault ----- */
+  function paintVault() {
+    const box = $('#my-vault-list'); if (!box) return;
+    if (AW.err) { box.innerHTML = '<div class="empty">' + esc(AW.err) + '</div>'; return; }
+    if (!AW.loaded) { box.innerHTML = '<div class="empty">Loading trophies…</div>'; return; }
+    const L = D.awards.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    box.innerHTML = L.length ? L.map((a) => {
+      const d = cleanDesign(a.design), c = cleanCard(a.card);
+      return '<button type="button" class="vault-item" data-aw-open="' + esc(a.id) + '">' + badgeSvg(d, 64) + '<b dir="auto">' + esc(c.title || d.name) + '</b><small dir="auto">' + esc(c.date) + '</small></button>';
+    }).join('') : empty('No trophies yet. Awards you receive will appear here.');
+  }
+  function openAward(id) {
+    const a = D.awards.find((x) => x.id === id); if (!a) return;
+    const d = cleanDesign(a.design), c = cleanCard(a.card);
+    openModal('<div class="mhead"><h3 dir="auto">' + esc(c.title || d.name) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody">' + cardHtml(c, d) + '<div class="mfoot"><button class="btn sm ghost" data-close>Close</button><button class="btn sm" id="aw-replay">Replay ceremony</button></div></div>');
+    $('#aw-replay').onclick = () => { if (window.SvxCeremony) window.SvxCeremony.play(ceremonyPayload(c, d, { tag: 'YOUR TROPHY' })); else toast('The ceremony engine failed to load.', 'bad'); };
+  }
+
+  /* ----- listeners (student: own awards only; everyone: live feed) ----- */
+  function startAwardsData(tk) {
+    const subs = [];
+    AW.bootAt = Date.now(); AW.seen = null; AW.loaded = false; AW.err = '';
+    if (isAdmin()) subs.push(db.watch('badgeDefs', (l) => { D.badgeDefs = l; tk(); }, null, null, () => toast('Could not load badge designs.', 'bad')));
+    else subs.push(db.watch('awards', (l) => { D.awards = l.filter((a) => a.to === me.id); AW.loaded = true; AW.err = ''; tk(); }, 'to', me.id, () => { AW.err = 'Could not load your trophies. Check your connection and try again.'; tk(); }));
+    subs.push(db.watch('awardFeed', onFeed, null, null, () => toast('Live award announcements are unavailable.', 'bad')));
+    if (!AW.timer) AW.timer = setInterval(flushAwards, 2500);
+    return subs;
+  }
+  function onFeed(l) {
+    if (AW.seen === null) { AW.seen = new Set(l.map((x) => x.id)); return; }   // first snapshot = history, never replayed
+    l.forEach((a) => {
+      if (AW.seen.has(a.id)) return; AW.seen.add(a.id);
+      if (!a.createdAt || a.createdAt < AW.bootAt - 60000) return;
+      AW.pending.push(ceremonyPayload(cleanCard(a.card), cleanDesign(a.design), { tag: 'LIVE AWARD', autoClose: 9000, mine: !isAdmin() && a.to === me.id }));
+    });
+    flushAwards();
+  }
+  function flushAwards() {
+    if (!AW.pending.length) return;
+    if ($('#a-send') && !$('#modal').hidden) return;     // never interrupt a task or exam in progress
+    const q = AW.pending.splice(0);
+    if (!window.SvxCeremony) { console.error('Ceremony engine is not loaded'); return; }
+    q.forEach((p) => window.SvxCeremony.enqueue(p));
+  }
+
+  /* ----- admin: Trophies Studio ----- */
+  const tgOpts = (obj, labels) => Object.keys(obj).map((k) => '<option value="' + k + '">' + labels[k] + '</option>').join('');
+  const tgStatus = (m) => { const e = $('#tg-status'); if (e) e.textContent = m || ''; };
+  const tgV = (id) => { const e = $('#' + id); return e ? e.value : ''; };
+  function tgRead() {
+    return {
+      badgeId: tgV('tg-badge'), memberId: tgV('tg-member'),
+      design: cleanDesign({ name: tgV('tg-bname'), shape: tgV('tg-shape'), icon: tgV('tg-icon'), c1: tgV('tg-c1'), c2: tgV('tg-c2'), frame: tgV('tg-frame') }),
+      card: cleanCard({ hdr: tgV('tg-hdr'), lbl: tgV('tg-lbl'), name: tgV('tg-name'), title: tgV('tg-title'), desc: tgV('tg-desc'), thanks: tgV('tg-thanks'), date: tgV('tg-date'), issuer: tgV('tg-issuer') })
+    };
+  }
+  function tgRefresh() { const box = $('#tg-card'); if (!box) return; const s = tgRead(); box.innerHTML = cardHtml(s.card, s.design); }
+  function tgLoadBadge(id) {
+    if (!BID.test(id)) return;
+    const d = badgeDef(id);
+    $('#tg-bname').value = d.name; $('#tg-shape').value = d.shape; $('#tg-icon').value = d.icon;
+    $('#tg-c1').value = d.c1; $('#tg-c2').value = d.c2; $('#tg-frame').value = d.frame;
+    $('#tg-title').value = d.name; TG.lastName = d.name;
+  }
+  function tgFillBadges() {
+    const sel = $('#tg-badge'); if (!sel) return;
+    const opts = Array.from({ length: 10 }, (_, i) => ['b' + (i + 1), badgeDef('b' + (i + 1)).name]);
+    const sig = opts.map((o) => o.join('|')).join('~'); if (sel.dataset.sig === sig) return; sel.dataset.sig = sig;
+    const cur = sel.value || 'b1';
+    sel.innerHTML = opts.map((o, i) => '<option value="' + o[0] + '">' + (i + 1) + '. ' + esc(o[1]) + '</option>').join('');
+    sel.value = cur;
+  }
+  function tgFillMembers() {
+    const sel = $('#tg-member'); if (!sel) return;
+    const L = D.members.filter((m) => m.role !== 'admin' && !m.deleted).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    const sig = L.map((m) => m.id + '|' + m.name).join('~'); if (sel.dataset.sig === sig) return; sel.dataset.sig = sig;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="" disabled selected>' + (L.length ? 'Choose a student' : 'No members yet (or still loading)') + '</option>' + L.map((m) => '<option value="' + esc(m.id) + '">' + esc(m.name || m.id) + ' (' + esc(m.id) + ')</option>').join('');
+    sel.value = L.some((m) => m.id === cur) ? cur : '';
+  }
+  function tgOnInput(el) {
+    if (el.id === 'tg-badge') tgLoadBadge(el.value);
+    else if (el.id === 'tg-member') { const m = D.members.find((x) => x.id === el.value); if (m) $('#tg-name').value = m.name || m.id; }
+    else if (el.id === 'tg-bname') { const t = $('#tg-title'); if (t.value === TG.lastName) t.value = el.value; TG.lastName = el.value; }
+    tgRefresh();
+  }
+  async function tgSaveDesign(btn) {
+    const s = tgRead();
+    if (!BID.test(s.badgeId)) return tgStatus('Choose one of the 10 badges.');
+    if (!s.design.name.trim()) return tgStatus('The badge name cannot be empty.');
+    tgStatus(''); btn.disabled = true;
+    try { await db.set('badgeDefs', s.badgeId, Object.assign({}, s.design, { name: s.design.name.trim(), updatedAt: Date.now() })); toast('Badge design saved'); }
+    catch (err) { console.error(err); tgStatus('Could not save the badge design: ' + (err.code || err.message)); }
+    btn.disabled = false;
+  }
+  function tgPreviewCeremony() {
+    const s = tgRead();
+    if (!s.card.name.trim() || !s.card.title.trim() || !s.card.desc.trim()) return tgStatus('Fill in the name, title and description to preview the ceremony.');
+    if (!window.SvxCeremony) return tgStatus('The ceremony engine failed to load.');
+    tgStatus('');
+    window.SvxCeremony.play(ceremonyPayload(s.card, s.design, { preview: true, tag: 'PREVIEW · nothing is saved or sent' }));   // no database call here
+  }
+  function tgSend() {
+    const s = tgRead(), m = D.members.find((x) => x.id === s.memberId && x.role !== 'admin' && !x.deleted);
+    const err = !m ? 'Choose a student first.' : !BID.test(s.badgeId) ? 'Choose a badge.' : !s.design.name.trim() ? 'The badge needs a name.' : !s.card.name.trim() ? 'The student name on the card is required.' : !s.card.title.trim() ? 'The card needs a title.' : !s.card.desc.trim() ? 'Write the achievement description.' : '';
+    if (err) return tgStatus(err);
+    tgStatus('');
+    openModal('<div class="mhead"><h3>Send this award?</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><p class="note" style="text-align:start"><b dir="auto">' + esc(s.card.title.trim()) + '</b> will be saved to <b dir="auto">' + esc(m.name || m.id) + '</b> (<code>' + esc(m.id) + '</code>) and a live ceremony will play for everyone currently online. The app has no undo for this.</p><div class="mfoot"><button class="btn sm ghost" data-close>Cancel</button><button class="btn sm" id="tg-confirm">Confirm and send</button></div></div>');
+    $('#tg-confirm').onclick = () => tgDoSend(s, m);
+  }
+  async function tgDoSend(s, m) {
+    const btn = $('#tg-confirm'); btn.disabled = true;
+    const id = m.id + '_' + s.badgeId;
+    const card = cleanCard(Object.fromEntries(Object.entries(s.card).map(([k, v]) => [k, v.trim()])));
+    const design = cleanDesign(Object.assign({}, s.design, { name: s.design.name.trim() }));
+    try { if (await db.get('awards', id)) { closeModal(); return tgStatus('This student already has this badge. Duplicate awards are not allowed.'); } }
+    catch (err) { console.error(err); closeModal(); return tgStatus('Could not check for duplicates: ' + (err.code || err.message)); }
+    const now = Date.now(), toName = m.name || m.id;
+    try { await db.set('awards', id, { to: m.id, toName, badgeId: s.badgeId, card, design, createdAt: now }); }
+    catch (err) { console.error(err); closeModal(); return tgStatus('The award was NOT saved: ' + (err.code || err.message)); }
+    try { await db.set('awardFeed', id, { awardId: id, to: m.id, toName, badgeId: s.badgeId, card, design, createdAt: now }); }
+    catch (err) { console.error(err); closeModal(); return tgStatus('The award was saved to the student vault, but the live announcement failed: ' + (err.code || err.message)); }
+    closeModal(); tgStatus(''); toast('Award sent to ' + toName.split(' ')[0]);
+  }
+
+  V.trophies = {
+    html: () => '<h2 class="ph">' + tr('Trophies Studio') + '</h2><p class="pp">Customise the 10 badges, compose an award card, preview it, then send it to a real member. Nothing is saved until you confirm sending.</p>'
+      + '<div id="tg-root" class="tg-grid"><div>'
+      + '<div class="card" style="margin-bottom:16px"><h3 style="margin:0 0 14px">1 · Badge design</h3>'
+      + '<div class="field"><label for="tg-badge">Badge</label><select id="tg-badge"></select></div>'
+      + '<div class="field"><label for="tg-bname">Badge name</label><input id="tg-bname" maxlength="40" dir="auto"></div>'
+      + '<div class="two"><div class="field"><label for="tg-shape">Shape</label><select id="tg-shape">' + tgOpts(SHAPES, SHAPE_LABEL) + '</select></div><div class="field"><label for="tg-icon">Icon</label><select id="tg-icon">' + tgOpts(ICONS, ICON_LABEL) + '</select></div></div>'
+      + '<div class="two"><div class="field"><label for="tg-c1">Primary colour</label><input id="tg-c1" type="color"></div><div class="field"><label for="tg-c2">Accent colour</label><input id="tg-c2" type="color"></div></div>'
+      + '<div class="field"><label for="tg-frame">Card frame</label><select id="tg-frame">' + FRAMES.map((f) => '<option value="' + f + '">' + f.charAt(0).toUpperCase() + f.slice(1) + '</option>').join('') + '</select></div>'
+      + '<button type="button" class="btn sm ghost" data-tg="save-design">Save badge design</button></div>'
+      + '<div class="card"><h3 style="margin:0 0 14px">2 · Award card</h3>'
+      + '<div class="field"><label for="tg-member">Student</label><select id="tg-member"></select></div>'
+      + '<div class="field"><label for="tg-hdr">Header text</label><input id="tg-hdr" maxlength="60" dir="auto"></div>'
+      + '<div class="field"><label for="tg-title">Badge title on the card</label><input id="tg-title" maxlength="60" dir="auto"></div>'
+      + '<div class="field"><label for="tg-lbl">"Awarded to" label</label><input id="tg-lbl" maxlength="40" dir="auto"></div>'
+      + '<div class="field"><label for="tg-name">Student name on the card</label><input id="tg-name" maxlength="80" dir="auto"></div>'
+      + '<div class="field"><label for="tg-desc">Achievement description</label><textarea id="tg-desc" maxlength="400" dir="auto"></textarea></div>'
+      + '<div class="field"><label for="tg-thanks">Thank-you message</label><textarea id="tg-thanks" maxlength="300" dir="auto"></textarea></div>'
+      + '<div class="two"><div class="field"><label for="tg-date">Date text</label><input id="tg-date" maxlength="40" dir="auto"></div><div class="field"><label for="tg-issuer">Issuer text</label><input id="tg-issuer" maxlength="60" dir="auto"></div></div></div></div>'
+      + '<div class="tg-side"><div class="card"><h3 style="margin:0 0 12px">Live preview</h3><div id="tg-card"></div><p class="error" id="tg-status" role="alert"></p>'
+      + '<div class="tg-actions"><button type="button" class="btn sm ghost" data-tg="preview">Play ceremony preview</button><button type="button" class="btn sm" data-tg="send">Send award…</button></div>'
+      + '<p class="note dim" style="margin:12px 0 0;text-align:start">Previewing never saves or sends anything.</p></div></div></div>',
+    paint() {
+      const tgr = $('#tg-root'); if (!tgr) return;
+      tgFillBadges();
+      if (!tgr.dataset.ready) {
+        tgr.dataset.ready = '1';
+        $('#tg-badge').value = 'b1';
+        $('#tg-hdr').value = 'Certificate of Achievement'; $('#tg-lbl').value = 'Awarded to';
+        $('#tg-thanks').value = 'Thank you for your effort and your contribution to the community.';
+        $('#tg-date').value = fmt(Date.now()); $('#tg-issuer').value = 'SOLVIX KOD Community';
+        tgLoadBadge('b1');
+      }
+      tgFillMembers(); tgRefresh();
+    }
+  };
+
+  const CT = $('#content');
+  const inTg = (e) => e.target.closest && e.target.closest('#tg-root');
+  CT.addEventListener('input', (e) => { if (inTg(e)) tgOnInput(e.target); });
+  CT.addEventListener('change', (e) => { if (inTg(e)) tgOnInput(e.target); });
+  CT.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tg],[data-aw-open]'); if (!b) return;
+    if (b.dataset.awOpen) return openAward(b.dataset.awOpen);
+    if (b.dataset.tg === 'preview') tgPreviewCeremony();
+    else if (b.dataset.tg === 'send') tgSend();
+    else if (b.dataset.tg === 'save-design') tgSaveDesign(b);
+  });
   /* ---------- admin actions ---------- */
   const genId = () => {
     let id;
@@ -1448,7 +1835,9 @@ window.SOLVIX_CONFIG = {
       const mid = $('#rq-id').value.trim().toUpperCase();
       if (!fe('rq-id', !/^[A-Z0-9-]{4,24}$/.test(mid) ? 'Invalid ID (English letters, digits and dashes).' : (D.members.some((m) => m.id === mid) || mid === CONFIG.adminId.toUpperCase()) ? 'This ID is already in use.' : '')) return;
       $('#rq-ok').disabled = true;
-      await db.set('members', mid, { id: mid, name: r.name, dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} });
+      const memberDoc = { id: mid, name: r.name, dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} };
+      if (typeof r.uid === 'string' && r.uid) memberDoc.uid = r.uid;   // only the request's original uid; never guessed for old requests
+      await db.set('members', mid, memberDoc);
       await db.set('requests', r.id, { status: 'approved', memberId: mid, decidedAt: Date.now() });
       await notifyMember(mid, 'accepted', {});
       closeModal(); toast('Accepted. Give this ID to the student: ' + mid);
@@ -1872,9 +2261,21 @@ window.SOLVIX_CONFIG = {
   }
   const C = $('#content');
   C.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann]'); if (!t) return;
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann],[data-preview]'); if (!t) return;
     if (t.dataset.lang) setLang(t.dataset.lang);
     else if (t.dataset.req) openRequest(t.dataset.req);
+    else if (t.dataset.mem) openMember(t.dataset.mem);
+    else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
+    else if (t.dataset.resf) { F.resDept = t.dataset.resf; V.resources.paint(); }
+    else if (t.dataset.open) openTask(t.dataset.open);
+    else if (t.dataset.subs) openSubs(t.dataset.subs);
+    else if (t.dataset.edtask) openEditTask(t.dataset.edtask);
+    else if (t.dataset.preview) {
+      const url = t.dataset.preview, title = t.dataset.title || 'Resource Preview';
+      openModal('<div class="mhead"><h3>' + esc(title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody" style="padding:0;height:75dvh"><iframe src="' + esc(url) + '" style="width:100%;height:100%;border:0"></iframe></div><div class="mfoot"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" class="btn sm">Open in new tab</a></div>');
+    }
+    else if (t.dataset.delres) { db.set('resources', t.dataset.delres, { deleted: true }).then(() => toast('Resource deleted')); }
+    else if (t.dataset.delann) { db.set('announces', t.dataset.delann, { deleted: true }).then(() => toast('Announcement removed')); }
     else if (t.dataset.mem) openMember(t.dataset.mem);
     else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
     else if (t.dataset.resf) { F.resDept = t.dataset.resf; V.resources.paint(); }
@@ -1889,9 +2290,8 @@ window.SOLVIX_CONFIG = {
       if (!val) return;
       const qObj = D.questions.find((x) => x.id === qid);
       if (qObj) {
-        const reps = qObj.replies || [];
-        reps.push({ name: me.name, level: me.level || 1, text: val, createdAt: Date.now() });
-        db.set('questions', qid, { replies: reps }).then(() => toast('Reply posted'));
+        const reps = (qObj.replies || []).concat([{ name: me.name, level: me.level || 1, text: val, createdAt: Date.now(), authorId: me.id }]);
+        db.set('questions', qid, { replies: reps }).then(() => toast('Reply posted')).catch(() => toast(tr('Could not save, please try again.'), 'bad'));
       }
     }
     else if (t.dataset.deltask) {
@@ -1923,15 +2323,47 @@ window.SOLVIX_CONFIG = {
     else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); }
     else if (e.target.id === 'res-form') {
       e.preventDefault();
-      db.add('resources', { title: $('#res-title').value.trim(), dept: $('#res-dept').value, link: $('#res-link').value.trim(), createdAt: Date.now() }).then(() => {
-        $('#res-form').reset(); toast('Resource added');
-      });
+      const titleInput = $('#res-title'), deptInput = $('#res-dept'), fileInput = $('#res-file'), submitBtn = $('#res-submit');
+      const file = fileInput.files[0];
+      if (!file) return toast('Please select a file', 'bad');
+      if (file.size > 5 * 1024 * 1024) return toast('File size must be less than 5MB', 'bad');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+
+      const reader = new FileReader();
+      reader.onload = async function(uploadEvent) {
+        try {
+          const fileDataUrl = uploadEvent.target.result;
+          await db.add('resources', {
+            title: titleInput.value.trim(),
+            dept: deptInput.value,
+            link: fileDataUrl,
+            fileName: file.name,
+            createdAt: Date.now()
+          });
+          $('#res-form').reset();
+          toast('Resource uploaded successfully');
+        } catch (err) {
+          console.error(err);
+          toast('Could not upload file', 'bad');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = tr('Add resource');
+        }
+      };
+      reader.onerror = () => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = tr('Add resource');
+        toast('Error reading file', 'bad');
+      };
+      reader.readAsDataURL(file);
     }
     else if (e.target.id === 'q-form') {
       e.preventDefault();
-      db.add('questions', { authorName: me.name, level: me.level || 1, text: $('#q-txt').value.trim(), replies: [], createdAt: Date.now() }).then(() => {
+      db.add('questions', { authorName: me.name, level: me.level || 1, text: $('#q-txt').value.trim(), replies: [], createdAt: Date.now(), authorId: me.id }).then(() => {
         $('#q-form').reset(); toast('Question posted');
-      });
+      }).catch(() => toast(tr('Could not save, please try again.'), 'bad'));
     }
     else if (e.target.id === 'ann-form') {
       e.preventDefault();
@@ -1942,16 +2374,36 @@ window.SOLVIX_CONFIG = {
   });
 
   /* ---------- boot ---------- */
+  function showFatal(code) {
+    root.classList.remove('restoring'); body.classList.remove('in-app');
+    const old = document.getElementById('fatal'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'fatal'; d.setAttribute('role', 'alert');
+    d.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:#030818;color:#fff;font:600 16px/1.8 Cairo,Inter,system-ui,sans-serif';
+    d.innerHTML = '<div style="font-size:42px">⚠️</div><div>تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم أعد المحاولة.</div><div style="color:#9fb4d6;font-size:14px;direction:ltr">Could not connect to the database. Check your connection and try again.</div><code style="color:#ff9db0;font-size:12px;direction:ltr"></code><button class="btn sm" style="width:auto;padding:10px 24px">إعادة المحاولة / Retry</button>';
+    d.querySelector('code').textContent = code;
+    d.querySelector('button').onclick = () => location.reload();
+    document.body.append(d);
+  }
   (async function boot() {
-    db = await initDB();
+    try { db = await initDB(); }
+    catch (e) { showFatal(e && e.message ? e.message : 'DB_ERROR'); return; }
+    if (db.isAdminSession && db.isAdminSession()) {
+      enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() }, true);
+      return;
+    }
+    store.removeItem('svx.adm');
     const sid = store.getItem('svx.session');
     if (sid) {
       try {
-        const m = await db.get('members', sid);
-        if (m && m.uid && m.uid !== db.uid()) {
+        let m = await db.get('members', sid);
+        if (m && m.role === 'admin') {
+          store.removeItem('svx.session');
+          store.removeItem('svx.me');
+        } else if (m && m.uid && m.uid !== db.uid()) {
           store.removeItem('svx.session');
           store.removeItem('svx.me');
         } else if (m && m.passHash) {
+          if (!m.uid) { try { await db.set('members', m.id, { uid: db.uid() }); m = Object.assign({}, m, { uid: db.uid() }); } catch (_) {} }
           enterApp(m, true);
           return;
         } else {
@@ -1965,140 +2417,253 @@ window.SOLVIX_CONFIG = {
   })();
 
   draw(); place();
+})();
+</script>
 
-  /* ---------- content protection (members only) ---------- */
-  (() => {
-    const on = () => body.classList.contains('guard');
-    const inField = (t) => !!(t && t.closest && t.closest('input,textarea'));
-    let lost = false;
-    const hide = () => { if (!on()) return; body.classList.add('shield'); if (!lost) { lost = true; if (examOpen()) viol++; } };
-    const show = () => { lost = false; body.classList.remove('shield'); };
-    addEventListener('blur', hide);
-    addEventListener('focus', show);
-    addEventListener('pageshow', show);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); else show(); });
-    ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => addEventListener(ev, () => { if (body.classList.contains('shield') && document.hasFocus()) show(); }, true));
+<!-- Award ceremony stage + engine (self-contained; the app calls window.SvxCeremony) -->
+<div class="cer-stage" id="cer-stage" hidden role="dialog" aria-modal="true" aria-label="Award ceremony">
+  <div class="cer-bar">
+    <span class="cer-tag" id="cer-tag"></span>
+    <div class="cer-ctl">
+      <button type="button" class="btn sm ghost" id="cer-mute">Sound: on</button>
+      <button type="button" class="btn sm ghost" id="cer-skip">Skip</button>
+      <button type="button" class="btn sm ghost" id="cer-close">Close</button>
+    </div>
+  </div>
+  <div class="cer-wrap">
+    <div class="cer-badge"><div class="cer-b3d" id="cer-b3d"></div></div>
+    <div class="cer-plate" id="cer-plate">
+      <canvas class="cer-cv" id="cer-cv"></canvas>
+      <div class="cer-hdr" id="cer-hdr"></div>
+      <div class="cer-lines" id="cer-lines"></div>
+      <div class="cer-extra" id="cer-extra"></div>
+    </div>
+    <button type="button" class="btn sm" id="cer-done" hidden>Continue</button>
+  </div>
+</div>
 
-    const stop = (e) => { if (on() && !inField(e.target)) e.preventDefault(); };
-    ['copy', 'cut', 'selectstart', 'dragstart'].forEach((ev) => document.addEventListener(ev, stop));
-    document.addEventListener('contextmenu', (e) => { if (on()) e.preventDefault(); });
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $('cer-stage'), plate = $('cer-plate'), cv = $('cer-cv'), g2 = cv.getContext('2d');
+  var linesEl = $('cer-lines'), extraEl = $('cer-extra'), b3d = $('cer-b3d'), tagEl = $('cer-tag'), hdrEl = $('cer-hdr');
+  var doneBtn = $('cer-done'), muteBtn = $('cer-mute'), skipBtn = $('cer-skip'), closeBtn = $('cer-close');
+  var token = 0, isOpen = false, skipping = false, queue = [], parts = [], rings = [], waits = [], raf = 0, lastT = 0, autoT = 0;
+  var laser = { x: 0, y: 0, tx: 0, ty: 0, on: false };
 
-    const noPaste = (e) => { if (on() && e.target.closest && e.target.closest('.noPaste')) { e.preventDefault(); toast('Pasting is disabled in answers', 'bad'); } };
-    document.addEventListener('paste', noPaste);
-    document.addEventListener('drop', noPaste);
-    document.addEventListener('beforeinput', (e) => { if (on() && /^insertFrom(Paste|Drop)/.test(e.inputType || '') && e.target.closest && e.target.closest('.noPaste')) e.preventDefault(); });
+  /* ---------- synthesised audio only (no speech, no samples) ---------- */
+  var ac = null, master = null, muted = false, hum = null;
+  function audio() {
+    if (!ac) {
+      try { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(ac.destination); }
+      catch (e) { ac = null; }
+    }
+    if (ac && ac.state === 'suspended') ac.resume().catch(function () {});
+    return ac;
+  }
+  function noiseBuf(sec) { var n = Math.max(1, (ac.sampleRate * sec) | 0), b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0); for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b; }
+  function env(g, t, a, peak, dec) { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); }
+  function burst(type, f, q, peak, dur) {
+    if (skipping || !audio()) return;
+    var t = ac.currentTime, s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf(dur + 0.05); fl.type = type; fl.frequency.value = f; fl.Q.value = q; env(g, t, 0.003, peak, dur);
+    s.connect(fl); fl.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.05);
+  }
+  function tone(type, f0, f1, peak, a, dec, when) {
+    if (skipping || !audio()) return;
+    var t = ac.currentTime + (when || 0), o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + a + dec);
+    env(g, t, a, peak, dec); o.connect(g); g.connect(master); o.start(t); o.stop(t + a + dec + 0.05);
+  }
+  var snd = {
+    tick: function () { burst('bandpass', 3200 + Math.random() * 1800, 4, 0.16, 0.05); tone('square', 1500, 700, 0.03, 0.001, 0.04); },
+    sizzle: function () { burst('highpass', 5000, 0.7, 0.07, 0.12); },
+    impact: function () { tone('sine', 110, 38, 0.7, 0.005, 0.6); burst('lowpass', 420, 0.8, 0.5, 0.35); },
+    hit: function () { tone('sine', 70, 35, 0.6, 0.004, 0.45); },
+    chime: function () { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach(function (f, i) { tone('triangle', f, 0, 0.12, 0.01, 1.5, i * 0.13); tone('sine', f * 2, 0, 0.03, 0.01, 1.1, i * 0.13); }); }
+  };
+  function humOn() {
+    if (skipping || hum || !audio()) return;
+    var t = ac.currentTime, o1 = ac.createOscillator(), o2 = ac.createOscillator(), l = ac.createOscillator(), lg = ac.createGain(), f = ac.createBiquadFilter(), g = ac.createGain();
+    o1.type = 'sawtooth'; o1.frequency.value = 118; o2.type = 'square'; o2.frequency.value = 237; f.type = 'lowpass'; f.frequency.value = 900;
+    l.frequency.value = 7; lg.gain.value = 0.012; l.connect(lg); lg.connect(g.gain);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.035, t + 0.25);
+    o1.connect(f); o2.connect(f); f.connect(g); g.connect(master); o1.start(t); o2.start(t); l.start(t);
+    hum = { o: [o1, o2, l], g: g };
+  }
+  function humOff() {
+    if (!hum) return; var h = hum, t = ac.currentTime; hum = null;
+    try { h.g.gain.cancelScheduledValues(t); h.g.gain.setValueAtTime(Math.max(0.0001, h.g.gain.value), t); h.g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); h.o.forEach(function (o) { o.stop(t + 0.25); }); } catch (e) {}
+  }
+  function drone(sec) {
+    if (skipping || !audio()) return;
+    var t = ac.currentTime, a = ac.createOscillator(), b = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    a.type = 'sawtooth'; b.type = 'sawtooth'; a.frequency.value = 55; b.frequency.value = 58.5; f.type = 'lowpass';
+    f.frequency.setValueAtTime(120, t); f.frequency.exponentialRampToValueAtTime(1100, t + sec);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + sec * 0.9); g.gain.exponentialRampToValueAtTime(0.0001, t + sec + 0.15);
+    a.connect(f); b.connect(f); f.connect(g); g.connect(master); a.start(t); b.start(t); a.stop(t + sec + 0.2); b.stop(t + sec + 0.2);
+    for (var i = 0; i < sec / 0.8; i++) { tone('sine', 62, 40, 0.28, 0.004, 0.2, i * 0.8); tone('sine', 62, 40, 0.18, 0.004, 0.18, i * 0.8 + 0.22); }
+  }
+  function silence() {
+    humOff();
+    if (ac && master) { try { master.disconnect(); } catch (e) {} master = ac.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(ac.destination); }
+  }
 
-    addEventListener('keydown', (e) => {
-      if (!on()) return;
-      const k = (e.key || '').toLowerCase(), mod = e.ctrlKey || e.metaKey;
-      if (mod && (k === 'p' || k === 's' || k === 'u')) e.preventDefault();
-      if (mod && (k === 'c' || k === 'x' || k === 'a') && !inField(e.target)) e.preventDefault();
+  /* ---------- canvas: laser beam, sparks, dust, shockwaves ---------- */
+  function size() { var r = plate.getBoundingClientRect(), k = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.max(1, r.width * k); cv.height = Math.max(1, r.height * k); g2.setTransform(k, 0, 0, k, 0, 0); }
+  function spawn(x, y, n, kind) {
+    for (var i = 0; i < n && parts.length < 420; i++) {
+      var a = Math.random() * 6.283, sp = kind === 'spark' ? 60 + Math.random() * 190 : kind === 'burst' ? 80 + Math.random() * 260 : 8 + Math.random() * 26;
+      parts.push({ k: kind, x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (kind === 'spark' ? 60 : 0), life: 0,
+        max: kind === 'dust' ? 1.4 + Math.random() : 0.45 + Math.random() * 0.5, r: kind === 'dust' ? 1.5 + Math.random() * 2.2 : 0.8 + Math.random() * 1.4,
+        c: kind === 'dust' ? 'rgba(170,200,235,' : kind === 'burst' ? 'rgba(150,225,255,' : 'rgba(255,175,90,' });
+    }
+  }
+  function ring(x, y) { rings.push({ x: x, y: y, t: 0 }); }
+  function frame(t) {
+    raf = 0; if (!isOpen) return;
+    var dt = Math.min(0.05, (t - lastT) / 1000) || 0.016; lastT = t;
+    var W = plate.clientWidth, H = plate.clientHeight, k = Math.min(1, dt * 14);
+    g2.globalCompositeOperation = 'lighter'; g2.clearRect(0, 0, W, H);
+    laser.x += (laser.tx - laser.x) * k; laser.y += (laser.ty - laser.y) * k;
+    if (laser.on) {
+      var fl = 0.85 + Math.random() * 0.15;
+      g2.lineCap = 'round'; g2.beginPath(); g2.moveTo(W / 2, -4); g2.lineTo(laser.x, laser.y);
+      g2.strokeStyle = 'rgba(255,50,100,' + (0.35 * fl) + ')'; g2.lineWidth = 5; g2.stroke();
+      g2.strokeStyle = 'rgba(255,255,255,' + (0.9 * fl) + ')'; g2.lineWidth = 1.4; g2.stroke();
+      var rg = g2.createRadialGradient(laser.x, laser.y, 0, laser.x, laser.y, 16);
+      rg.addColorStop(0, 'rgba(255,255,255,.95)'); rg.addColorStop(0.35, 'rgba(255,90,120,.6)'); rg.addColorStop(1, 'rgba(255,60,100,0)');
+      g2.fillStyle = rg; g2.beginPath(); g2.arc(laser.x, laser.y, 16, 0, 6.283); g2.fill();
+    }
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var q = parts[i]; q.life += dt; if (q.life >= q.max) { parts.splice(i, 1); continue; }
+      q.x += q.vx * dt; q.y += q.vy * dt;
+      if (q.k === 'dust') { q.vx *= 0.98; q.vy = q.vy * 0.98 - 4 * dt; } else { q.vy += 420 * dt; q.vx *= 0.99; }
+      g2.fillStyle = q.c + (1 - q.life / q.max).toFixed(3) + ')'; g2.beginPath(); g2.arc(q.x, q.y, q.r, 0, 6.283); g2.fill();
+    }
+    for (var j = rings.length - 1; j >= 0; j--) {
+      var r = rings[j]; r.t += dt; if (r.t > 0.8) { rings.splice(j, 1); continue; }
+      g2.strokeStyle = 'rgba(34,208,255,' + (0.7 * (1 - r.t / 0.8)).toFixed(3) + ')'; g2.lineWidth = 2; g2.beginPath(); g2.arc(r.x, r.y, r.t * 260, 0, 6.283); g2.stroke();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* ---------- timing helpers ---------- */
+  function sleep(ms) {
+    return new Promise(function (res) {
+      if (skipping) return res();
+      var w = { id: 0, done: function () { var i = waits.indexOf(w); if (i >= 0) waits.splice(i, 1); res(); } };
+      w.id = setTimeout(w.done, ms); waits.push(w);
     });
-    addEventListener('keyup', (e) => {
-      if (on() && e.key === 'PrintScreen') {
-        try { navigator.clipboard.writeText(' '); } catch (_) {}
-        if (examOpen()) viol++;
-        toast('Screenshots are not allowed', 'bad');
-      }
-    });
-  })();
+  }
+  function wakeAll() { waits.slice().forEach(function (w) { clearTimeout(w.id); w.done(); }); }
+  function alive(my) { return my === token && isOpen; }
+  async function nap(my, ms) { await sleep(ms); return alive(my); }
 
-  /* ---------- block pull-to-refresh (app feel) ---------- */
-  (() => {
-    let startY = 0;
-    addEventListener('touchstart', (e) => { if (e.touches.length === 1) startY = e.touches[0].clientY; }, { passive: true });
-    addEventListener('touchmove', (e) => {
-      if (e.touches.length !== 1 || e.target.closest('input,textarea,select')) return;
-      const dy = e.touches[0].clientY - startY;
-      if (dy <= 0) return;
-      // find the nearest scrollable ancestor; if it is already at the top, a downward drag would trigger refresh
-      let el = e.target, scroller = null;
-      while (el && el !== document.body) {
-        const s = getComputedStyle(el);
-        if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight) { scroller = el; break; }
-        el = el.parentElement;
-      }
-      if (!scroller || scroller.scrollTop <= 0) { if (e.cancelable) e.preventDefault(); }
-    }, { passive: false });
-  })();
+  /* ---------- text rows: one span per character, laser follows the real glyph ---------- */
+  function row(cls, text) {
+    var d = document.createElement('div'); d.className = 'cer-row ' + cls; d.setAttribute('dir', 'auto');
+    Array.from(String(text || '')).forEach(function (c) { var s = document.createElement('span'); s.className = 'ch'; s.textContent = c; d.appendChild(s); });
+    linesEl.appendChild(d); return d;
+  }
+  async function engrave(my, rowEl, per) {
+    var chs = rowEl.querySelectorAll('.ch');
+    if (!laser.on) { laser.x = plate.clientWidth / 2; laser.y = 0; }
+    laser.on = true; humOn();
+    for (var i = 0; i < chs.length; i++) {
+      if (!alive(my)) { laser.on = false; humOff(); return false; }
+      var c = chs[i];
+      if (skipping) { c.className = 'ch on'; continue; }
+      var pr = plate.getBoundingClientRect(), r = c.getBoundingClientRect();
+      laser.tx = r.left - pr.left + r.width / 2; laser.ty = r.top - pr.top + r.height / 2;
+      if (/^\s$/.test(c.textContent)) { c.className = 'ch on'; await sleep(per * 0.5); continue; }
+      await sleep(Math.min(180, per * 0.55));                    // the beam travels to this glyph
+      if (!alive(my)) { laser.on = false; humOff(); return false; }
+      c.className = 'ch hot';
+      (function (el) { setTimeout(function () { if (el.className === 'ch hot') el.className = 'ch on'; }, 420); })(c);
+      spawn(laser.tx, laser.ty, 5, 'spark'); spawn(laser.tx, laser.ty + 4, 2, 'dust');
+      snd.tick(); if (i % 3 === 0) snd.sizzle();
+      await sleep(per * 0.45);
+    }
+    laser.on = false; humOff(); return alive(my);
+  }
+  function shake() { plate.classList.remove('shake'); void plate.offsetWidth; plate.classList.add('shake'); }
 
-  /* ---------- PWA: install button + auto update banner ---------- */
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
+  /* ---------- the ceremony ---------- */
+  async function run(p, my) {
+    var rows = linesEl.children, rTitle = rows[0], rDesc = rows[1], rLbl = rows[2], rName = rows[3];
+    hdrEl.style.opacity = 1;
+    if (!(await nap(my, 1000))) return;
+    snd.impact(); shake(); ring(plate.clientWidth / 2, 6); spawn(plate.clientWidth / 2, 6, 30, 'burst');
+    if (!(await nap(my, 1200))) return;
+    if (!(await engrave(my, rTitle, 150))) return;
+    if (!(await nap(my, 800))) return;
+    if (!(await engrave(my, rDesc, 62))) return;
+    if (!(await nap(my, 900))) return;
+    if (!(await engrave(my, rLbl, 110))) return;
+    if (!(await nap(my, 700))) return;
+    rName.classList.add('suspense'); drone(3.6);               // suspense before the recipient is revealed
+    if (!(await nap(my, 3700))) return;
+    snd.hit();
+    if (!(await nap(my, 450))) return;
+    rName.classList.remove('suspense');
+    if (!(await engrave(my, rName, 240))) return;
+    if (!(await nap(my, 600))) return;
+    var pr = plate.getBoundingClientRect(), nr = rName.getBoundingClientRect(), x = plate.clientWidth / 2, y = nr.top - pr.top + nr.height / 2;
+    plate.classList.add('win'); extraEl.classList.add('show');
+    snd.impact(); snd.chime(); spawn(x, y, 70, 'burst'); ring(x, y); setTimeout(function () { if (isOpen) ring(x, y); }, 250);
+    doneBtn.hidden = false; skipBtn.hidden = true;
+    if (p.autoClose) autoT = setTimeout(function () { if (alive(my)) close(); }, p.autoClose);
   }
 
-  let installEvt = null;
-  addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); installEvt = e;
-    if ($('#pwa-install')) return;
-    const b = document.createElement('button');
-    b.id = 'pwa-install'; b.className = 'btn sm';
-    b.style.cssText = 'position:fixed;inset-block-end:18px;inset-inline-end:18px;z-index:95;box-shadow:0 12px 30px -8px #000';
-    b.textContent = 'Install SOLVIX';
-    b.onclick = async () => { b.remove(); installEvt.prompt(); await installEvt.userChoice; installEvt = null; };
-    document.body.append(b);
-  });
-  addEventListener('appinstalled', () => { const b = $('#pwa-install'); if (b) b.remove(); });
-
-  /* ---- update detection: compares the files on the server with the ones this session started with ---- */
-  const WATCH = ['./index.html', './manifest.json', './sw.js', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
-  let baseSig = null, updShown = false;
-
-  async function signature() {
-    const parts = await Promise.all(WATCH.map(async (u) => {
-      try {
-        const r = await fetch(u, { cache: 'no-store' });
-        if (!r.ok) return null;
-        return u + ':' + b64(await crypto.subtle.digest('SHA-256', await r.arrayBuffer()));
-      } catch (_) { return null; }
-    }));
-    return parts.indexOf(null) >= 0 ? null : parts.join('|');
+  function start(p) {
+    token++; var my = token; isOpen = true; skipping = false; clearTimeout(autoT);
+    parts = []; rings = []; laser.on = false;
+    stage.hidden = false; tagEl.textContent = p.tag || '';
+    hdrEl.textContent = p.hdr || ''; hdrEl.style.opacity = 0;
+    plate.className = 'cer-plate'; plate.style.setProperty('--c1', p.c1); plate.style.setProperty('--c2', p.c2);
+    extraEl.className = 'cer-extra'; extraEl.textContent = '';
+    doneBtn.hidden = true; doneBtn.textContent = p.preview ? 'Close preview' : 'Continue'; skipBtn.hidden = false;
+    b3d.textContent = '';
+    for (var i = 0; i < 9; i++) {                                // stacked layers give the badge real thickness
+      var ly = document.createElement('div'); ly.className = 'ly'; ly.style.transform = 'translateZ(' + ((i - 4) * 2.4) + 'px)';
+      if (i < 8) ly.style.filter = 'brightness(' + (0.4 + i * 0.05) + ')';
+      ly.innerHTML = p.badgeSvg; b3d.appendChild(ly);           // badgeSvg is built and sanitised by the app
+    }
+    linesEl.textContent = '';
+    var chars = Array.from(String(p.desc || '')), cut = chars.length > 160;
+    row('cer-r-title', p.title); row('cer-r-desc', cut ? chars.slice(0, 157).join('') + '…' : p.desc); row('cer-r-lbl', p.label); row('cer-r-name', p.name);
+    function add(cls, txt) { if (!txt) return; var e = document.createElement('div'); e.className = cls; e.setAttribute('dir', 'auto'); e.textContent = txt; extraEl.appendChild(e); }
+    if (p.mine) add('cer-x-mine', 'Congratulations!');
+    if (cut) add('', p.desc);
+    add('', p.thanks); add('cer-x-foot', [p.date, p.issuer].filter(Boolean).join('  ·  '));
+    size(); audio(); lastT = performance.now(); if (!raf) raf = requestAnimationFrame(frame);
+    closeBtn.focus({ preventScroll: true });
+    run(p, my).catch(function (e) { console.error('Ceremony failed', e); if (alive(my)) { doneBtn.hidden = false; skipBtn.hidden = true; } });
+  }
+  function close(noQueue) {
+    if (!isOpen) return;
+    isOpen = false; token++; clearTimeout(autoT); laser.on = false; silence(); wakeAll();
+    stage.hidden = true; parts = []; rings = []; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    if (!noQueue && queue.length) setTimeout(function () { if (!isOpen && queue.length) start(queue.shift()); }, 700);
   }
 
-  function showUpdate() {
-    if (updShown) return; updShown = true;
-    const bar = document.createElement('div');
-    bar.setAttribute('role', 'alert');
-    bar.style.cssText = 'position:fixed;inset-inline:12px;inset-block-end:calc(12px + env(safe-area-inset-bottom,0px));z-index:100;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 14px 12px 18px;border-radius:12px;background:linear-gradient(90deg,#0a78bd,#2547d9 55%,#6a38d6);color:#fff;font:600 14.5px var(--sans);box-shadow:0 16px 40px -10px #000;animation:viewIn .4s both';
-    bar.innerHTML = '<span style="flex:1">A new update is available</span><button type="button" style="padding:9px 20px;border:0;border-radius:8px;background:#fff;color:#0a1a40;font:700 14px var(--sans);cursor:pointer">Update</button>';
-    bar.querySelector('button').onclick = async () => {
-      bar.querySelector('button').textContent = '…';
-      try { const ks = await caches.keys(); await Promise.all(ks.map((k) => caches.delete(k))); } catch (_) {}
-      try { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map((r) => r.unregister())); } catch (_) {}
-      location.reload();
-    };
-    document.body.append(bar);
-  }
+  skipBtn.onclick = function () { skipping = true; silence(); wakeAll(); };      // jump to the finished state
+  closeBtn.onclick = function () { close(); };
+  doneBtn.onclick = function () { close(); };
+  muteBtn.onclick = function () { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.9; muteBtn.textContent = muted ? 'Sound: off' : 'Sound: on'; };
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) close(); });
+  window.addEventListener('popstate', function () { if (isOpen) close(); });
+  window.addEventListener('resize', function () { if (isOpen) size(); });
+  if (window.ResizeObserver) new ResizeObserver(function () { if (isOpen) size(); }).observe(plate);
 
-  /* the baseline is the index.html this session is actually running (embedded at load), not whatever the server has now */
-  async function runningSig() {
-    try {
-      const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-      return b64(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html)));
-    } catch (_) { return null; }
-  }
-
-  let checking = false;
-  async function checkUpdate() {
-    if (updShown || checking || !(window.crypto && crypto.subtle) || location.protocol === 'file:') return;
-    checking = true;
-    try {
-      const s = await signature();
-      if (!s) return;                                 // offline or a file failed: skip this round
-      const saved = store.getItem('svx.sig');         // signature of the version this device last ran
-      if (baseSig === null) {
-        baseSig = s;
-        if (saved && saved !== s) { store.setItem('svx.sig', s); showUpdate(); return; }   // app opened from an old cached copy
-        store.setItem('svx.sig', s);
-      } else if (s !== baseSig) showUpdate();
-    } finally { checking = false; }
-  }
-  checkUpdate();
-  setInterval(checkUpdate, 300000);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
-  addEventListener('online', checkUpdate);
-  addEventListener('focus', checkUpdate);
-  addEventListener('pageshow', checkUpdate);
+  window.SvxCeremony = {
+    play: function (p) { close(true); start(p); },                                 // preview / replay: never queued
+    enqueue: function (p) { if (isOpen) { if (queue.length < 10) queue.push(p); } else start(p); },
+    close: function () { close(); },
+    isOpen: function () { return isOpen; }
+  };
 })();
 </script>
 </body>
