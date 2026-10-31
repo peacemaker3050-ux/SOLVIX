@@ -77,7 +77,8 @@ body[data-state="dragging"]{user-select:none;-webkit-user-select:none;cursor:gra
 @keyframes flicker{0%{opacity:0}10%{opacity:.9}18%{opacity:.15}32%{opacity:1}44%{opacity:.35}58%{opacity:1}100%{opacity:1}}
 
 #handle{outline:none;cursor:grab}
-#hit{fill:transparent;pointer-events:all;touch-action:none}
+#hit,#handle{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#hit{fill:transparent;pointer-events:all}
 #handle .ring{fill:none;stroke:var(--gold);stroke-width:1.2;opacity:0;transition:opacity .25s,r .25s}
 #handle:hover .ring,#handle:focus-visible .ring{opacity:.5}
 #handle.grabbed{cursor:grabbing}
@@ -705,10 +706,15 @@ window.SOLVIX_CONFIG = {
 
   const settled = () => Math.abs(ext) < 0.1 && Math.abs(ev) < 0.02 && Math.abs(tilt) < 0.03 && Math.abs(tv) < 0.004 && pts.every((p) => Math.abs(p.x - p.px) + Math.abs(p.y - p.py) < 0.04);
 
+  function ease() {                                    // pointer position is smoothed for touch, so finger jitter never jerks the cord
+    if (!drag) return;
+    drag.tx += (drag.gx - drag.tx) * drag.k; drag.ty += (drag.gy - drag.ty) * drag.k; drag.ext += (drag.ge - drag.ext) * drag.k;
+  }
   function loop(t) {
     acc += Math.min(0.05, (t - last) / 1000); last = t;
-    while (acc >= 1 / 60) { step(); acc -= 1 / 60; }
+    while (acc >= 1 / 60) { ease(); step(); acc -= 1 / 60; }
     draw();
+    if (drag && drag.ext >= T() + drag.xt) trigger();  // the (smoothed) pull passed the threshold: toggle the lamp
     if (drag || !settled()) raf = requestAnimationFrame(loop); else { running = false; ext = ev = tilt = tv = 0; draw(); }
   }
   function wake() {
@@ -724,8 +730,8 @@ window.SOLVIX_CONFIG = {
     if ((state !== 'dark' && state !== 'login-visible') || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
     e.preventDefault(); audio();
     hit.setPointerCapture(e.pointerId);
-    const p = toSvg(e), from = state;
-    drag = { id: e.pointerId, from, ox: p.x - end.x, oy: p.y - end.y, tx: end.x, ty: end.y, ext };
+    const p = toSvg(e), from = state, touch = e.pointerType !== 'mouse';
+    drag = { id: e.pointerId, from, ox: p.x - end.x, oy: p.y - end.y, tx: end.x, ty: end.y, ext, gx: end.x, gy: end.y, ge: ext, k: touch ? 0.28 : 1, xt: touch ? 6 : 0 };
     go('dragging'); handle.classList.add('grabbed'); wake();
   });
 
@@ -739,8 +745,7 @@ window.SOLVIX_CONFIG = {
       x = extra <= t ? extra : t + (m - t) * (1 - Math.exp(-(extra - t) / (m - t)));
       vx *= (L + x) / r; vy *= (L + x) / r;
     }
-    drag.tx = ANCHOR.x + vx; drag.ty = ANCHOR.y + vy; drag.ext = x;
-    if (x >= t) trigger();                             // pulled far enough: toggle the lamp
+    drag.gx = ANCHOR.x + vx; drag.gy = ANCHOR.y + vy; drag.ge = x;   // goal only; loop() eases towards it and fires the toggle
   });
 
   function endDrag(e) {
@@ -749,6 +754,8 @@ window.SOLVIX_CONFIG = {
     if (state === 'dragging') { go(from); wake(); }    // short pull: cord returns, nothing changes
   }
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => hit.addEventListener(t, endDrag));
+  hit.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });   // phones: stop the page from scrolling/cancelling the pull
+  hit.addEventListener('touchmove', (e) => { if (drag && e.cancelable) e.preventDefault(); }, { passive: false });
   hit.addEventListener('contextmenu', (e) => e.preventDefault());
   hit.addEventListener('dragstart', (e) => e.preventDefault());
 
