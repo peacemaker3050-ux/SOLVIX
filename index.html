@@ -369,12 +369,25 @@ html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
 .pdf-canvas-container{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:14px;background:#020612;min-height:360px}
 #pdf-canvas{max-width:100%;height:auto;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,0.6);background:#fff}
 
-/* ===== Solvix AI Assistant Chatbot ===== */
-.chat-bubble{max-width:84%;padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.6;word-break:break-word}
-.chat-bubble.user{align-self:flex-end;background:linear-gradient(135deg,#0a78bd,#22d0ff);color:#020611;font-weight:600;border-bottom-right-radius:2px}
-.chat-bubble.ai{align-self:flex-start;background:#0d1c3a;border:1px solid rgba(80,170,255,.25);color:#dff2ff;border-bottom-left-radius:2px}
-.chat-bubble pre{background:#040916;padding:10px;border-radius:6px;overflow-x:auto;margin:8px 0 4px;font-family:ui-monospace,monospace;font-size:12.5px;border:1px solid rgba(80,170,255,.2)}
-.chat-bubble code{background:rgba(0,0,0,.35);padding:2px 6px;border-radius:4px;font-family:ui-monospace,monospace;font-size:12px}
+/* ===== Solvix AI Assistant Full-Canvas Chatbot ===== */
+.content.chat-mode{padding:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+.page.chat-page{max-width:100%!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;flex:1!important;min-height:0!important;border-radius:0!important;animation:none!important}
+.chat-full-view{display:flex;flex-direction:column;flex:1;width:100%;height:100%;min-height:0;background:radial-gradient(120% 70% at 50% 0,rgba(34,208,255,.07),transparent 65%),linear-gradient(180deg,#060e24,#030713);overflow:hidden}
+.chat-top-header{display:flex;align-items:center;justify-content:space-between;padding:12px clamp(16px,3vw,36px);background:rgba(13,27,61,.75);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);flex-shrink:0}
+.chat-msgs-scroller{flex:1;min-height:0;overflow-y:auto;padding:22px clamp(16px,4vw,40px);display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.chat-bubble{max-width:min(920px,94%);padding:14px 20px;border-radius:16px;font-size:14.5px;line-height:1.7;word-break:break-word;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.chat-bubble.user{align-self:flex-end;background:linear-gradient(135deg,#0a84d6,#22d0ff);color:#020611;font-weight:600;border-bottom-right-radius:4px}
+.chat-bubble.ai{align-self:flex-start;background:#0d1e3d;border:1px solid rgba(80,170,255,.25);color:#e1f2fd;border-bottom-left-radius:4px;width:fit-content}
+.chat-bubble pre{background:#020612;padding:14px 18px;border-radius:10px;overflow-x:auto;margin:10px 0 6px;font-family:ui-monospace,monospace;font-size:13px;line-height:1.55;border:1px solid rgba(80,170,255,.25)}
+.chat-bubble code{background:rgba(0,0,0,.35);padding:3px 7px;border-radius:5px;font-family:ui-monospace,monospace;font-size:12.5px}
+.chat-bubble p{margin:0 0 10px}.chat-bubble p:last-child{margin-bottom:0}
+.chat-chips-row{padding:8px clamp(16px,3vw,32px);display:flex;gap:8px;overflow-x:auto;white-space:nowrap;background:rgba(6,13,32,.75);backdrop-filter:blur(8px);border-top:1px solid rgba(80,170,255,.08);flex-shrink:0}
+.chat-chip{font-size:12px;padding:6px 14px;border-radius:20px;background:rgba(34,208,255,.08);border:1px solid rgba(80,170,255,.25);color:#d0e6ff;cursor:pointer;transition:.2s}
+.chat-chip:hover{background:rgba(34,208,255,.2);color:#fff;border-color:var(--cy)}
+.chat-composer{display:flex;gap:10px;align-items:center;padding:12px clamp(16px,3vw,36px);background:#070f24;border-top:1px solid var(--bd);flex-shrink:0}
+.chat-composer input{flex:1;background:#030713;border:1px solid var(--bd);border-radius:10px;color:#fff;padding:12px 18px;font-size:14.5px;outline:none;transition:border-color .2s}
+.chat-composer input:focus{border-color:var(--cy);box-shadow:0 0 14px -4px var(--cy)}
+.chat-send-btn{padding:0 22px;height:44px;display:flex;align-items:center;gap:6px;font-weight:700}
 
 /* ===== Content protection (members only) ===== */
 body.guard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -1096,7 +1109,7 @@ window.SOLVIX_CONFIG = {
     'Loading document...': 'جاري تحميل الملف...',
     'AI Task Studio': 'استوديو الذكاء الاصطناعي للمهام',
     'Generate with AI': 'توليد بالذكاء الاصطناعي',
-    'Generate quizzes and coding tasks from session slides or topics using Gemini AI.': 'توليد اختبارات ومسائل برمجية من سلايدات المحاضرات أو الموضوعات باستخدام Gemini AI.',
+    'Generate quizzes and coding tasks from session slides or topics using Gemini 3.8 Flash.': 'توليد اختبارات ومسائل برمجية من سلايدات المحاضرات أو الموضوعات باستخدام Gemini 3.8 Flash.',
     'Select session material': 'اختر المحاضرة أو الموضوع',
     'Choose an uploaded session': 'اختر محاضرة مرفوعة',
     'Or upload a PDF file': 'أو ارفع ملف PDF',
@@ -1105,7 +1118,16 @@ window.SOLVIX_CONFIG = {
     'Target level': 'المستوى المستهدف',
     'Generate Task': 'توليد الكويز الآن',
     'Extracting session material...': 'جاري استخراج محتوى المحاضرة...',
-    'Gemini AI is crafting engineering questions...': 'الذكاء الاصطناعي يقوم بصياغة الأسئلة الهندسية...',
+    'Gemini 3.8 Flash is crafting engineering questions...': 'الذكاء الاصطناعي (Gemini 3.8 Flash) يقوم بصياغة الأسئلة الهندسية...',
+    'Study Hub & Library': 'المحاضرات والمكتبة الهندسية',
+    'All lecture notes, session slides, textbooks, and engineering cheat-sheets in one place.': 'جميع المحاضرات، سلايدات السيشنات، المراجع، والكتب الهندسية في مكان واحد.',
+    'Sessions & Slides': 'المحاضرات وسلايدات السيشنات',
+    'Books & References': 'المراجع والكتب والمذكرات',
+    'Resource title': 'عنوان المرجع / الكتاب',
+    'Resource link (Google Drive / Direct link)': 'رابط المرجع (Google Drive أو رابط مباشر)',
+    'Or upload local file (PDF / Doc / Archive)': 'أو رفع ملف من جهازك (PDF / مذكرات)',
+    'Add resource': 'إضافة مرجع أو كتاب',
+    'Upload session': 'رفع وحفظ المحاضرة',
     'Task generated successfully! Loaded into the studio for your review.': 'تم توليد المهمة بنجاح! تم تحميلها في الاستوديو لمراجعتها والتعديل عليها.',
     'Please select a session, upload a PDF, or enter a topic.': 'يرجى اختيار محاضرة أو رفع PDF أو كتابة موضوع.',
     'AI Assistant': 'المساعد الذكي',
@@ -1292,7 +1314,6 @@ window.SOLVIX_CONFIG = {
       ['study', 'Study Hub', 'book'],
       ['assistant', 'AI Assistant', 'bot'],
       ['leaderboard', 'Leaderboard', 'up'],
-      ['resources', 'Resources', 'inbox'],
       ['forum', 'Q&A Forum', 'users'],
       ['vault', 'Trophies Vault', 'trophy'],
       ['profile', 'My profile', 'user'],
@@ -1306,7 +1327,6 @@ window.SOLVIX_CONFIG = {
       ['study', 'Study Hub', 'book'],
       ['assistant', 'AI Assistant', 'bot'],
       ['analytics', 'Analytics', 'tasks'],
-      ['resources', 'Resources', 'inbox'],
       ['announces', 'Broadcast', 'bell'],
       ['trophies', 'Trophies Studio', 'trophy']
     ]
@@ -1343,9 +1363,9 @@ function showUpdateBar(onUpdate) {
   if (document.getElementById('upd')) return;
   const d = document.createElement('div');
   d.id = 'upd'; d.setAttribute('role', 'status');
-  d.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;background:#0b1630;border:1px solid #22d0ff;border-radius:12px;color:#fff;font:600 14px/1.6 Cairo,Inter,system-ui,sans-serif';
-  d.innerHTML = '<span>يوجد تحديث جديد للتطبيق</span><button class="btn" style="padding:8px 14px">تحديث الآن</button>';
-  d.querySelector('button').onclick = () => { d.querySelector('button').disabled = true; onUpdate(); };
+  d.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 18px;max-width:520px;margin:0 auto;background:#0d1833;border:1px solid #22d0ff;border-radius:14px;box-shadow:0 10px 32px rgba(0,0,0,0.7),0 0 16px rgba(34,208,255,0.3);color:#fff;font:600 14px/1.5 Inter,system-ui,sans-serif';
+  d.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:#22d0ff;box-shadow:0 0 10px #22d0ff;display:inline-block"></span><span>An update is available for this app.</span></div><button class="btn sm" style="padding:7px 16px;font-size:13px;white-space:nowrap">Update now</button>';
+  d.querySelector('button').onclick = () => { d.querySelector('button').disabled = true; d.querySelector('button').textContent = 'Updating...'; onUpdate(); };
   document.body.append(d);
 }
   async function initPushNotifications() {
@@ -1430,14 +1450,16 @@ function showUpdateBar(onUpdate) {
     );
   }
   function nav(v, fromHistory) {
+    if (v === 'resources') { v = 'study'; F.studyTab = 'resources'; }
     if (!fromHistory && route.v && route.v !== v) {
       history.pushState({ view: v }, '');
     }
     route.v = v; firstPaint = true;
     $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v));
     const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v);
-    $('#top-title').textContent = L ? tr(L[1]) : '';
-    $('#content').innerHTML = '<div class="page">' + V[v].html() + '</div>';
+    $('#top-title').textContent = L ? tr(L[1]) : (v === 'assistant' ? tr('Solvix AI Assistant') : '');
+    $('#content').classList.toggle('chat-mode', v === 'assistant');
+    $('#content').innerHTML = '<div class="page' + (v === 'assistant' ? ' chat-page' : '') + '">' + (V[v] ? V[v].html() : '') + '</div>';
     $('#side').classList.remove('open');
     $('#scrim').classList.remove('open');
     paint();
@@ -1795,6 +1817,100 @@ function showUpdateBar(onUpdate) {
     }
   }
 
+  /* ---------- study hub & library engine ---------- */
+  function paintStudyHub() {
+    const curTab = F.studyTab || 'sessions';
+    const body = $('#study-tab-body');
+    if (!body) return;
+
+    if (curTab === 'sessions') {
+      const isAdm = isAdmin();
+      let uploadForm = '';
+      if (isAdm) {
+        uploadForm = '<form class="card" id="session-form" style="margin-bottom:20px">'
+          + '<h3 style="margin:0 0 12px">' + tr('Add new session') + '</h3>'
+          + '<div class="field"><label for="ses-title">' + tr('Session title') + '</label><input id="ses-title" required placeholder="e.g. Session 1: Control Systems Overview"></div>'
+          + '<div class="field"><label for="ses-desc">' + tr('Session description') + '</label><textarea id="ses-desc" placeholder="Summary of topics covered..."></textarea></div>'
+          + '<div class="two">'
+          + '  <div class="field"><label for="ses-dept">' + tr('Department') + '</label><select id="ses-dept"></select></div>'
+          + '  <div class="field"><label for="ses-date">' + tr('Session date') + '</label><input id="ses-date" type="date"></div>'
+          + '</div>'
+          + '<div class="field"><label for="ses-link">' + tr('PDF Document link') + '</label><input id="ses-link" type="url" dir="ltr" placeholder="https://res.cloudinary.com/... or direct link"></div>'
+          + '<div class="field"><label for="ses-file">' + tr('Or upload local PDF file') + '</label><input id="ses-file" type="file" accept=".pdf,application/pdf"></div>'
+          + '<p class="error" id="ses-err"></p>'
+          + '<button class="btn sm" type="submit" id="ses-submit">' + ico('plus', 16) + ' ' + tr('Upload session') + '</button>'
+          + '</form>';
+      }
+
+      body.innerHTML = uploadForm
+        + '<div class="chips" id="ses-chips"></div>'
+        + '<div class="list" id="ses-list"></div>';
+
+      if (isAdm && $('#ses-dept') && !$('#ses-dept').dataset.ready) {
+        $('#ses-dept').dataset.ready = '1';
+        $('#ses-dept').innerHTML = DEPTS.map((d) => '<option value="' + esc(d.ar) + '">' + esc(nm(d.ar)) + '</option>').join('');
+        const today = new Date().toISOString().split('T')[0];
+        if ($('#ses-date') && !$('#ses-date').value) $('#ses-date').value = today;
+      }
+
+      $('#ses-chips').innerHTML = '<button class="chip' + (F.sesDept === '0' ? ' on' : '') + '" data-sesf="0">' + tr('All') + '</button>' + DEPTS.map((d) => '<button class="chip' + (F.sesDept === d.ar ? ' on' : '') + '" data-sesf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
+
+      const S = (D.sessions || []).filter((s) => !s.deleted && (F.sesDept === '0' || s.dept === F.sesDept)).sort((a, b) => (b.date || b.createdAt) - (a.date || a.createdAt));
+
+      $('#ses-list').innerHTML = S.length ? S.map((s, i) => {
+        const dateStr = s.date ? new Date(s.date).toLocaleDateString() : fmt(s.createdAt);
+        return '<div class="card" style="margin-bottom:12px;--i:' + i + '">'
+          + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+          + '  <div style="flex:1;min-width:240px">'
+          + '    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          + '      <span class="pill" style="font-size:11px">' + esc(nm(s.dept)) + '</span>'
+          + '      <small style="color:#8397bb">' + dateStr + '</small>'
+          + '    </div>'
+          + '    <h4 style="margin:0 0 6px;font-size:16px;color:#fff">' + esc(s.title) + '</h4>'
+          + '    ' + (s.desc ? '<p style="color:#cfe2ff;font-size:13px;margin:0 0 10px;line-height:1.5">' + esc(s.desc) + '</p>' : '')
+          + '  </div>'
+          + '  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          + '    <button class="btn sm" data-readpdf="' + esc(s.pdfUrl) + '" data-title="' + esc(s.title) + '">' + ico('book', 16) + ' ' + tr('Read PDF') + '</button>'
+          + '    <a href="' + esc(s.pdfUrl) + '" download class="btn sm ghost">' + ico('inbox', 16) + ' ' + tr('Download') + '</a>'
+          + '    ' + (isAdm ? '<button class="btn sm bad" data-delses="' + esc(s.id) + '">' + ico('x', 16) + ' ' + tr('Delete') + '</button>' : '')
+          + '  </div>'
+          + '</div>'
+          + '</div>';
+      }).join('') : empty(tr('No study sessions uploaded for this department yet.'));
+
+    } else {
+      const isAdm = isAdmin();
+      let resUpload = '';
+      if (isAdm) {
+        resUpload = '<form class="card" id="res-form" style="margin-bottom:20px">'
+          + '<h3 style="margin:0 0 12px">' + (LANG === 'ar' ? 'إضافة مرجع أو كتاب' : 'Add resource') + '</h3>'
+          + '<div class="field"><label for="res-title">' + (LANG === 'ar' ? 'عنوان المرجع / الكتاب' : 'Title') + '</label><input id="res-title" required placeholder="e.g. Electric Machinery Fundamentals - Chapman"></div>'
+          + '<div class="two">'
+          + '  <div class="field"><label for="res-dept">' + tr('Department') + '</label><select id="res-dept"></select></div>'
+          + '  <div class="field"><label for="res-link">' + (LANG === 'ar' ? 'رابط المرجع (Google Drive أو Cloudinary)' : 'Resource link (Drive / Cloudinary)') + '</label><input id="res-link" type="url" dir="ltr" placeholder="https://..."></div>'
+          + '</div>'
+          + '<div class="field"><label for="res-file">' + (LANG === 'ar' ? 'أو رفع ملف من جهازك (PDF / مذكرات)' : 'Or upload file (PDF / Notes)') + '</label><input id="res-file" type="file"></div>'
+          + '<button class="btn sm" type="submit" id="res-submit">' + ico('plus', 16) + ' ' + (LANG === 'ar' ? 'إضافة المرجع' : 'Add resource') + '</button>'
+          + '</form>';
+      }
+
+      body.innerHTML = resUpload
+        + '<div class="chips" id="res-chips"></div>'
+        + '<div class="list" id="res-list"></div>';
+
+      if (isAdm && $('#res-dept') && !$('#res-dept').dataset.ready) {
+        $('#res-dept').dataset.ready = '1';
+        $('#res-dept').innerHTML = DEPTS.map((d) => '<option value="' + esc(d.ar) + '">' + esc(nm(d.ar)) + '</option>').join('');
+      }
+
+      $('#res-chips').innerHTML = '<button class="chip' + (F.resDept === '0' ? ' on' : '') + '" data-resf="0">' + tr('All') + '</button>' + DEPTS.map((d) => '<button class="chip' + (F.resDept === d.ar ? ' on' : '') + '" data-resf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
+
+      const list = (D.resources || []).filter((r) => !r.deleted && (F.resDept === '0' || r.dept === F.resDept)).sort((a,b) => b.createdAt - a.createdAt);
+
+      $('#res-list').innerHTML = list.length ? list.map((r, i) => '<div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(r.title) + '</b><br><small style="color:#9fb4d6">' + esc(nm(r.dept)) + ' · ' + fmt(r.createdAt) + '</small></div><div style="display:flex;gap:8px"><button class="btn sm ghost" data-preview="' + esc(r.link) + '" data-title="' + esc(r.title) + '">' + (LANG === 'ar' ? 'معاينة' : 'Preview') + '</button><a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer" class="btn sm">' + (LANG === 'ar' ? 'فتح' : 'Open') + '</a>' + (isAdmin() ? '<button class="btn sm bad" data-delres="' + r.id + '">' + ico('x', 16) + '</button>' : '') + '</div></div>').join('') : empty(LANG === 'ar' ? 'لا توجد مراجع أو كتب مرفوعة لهذا القسم حتى الآن' : 'No resources uploaded yet');
+    }
+  }
+
   /* ---------- solvix ai assistant chatbot engine ---------- */
   let aiChatHistory = [];
   try { aiChatHistory = JSON.parse(store.getItem('svx.aiChat') || '[]'); } catch (_) { aiChatHistory = []; }
@@ -1812,10 +1928,10 @@ function showUpdateBar(onUpdate) {
     const box = $('#chat-msgs');
     if (!box) return;
     if (!aiChatHistory.length) {
-      box.innerHTML = '<div style="margin:auto;text-align:center;padding:24px 12px;color:#8397bb">'
-        + '<div class="pulse" style="margin:0 auto 12px"><i></i><i></i>' + ico('bot', 32) + '</div>'
-        + '<b style="color:#fff;font-size:15px">' + (LANG === 'ar' ? 'مرحباً بك! أنا مساعد Solvix الذكي' : 'Welcome! I am Solvix AI Assistant') + '</b>'
-        + '<p style="font-size:13px;max-width:380px;margin:8px auto 0;line-height:1.6">' + (LANG === 'ar' ? 'اسألني أي سؤال في الهندسة، الكود، الدوائر الإلكترونية أو حل المسائل.' : 'Ask me anything about engineering, code debugging, circuits, mathematics or tasks.') + '</p>'
+      box.innerHTML = '<div style="margin:auto;text-align:center;padding:40px 16px;color:#8397bb">'
+        + '<div class="pulse" style="margin:0 auto 16px"><i></i><i></i>' + ico('bot', 38) + '</div>'
+        + '<b style="color:#fff;font-size:18px">' + (LANG === 'ar' ? 'مرحباً بك! أنا مرشدك الهندسي Solvix AI' : 'Welcome! I am Solvix AI Mentor') + '</b>'
+        + '<p style="font-size:14px;max-width:540px;margin:12px auto 0;line-height:1.7;color:#b2c8ea">' + (LANG === 'ar' ? 'اسألني أي سؤال في الهندسة، الدوائر الإلكترونية، كتابة وتصحيح الكود، أو شرح مفاهيم المواد والتاسكات.' : 'Ask me anything about engineering concepts, circuit analysis, code debugging, or task assistance.') + '</p>'
         + '</div>';
       return;
     }
@@ -1962,59 +2078,17 @@ function showUpdateBar(onUpdate) {
     },
     study: {
       html: () => {
-        const isAdm = isAdmin();
-        const title = tr('Study Hub');
-        const lede = tr('Lecture notes, session slides and study materials for your engineering track.');
-        const deptFilter = '<div class="chips" id="ses-chips"></div>';
-        let uploadForm = '';
-        if (isAdm) {
-          uploadForm = '<form class="card" id="session-form" style="margin-bottom:20px">'
-            + '<h3 style="margin:0 0 12px">' + tr('Add new session') + '</h3>'
-            + '<div class="field"><label for="ses-title">' + tr('Session title') + '</label><input id="ses-title" required placeholder="e.g. Session 1: Control Systems Overview"></div>'
-            + '<div class="field"><label for="ses-desc">' + tr('Session description') + '</label><textarea id="ses-desc" placeholder="Summary of topics covered..."></textarea></div>'
-            + '<div class="two">'
-            + '  <div class="field"><label for="ses-dept">' + tr('Department') + '</label><select id="ses-dept"></select></div>'
-            + '  <div class="field"><label for="ses-date">' + tr('Session date') + '</label><input id="ses-date" type="date"></div>'
-            + '</div>'
-            + '<div class="field"><label for="ses-link">' + tr('PDF Document link') + '</label><input id="ses-link" type="url" dir="ltr" placeholder="https://res.cloudinary.com/... or direct link"></div>'
-            + '<div class="field"><label for="ses-file">' + tr('Or upload local PDF file') + '</label><input id="ses-file" type="file" accept=".pdf,application/pdf"></div>'
-            + '<p class="error" id="ses-err"></p>'
-            + '<button class="btn sm" type="submit" id="ses-submit">' + ico('plus', 16) + ' ' + tr('Upload session') + '</button>'
-            + '</form>';
-        }
-        return '<h2 class="ph">' + title + '</h2><p class="pp">' + lede + '</p>' + uploadForm + deptFilter + '<div class="list" id="ses-list"></div>';
+        const curTab = F.studyTab || 'sessions';
+        return '<h2 class="ph">' + tr('Study Hub') + '</h2>'
+          + '<p class="pp">' + tr('All lecture notes, session slides, textbooks, and engineering cheat-sheets in one place.') + '</p>'
+          + '<div class="chips" style="margin-bottom:18px">'
+          + '  <button class="chip' + (curTab === 'sessions' ? ' on' : '') + '" data-studytab="sessions">' + ico('book', 16) + ' ' + (LANG === 'ar' ? 'المحاضرات وسلايدات السيشنات' : 'Sessions & Slides') + '</button>'
+          + '  <button class="chip' + (curTab === 'resources' ? ' on' : '') + '" data-studytab="resources">' + ico('inbox', 16) + ' ' + (LANG === 'ar' ? 'المراجع والكتب والمذكرات' : 'Books & References') + '</button>'
+          + '</div>'
+          + '<div id="study-tab-body"></div>';
       },
       paint() {
-        if (isAdmin() && $('#ses-dept') && !$('#ses-dept').dataset.ready) {
-          $('#ses-dept').dataset.ready = '1';
-          $('#ses-dept').innerHTML = DEPTS.map((d) => '<option value="' + esc(d.ar) + '">' + esc(nm(d.ar)) + '</option>').join('');
-          const today = new Date().toISOString().split('T')[0];
-          if ($('#ses-date')) $('#ses-date').value = today;
-        }
-        $('#ses-chips').innerHTML = '<button class="chip' + (F.sesDept === '0' ? ' on' : '') + '" data-sesf="0">' + tr('All') + '</button>' + DEPTS.map((d) => '<button class="chip' + (F.sesDept === d.ar ? ' on' : '') + '" data-sesf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
-        
-        const S = (D.sessions || []).filter((s) => !s.deleted && (F.sesDept === '0' || s.dept === F.sesDept)).sort((a, b) => (b.date || b.createdAt) - (a.date || a.createdAt));
-        
-        $('#ses-list').innerHTML = S.length ? S.map((s, i) => {
-          const dateStr = s.date ? new Date(s.date).toLocaleDateString() : fmt(s.createdAt);
-          return '<div class="card" style="margin-bottom:12px;--i:' + i + '">'
-            + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
-            + '  <div style="flex:1;min-width:240px">'
-            + '    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
-            + '      <span class="pill" style="font-size:11px">' + esc(nm(s.dept)) + '</span>'
-            + '      <small style="color:#8397bb">' + dateStr + '</small>'
-            + '    </div>'
-            + '    <h4 style="margin:0 0 6px;font-size:16px;color:#fff">' + esc(s.title) + '</h4>'
-            + '    ' + (s.desc ? '<p style="color:#cfe2ff;font-size:13px;margin:0 0 10px;line-height:1.5">' + esc(s.desc) + '</p>' : '')
-            + '  </div>'
-            + '  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-            + '    <button class="btn sm" data-readpdf="' + esc(s.pdfUrl) + '" data-title="' + esc(s.title) + '">' + ico('book', 16) + ' ' + tr('Read PDF') + '</button>'
-            + '    <a href="' + esc(s.pdfUrl) + '" download class="btn sm ghost">' + ico('inbox', 16) + ' ' + tr('Download') + '</a>'
-            + '    ' + (isAdmin() ? '<button class="btn sm bad" data-delses="' + esc(s.id) + '">' + ico('x', 16) + ' ' + tr('Delete') + '</button>' : '')
-            + '  </div>'
-            + '</div>'
-            + '</div>';
-        }).join('') : empty(tr('No study sessions uploaded for this department yet.'));
+        paintStudyHub();
       }
     },
     assistant: {
@@ -2025,22 +2099,21 @@ function showUpdateBar(onUpdate) {
           LANG === 'ar' ? 'ما الفرق بين BJT و MOSFET؟' : 'What is the difference between BJT and MOSFET?',
           LANG === 'ar' ? 'ساعدني في تصحيح خطأ برمجي (Debug)' : 'How do I debug a segmentation fault in C++?'
         ];
-        return '<h2 class="ph">' + tr('Solvix AI Assistant') + '</h2><p class="pp">' + tr('Your 24/7 personal engineering mentor & coding companion') + '</p>'
-          + '<div class="card" style="padding:0;display:flex;flex-direction:column;height:min(72vh,680px);overflow:hidden;background:#050c20;border:1px solid var(--bd);border-radius:14px">'
-          + '  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0d1b3d;border-bottom:1px solid var(--bd)">'
-          + '    <div style="display:flex;align-items:center;gap:10px">'
-          + '      <div class="aura l2" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center">' + ico('bot', 22) + '</div>'
-          + '      <div><b style="color:#fff;font-size:14px">Solvix Engineering AI</b><small style="display:block;color:#35c4ff;font-size:11px">● Online · Gemini 1.5 Powered</small></div>'
+        return '<div class="chat-full-view">'
+          + '  <div class="chat-top-header">'
+          + '    <div style="display:flex;align-items:center;gap:12px">'
+          + '      <div class="aura l2" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center">' + ico('bot', 24) + '</div>'
+          + '      <div><b style="color:#fff;font-size:15px">' + tr('Solvix AI Assistant') + '</b><small style="display:block;color:#35c4ff;font-size:11.5px">● Online · Gemini 3.8 Flash Powered</small></div>'
           + '    </div>'
-          + '    <button type="button" class="btn sm ghost" id="chat-clear" style="padding:4px 10px;font-size:12px">' + tr('Clear chat') + '</button>'
+          + '    <button type="button" class="btn sm ghost" id="chat-clear" style="padding:6px 14px;font-size:12px">' + tr('Clear chat') + '</button>'
           + '  </div>'
-          + '  <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>'
-          + '  <div style="padding:8px 14px 4px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap" id="chat-chips">'
-          +      suggestions.map((s) => '<button type="button" class="chip" data-chatq="' + esc(s) + '" style="font-size:11.5px;padding:4px 10px">' + esc(s) + '</button>').join('')
+          + '  <div id="chat-msgs" class="chat-msgs-scroller"></div>'
+          + '  <div class="chat-chips-row" id="chat-chips">'
+          +      suggestions.map((s) => '<button type="button" class="chip chat-chip" data-chatq="' + esc(s) + '">' + esc(s) + '</button>').join('')
           + '  </div>'
-          + '  <form id="chat-form" style="display:flex;gap:8px;padding:10px 14px;background:#091326;border-top:1px solid var(--bd)">'
-          + '    <input id="chat-in" placeholder="' + tr('Ask anything about engineering, code, circuits or tasks...') + '" autocomplete="off" style="flex:1;background:#030712;border:1px solid var(--bd);border-radius:8px;color:#fff;padding:10px 14px;font-size:14px">'
-          + '    <button type="submit" class="btn sm" id="chat-send" style="padding:0 18px">' + ico('up', 18) + '</button>'
+          + '  <form id="chat-form" class="chat-composer">'
+          + '    <input id="chat-in" placeholder="' + tr('Ask anything about engineering, code, circuits or tasks...') + '" autocomplete="off">'
+          + '    <button type="submit" class="btn sm chat-send-btn" id="chat-send">' + ico('up', 18) + '</button>'
           + '  </form>'
           + '</div>';
       },
@@ -2097,18 +2170,8 @@ function showUpdateBar(onUpdate) {
       }
     },
     resources: {
-      html: () => '<h2 class="ph">' + tr('Resources') + '</h2><p class="pp">Textbooks, lecture notes, and cheat-sheets filtered by engineering department.</p>'
-        + (isAdmin() ? '<form class="card" id="res-form" style="margin-bottom:20px"><h3 style="margin:0 0 12px">' + tr('Add resource') + '</h3><div class="field"><label for="res-title">Title</label><input id="res-title" required></div><div class="two"><div class="field"><label for="res-dept">Department</label><select id="res-dept"></select></div><div class="field"><label for="res-link">Resource link (Cloudinary / Drive)</label><input id="res-link" type="url" dir="ltr" placeholder="https://" required></div></div><button class="btn sm" type="submit">' + ico('plus', 16) + ' ' + tr('Add resource') + '</button></form>' : '')
-        + '<div class="chips" id="res-chips"></div><div class="list" id="res-list"></div>',
-      paint() {
-        if (isAdmin() && $('#res-dept') && !$('#res-dept').dataset.ready) {
-          $('#res-dept').dataset.ready = '1';
-          $('#res-dept').innerHTML = DEPTS.map((d) => '<option value="' + esc(d.ar) + '">' + esc(nm(d.ar)) + '</option>').join('');
-        }
-        $('#res-chips').innerHTML = '<button class="chip' + (F.resDept === '0' ? ' on' : '') + '" data-resf="0">All</button>' + DEPTS.map((d) => '<button class="chip' + (F.resDept === d.ar ? ' on' : '') + '" data-resf="' + esc(d.ar) + '">' + esc(nm(d.ar).split(' ')[0]) + '</button>').join('');
-        const list = D.resources.filter((r) => F.resDept === '0' || r.dept === F.resDept).sort((a,b) => b.createdAt - a.createdAt);
-        $('#res-list').innerHTML = list.length ? list.map((r, i) => '<div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;--i:' + i + '"><div><b>' + esc(r.title) + '</b><br><small style="color:#9fb4d6">' + esc(nm(r.dept)) + ' · ' + fmt(r.createdAt) + '</small></div><div style="display:flex;gap:8px"><button class="btn sm ghost" data-preview="' + esc(r.link) + '" data-title="' + esc(r.title) + '">Preview</button><a href="' + esc(r.link) + '" target="_blank" rel="noopener noreferrer" class="btn sm">Open</a>' + (isAdmin() ? '<button class="btn sm bad" data-delres="' + r.id + '">' + ico('x', 16) + '</button>' : '') + '</div></div>').join('') : empty('No resources uploaded yet');
-      }
+      html: () => V.study.html(),
+      paint: () => V.study.paint()
     },
     forum: {
       html: () => '<h2 class="ph">' + tr('Q&A Forum') + '</h2><p class="pp">Ask technical questions and get answers from senior peers and mentors.</p>'
@@ -2699,7 +2762,7 @@ function showUpdateBar(onUpdate) {
 
     const html = '<div class="mhead"><h3>✨ ' + tr('AI Task Studio') + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div>'
       + '<div class="mbody" style="text-align:start">'
-      + '<p class="note" style="margin-bottom:14px;color:#cfe2ff">' + tr('Generate quizzes and coding tasks from session slides or topics using Gemini AI.') + '</p>'
+      + '<p class="note" style="margin-bottom:14px;color:#cfe2ff">' + tr('Generate quizzes and coding tasks from session slides or topics using Gemini 3.8 Flash.') + '</p>'
       + '<div class="field"><label for="ai-session">' + tr('Choose an uploaded session') + '</label><select id="ai-session">' + sessionOpts + '</select></div>'
       + '<div class="field"><label for="ai-file">' + tr('Or upload a PDF file') + '</label><input id="ai-file" type="file" accept=".pdf,application/pdf"></div>'
       + '<div class="field"><label for="ai-topic">' + tr('Or enter lecture notes / topic') + '</label><textarea id="ai-topic" placeholder="e.g. Microcontrollers, timers, interrupts, and GPIO configuration in embedded C..." rows="3"></textarea></div>'
@@ -2761,7 +2824,7 @@ function showUpdateBar(onUpdate) {
           }
         }
 
-        statusTxt.textContent = tr('Gemini AI is crafting engineering questions...');
+        statusTxt.textContent = tr('Gemini 3.8 Flash is crafting engineering questions...');
 
         const serverUrl = CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app';
         const res = await fetch(serverUrl + '/api/ai-generate-task', {
@@ -2824,7 +2887,7 @@ function showUpdateBar(onUpdate) {
       + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:12px 14px;background:linear-gradient(90deg,rgba(34,208,255,0.12),rgba(138,92,255,0.12));border:1px solid rgba(34,208,255,0.3);border-radius:12px;gap:12px;flex-wrap:wrap">'
       + '  <div style="display:flex;align-items:center;gap:10px">'
       + '    <div style="font-size:24px">🤖</div>'
-      + '    <div><b style="color:#fff;font-size:14px">' + tr('AI Task Studio') + '</b><small style="display:block;color:#9fb4d6;font-size:12px">' + tr('Generate quizzes and coding tasks from session slides or topics using Gemini AI.') + '</small></div>'
+      + '    <div><b style="color:#fff;font-size:14px">' + tr('AI Task Studio') + '</b><small style="display:block;color:#9fb4d6;font-size:12px">' + tr('Generate quizzes and coding tasks from session slides or topics using Gemini 3.8 Flash.') + '</small></div>'
       + '  </div>'
       + '  <button type="button" class="btn sm" data-aigen="1" style="background:linear-gradient(90deg,#22d0ff,#8a5cff);color:#020611;font-weight:700">✨ ' + tr('Generate with AI') + '</button>'
       + '</div>'
@@ -3149,8 +3212,13 @@ function showUpdateBar(onUpdate) {
   }
   const C = $('#content');
   C.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann],[data-preview],[data-subf],[data-grade],[data-viewsubs],[data-readpdf],[data-sesf],[data-delses],[data-aigen],[data-chatq],#chat-clear'); if (!t) return;
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann],[data-preview],[data-subf],[data-grade],[data-viewsubs],[data-readpdf],[data-sesf],[data-delses],[data-aigen],[data-chatq],[data-studytab],#chat-clear'); if (!t) return;
     if (t.dataset.lang) setLang(t.dataset.lang);
+    else if (t.dataset.studytab) {
+      F.studyTab = t.dataset.studytab;
+      $$('[data-studytab]').forEach(b => b.classList.toggle('on', b.dataset.studytab === F.studyTab));
+      paintStudyHub();
+    }
     else if (t.dataset.req) openRequest(t.dataset.req);
     else if (t.dataset.mem) openMember(t.dataset.mem);
     else if (t.dataset.aigen) openAiTaskModal();
@@ -3169,7 +3237,7 @@ function showUpdateBar(onUpdate) {
     else if (t.dataset.grade) openGrade(t.dataset.grade);
     else if (t.dataset.viewsubs) { F.subTask = t.dataset.viewsubs; F.subFilter = 'all'; nav('submissions'); }
     else if (t.dataset.readpdf) openPdfReader(t.dataset.readpdf, t.dataset.title);
-    else if (t.dataset.sesf) { F.sesDept = t.dataset.sesf; V.study.paint(); }
+    else if (t.dataset.sesf) { F.sesDept = t.dataset.sesf; paintStudyHub(); }
     else if (t.dataset.delses) {
       const sid = t.dataset.delses;
       openModal('<div class="mhead"><h3>' + tr('Confirm deletion') + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><p class="note" style="text-align:start">' + tr('Are you sure you want to delete this session?') + '</p><div class="mfoot"><button class="btn sm ghost" data-close>' + tr('Cancel') + '</button><button class="btn sm bad" id="cfm-del-ses">' + tr('Delete') + '</button></div></div>');
@@ -3184,7 +3252,7 @@ function showUpdateBar(onUpdate) {
         }
       };
     }
-    else if (t.dataset.resf) { F.resDept = t.dataset.resf; V.resources.paint(); }
+    else if (t.dataset.resf) { F.resDept = t.dataset.resf; paintStudyHub(); }
     else if (t.dataset.open) openTask(t.dataset.open);
     else if (t.dataset.subs) openSubs(t.dataset.subs);
     else if (t.dataset.edtask) openEditTask(t.dataset.edtask);
@@ -3192,7 +3260,7 @@ function showUpdateBar(onUpdate) {
       const url = t.dataset.preview, title = t.dataset.title || 'Resource Preview';
       openModal('<div class="mhead"><h3>' + esc(title) + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody" style="padding:0;height:75dvh"><iframe src="' + esc(url) + '" style="width:100%;height:100%;border:0"></iframe></div><div class="mfoot"><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" class="btn sm">Open in new tab</a></div>');
     }
-    else if (t.dataset.delres) { db.set('resources', t.dataset.delres, { deleted: true }).then(() => toast('Resource deleted')); }
+    else if (t.dataset.delres) { db.set('resources', t.dataset.delres, { deleted: true }).then(() => { toast('Resource deleted'); paintStudyHub(); }); }
     else if (t.dataset.delann) { db.set('announces', t.dataset.delann, { deleted: true }).then(() => toast('Announcement removed')); }
     else if (t.dataset.sendrp) {
       const qid = t.dataset.sendrp, inp = $('.rp-in[data-qid="' + qid + '"]');
@@ -3234,41 +3302,55 @@ function showUpdateBar(onUpdate) {
     else if (e.target.id === 'set-form') { e.preventDefault(); saveSettings(); }
     else if (e.target.id === 'res-form') {
       e.preventDefault();
-      const titleInput = $('#res-title'), deptInput = $('#res-dept'), fileInput = $('#res-file'), submitBtn = $('#res-submit');
-      const file = fileInput.files[0];
-      if (!file) return toast('Please select a file', 'bad');
-      if (file.size > 5 * 1024 * 1024) return toast('File size must be less than 5MB', 'bad');
+      const titleInput = $('#res-title'), deptInput = $('#res-dept'), linkInput = $('#res-link'), fileInput = $('#res-file'), submitBtn = $('#res-submit');
+      const title = titleInput ? titleInput.value.trim() : '';
+      const dept = deptInput ? deptInput.value : '';
+      const link = linkInput ? linkInput.value.trim() : '';
+      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+      if (!title) return toast(tr('Please enter a title'), 'bad');
+      if (!link && !file) return toast(tr('Please provide a link or upload a file'), 'bad');
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Uploading...';
+      submitBtn.textContent = 'Saving...';
 
-      const reader = new FileReader();
-      reader.onload = async function(uploadEvent) {
+      const saveRes = async (resUrl, fileName = '') => {
         try {
-          const fileDataUrl = uploadEvent.target.result;
           await db.add('resources', {
-            title: titleInput.value.trim(),
-            dept: deptInput.value,
-            link: fileDataUrl,
-            fileName: file.name,
+            title,
+            dept,
+            link: resUrl,
+            fileName: fileName || title,
             createdAt: Date.now()
           });
           $('#res-form').reset();
-          toast('Resource uploaded successfully');
+          toast(tr('Resource uploaded successfully'));
         } catch (err) {
           console.error(err);
-          toast('Could not upload file', 'bad');
+          toast(tr('Could not save, please try again.'), 'bad');
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = tr('Add resource');
         }
       };
-      reader.onerror = () => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = tr('Add resource');
-        toast('Error reading file', 'bad');
-      };
-      reader.readAsDataURL(file);
+
+      if (file) {
+        if (file.size > 15 * 1024 * 1024) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = tr('Add resource');
+          return toast('File size must be less than 15MB', 'bad');
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => saveRes(ev.target.result, file.name);
+        reader.onerror = () => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = tr('Add resource');
+          toast('Error reading file', 'bad');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        saveRes(link);
+      }
     }
     else if (e.target.id === 'q-form') {
       e.preventDefault();
