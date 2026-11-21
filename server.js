@@ -144,6 +144,257 @@ app.post('/send-push', async (req, res) => {
   }
 });
 
+// توليد كويز ومهمة بالذكاء الاصطناعي من محتوى السيشن أو السلايدات
+app.post('/api/ai-generate-task', async (req, res) => {
+  try {
+    const { sessionText, topic, numQuestions = 5, level = 2, lang = 'en' } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(503).json({
+        error: 'GEMINI_API_KEY is not configured on the server. Please add GEMINI_API_KEY in your Railway environment variables.'
+      });
+    }
+
+    if (!sessionText && !topic) {
+      return res.status(400).json({ error: 'Either sessionText or topic is required' });
+    }
+
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const languageName = lang === 'ar' ? 'Arabic' : 'English';
+    const prompt = `You are an expert university engineering professor and technical curriculum examiner for the engineering community SOLVIX KOD.
+Create a comprehensive, high-quality technical assessment task based on the following session material or topic:
+
+---
+${sessionText ? sessionText.slice(0, 15000) : ''}
+${topic ? `\nTopic / Instructions: ${topic}` : ''}
+---
+
+Requirements:
+- Target student level: ${level} (Level 1=Initiate/Freshman, 2=Explorer, 3=Builder, 4=Engineer, 5=Mentor, 6=Core Lead).
+- Number of questions: ${numQuestions}.
+- Language: ${languageName} (all titles, questions, and options MUST be in ${languageName}).
+- Create a balanced mix of Multiple Choice (MCQ) and Short Answer questions testing practical comprehension, analytical thinking, and engineering concepts from the material.
+- For MCQ questions: provide exactly 4 clear distinct options in "opts", and indicate the zero-based index (0, 1, 2, or 3) of the correct option in "correct".
+- For Short Answer questions: provide expected correct keywords separated by "|" in "ans" (for example: "KCL|Kirchhoff Current Law").
+
+Return ONLY a valid JSON object with this exact structure, with NO surrounding markdown or backticks:
+{
+  "title": "Concise engineering task title (under 70 chars)",
+  "desc": "Brief 2-3 sentence overview of what this task evaluates and instructions for the student",
+  "timeLimit": 25,
+  "minLevel": ${level},
+  "questions": [
+    {
+      "kind": "mcq",
+      "text": "Question text here?",
+      "pts": 10,
+      "opts": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0,
+      "ans": ""
+    },
+    {
+      "kind": "short",
+      "text": "Short answer question here?",
+      "pts": 10,
+      "opts": ["", "", "", ""],
+      "correct": 0,
+      "ans": "keyword1|keyword2"
+    }
+  ]
+}`;
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          responseMimeType: "application/json"
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Gemini API Error:', response.status, errText);
+      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
+    }
+
+    const data = await response.json();
+    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!candidateText) {
+      return res.status(500).json({ error: 'No response content received from Gemini' });
+    }
+
+    let parsedResult;
+    try {
+      const cleaned = candidateText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+      parsedResult = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error('Failed parsing Gemini JSON:', candidateText);
+      return res.status(500).json({ error: 'AI output could not be parsed as JSON' });
+    }
+
+    console.log(`[AI Generator] Successfully generated task: "${parsedResult.title}" with ${parsedResult.questions?.length || 0} questions.`);
+    return res.json({ success: true, task: parsedResult });
+  } catch (error) {
+    console.error('Error in /api/ai-generate-task:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// تصحيح إجابات الطلاب المقالية والكتابية بالذكاء الاصطناعي
+app.post('/api/ai-grade', async (req, res) => {
+  try {
+    const { taskTitle, questions, answers, files, maxScore, lang = 'en' } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(503).json({
+        error: 'GEMINI_API_KEY is not configured on the server. Please add GEMINI_API_KEY in your Railway environment variables.'
+      });
+    }
+
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const languageName = lang === 'ar' ? 'Arabic' : 'English';
+
+    const prompt = `You are an expert university engineering professor grading a student's technical submission for SOLVIX KOD.
+Task: "${taskTitle || 'Engineering Assessment'}"
+Total Max Points: ${maxScore || 100}
+
+Here are the questions and the student's submitted answers:
+${JSON.stringify({ questions, answers, files }, null, 2)}
+
+Instructions:
+1. Evaluate each question fairly and objectively based on engineering correctness, problem-solving method, and clarity.
+2. For multiple choice or short answer with keys, check correctness.
+3. For essay, code, or explanation questions, evaluate depth of understanding, correctness of logic, and assign appropriate partial or full marks.
+4. Total score must not exceed ${maxScore || 100}.
+5. Write constructive, encouraging, and specific feedback for the student in ${languageName}.
+
+Return ONLY a valid JSON object with this exact structure, with NO surrounding markdown or backticks:
+{
+  "score": 85,
+  "feedback": "Constructive feedback text here in ${languageName}",
+  "marks": {
+    "q1": 10
+  }
+}`;
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Gemini API Error (Grade):', response.status, errText);
+      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
+    }
+
+    const data = await response.json();
+    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!candidateText) {
+      return res.status(500).json({ error: 'No response content received from Gemini' });
+    }
+
+    const cleaned = candidateText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const parsedResult = JSON.parse(cleaned);
+
+    console.log(`[AI Auto-Grading] Evaluated submission for "${taskTitle}": Score ${parsedResult.score}/${maxScore}`);
+    return res.json({ success: true, ...parsedResult });
+  } catch (error) {
+    console.error('Error in /api/ai-grade:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// المساعد الذكي للطلاب (Solvix AI Assistant Chatbot)
+app.post('/api/ai-chat', async (req, res) => {
+  try {
+    const { message, history = [], studentInfo = {} } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(503).json({
+        error: 'GEMINI_API_KEY is not configured on the server. Please add GEMINI_API_KEY in your Railway environment variables.'
+      });
+    }
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const studentContext = `The student's name is ${studentInfo.name || 'Student'}, department: ${studentInfo.dept || 'Engineering'}, level: ${studentInfo.level || 1}.`;
+
+    const systemInstruction = `You are Solvix AI, the intelligent, friendly, and expert engineering mentor for SOLVIX KOD — an elite engineering and coding community for university students.
+${studentContext}
+Your responsibilities:
+- Answer engineering, programming, mathematics, physics, and technical questions clearly, concisely, and accurately.
+- Provide clean code snippets (in C, C++, Python, JavaScript, Verilog, etc.) with brief explanations when asked.
+- Help students debug compiler errors, understand circuits, control theory, data structures, and algorithms.
+- Always be encouraging, respectful, and pedagogically sound.
+- Detect the language of the student's message: if they write in Arabic, respond in clear fluent Arabic; if they write in English, respond in English.
+- Keep responses concise and formatted with clean Markdown.`;
+
+    // Map history to Gemini contents format
+    const contents = [];
+    if (Array.isArray(history)) {
+      history.slice(-8).forEach((h) => {
+        if (h.sender === 'user' || h.role === 'user') {
+          contents.push({ role: 'user', parts: [{ text: h.text || h.content || '' }] });
+        } else if (h.sender === 'ai' || h.role === 'model') {
+          contents.push({ role: 'model', parts: [{ text: h.text || h.content || '' }] });
+        }
+      });
+    }
+    contents.push({ role: 'user', parts: [{ text: message }] });
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        contents,
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens: 1000
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Gemini API Error (Chat):', response.status, errText);
+      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!reply) {
+      return res.status(500).json({ error: 'No response from AI assistant' });
+    }
+
+    return res.json({ success: true, reply });
+  } catch (error) {
+    console.error('Error in /api/ai-chat:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Solvix Push Server running on port ${PORT}`);
