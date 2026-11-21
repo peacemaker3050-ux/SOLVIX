@@ -160,7 +160,7 @@ app.post('/api/ai-generate-task', async (req, res) => {
       return res.status(400).json({ error: 'Either sessionText or topic is required' });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const languageName = lang === 'ar' ? 'Arabic' : 'English';
     const prompt = `You are an expert university engineering professor and technical curriculum examiner for the engineering community SOLVIX KOD.
 Create a comprehensive, high-quality technical assessment task based on the following session material or topic:
@@ -258,7 +258,7 @@ app.post('/api/ai-grade', async (req, res) => {
       });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const languageName = lang === 'ar' ? 'Arabic' : 'English';
 
     const prompt = `You are an expert university engineering professor grading a student's technical submission for SOLVIX KOD.
@@ -336,7 +336,7 @@ app.post('/api/ai-chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const studentContext = `The student's name is ${studentInfo.name || 'Student'}, department: ${studentInfo.dept || 'Engineering'}, level: ${studentInfo.level || 1}.`;
 
     const systemInstruction = `You are Solvix AI, the intelligent, friendly, and expert engineering mentor for SOLVIX KOD — an elite engineering and coding community for university students.
