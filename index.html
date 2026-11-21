@@ -543,6 +543,7 @@ input[type=color]{height:40px;padding:2px;border:1px solid var(--bd);border-radi
     <div class="views" style="--i:1">
       <form class="view" data-view="apply" id="apply-form" novalidate>
         <div class="field"><label for="a-name">Full name</label><input id="a-name" autocomplete="name" maxlength="60" placeholder="Your full name" aria-describedby="a-name-err"><p class="error" id="a-name-err"></p></div>
+        <div class="field"><label for="a-phone">Phone number</label><input id="a-phone" type="tel" dir="ltr" maxlength="20" placeholder="+20 1xxxxxxxxx" aria-describedby="a-phone-err"><p class="error" id="a-phone-err"></p></div>
         <div class="field"><label for="a-dept">Department</label><select id="a-dept" aria-describedby="a-dept-err"></select><p class="error" id="a-dept-err"></p></div>
         <div class="field"><label for="a-prog">Program</label><select id="a-prog" aria-describedby="a-prog-err"></select><p class="error" id="a-prog-err"></p></div>
         <div class="field" style="margin-top:12px"><label for="a-year">Year</label><select id="a-year" aria-describedby="a-year-err"></select><p class="error" id="a-year-err"></p></div>
@@ -612,6 +613,9 @@ window.SOLVIX_CONFIG = {
   adminId: "278601",
   // Firebase Auth UID of the dedicated administrator account (Email/Password). It is not a secret; authorization must be enforced by Firebase rules, not by this value.
   adminUid: "9EtEMz2EuCbbSGzyHFVFYHq3maX2",
+  // 6) Push Notification Server URL (Railway or any external server)
+  pushServerUrl: "https://solvix-production-6d76abf4.up.railway.app",
+  vapidKey: "BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c",
   prepYear: { ar: "الفرقة الإعدادية", en: "Preparatory Year" },
   years: [
     { ar: "الفرقة الأولى", en: "First Year" },
@@ -1084,11 +1088,27 @@ window.SOLVIX_CONFIG = {
   $('#apply-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!db) return toast('لا يوجد اتصال بقاعدة البيانات', 'bad');
-    const name = $('#a-name').value.trim().replace(/\s+/g, ' '), A = acA.get(), dept = A.dept, program = A.program, year = A.year;
-    const v = [fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''), fe('a-dept', dept ? '' : 'Choose a department.'), fe('a-prog', A.progNeeded && !program ? 'Choose a program.' : ''), fe('a-year', year ? '' : 'Choose a year.'), fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')];
+    const name = $('#a-name').value.trim().replace(/\s+/g, ' ');
+    const phone = $('#a-phone') ? $('#a-phone').value.trim() : '';
+    const A = acA.get(), dept = A.dept, program = A.program, year = A.year;
+    const phoneValid = /^\+?[0-9\s-]{8,20}$/.test(phone);
+    const v = [
+      fe('a-name', name.split(' ').length < 2 || name.length < 6 ? 'Enter at least your first and last name.' : ''),
+      fe('a-phone', phoneValid ? '' : 'Enter a valid phone number.'),
+      fe('a-dept', dept ? '' : 'Choose a department.'),
+      fe('a-prog', A.progNeeded && !program ? 'Choose a program.' : ''),
+      fe('a-year', year ? '' : 'Choose a year.'),
+      fe('a-terms', $('#a-terms').checked ? '' : 'You must accept the terms and conditions.')
+    ];
     if (v.indexOf(false) >= 0) { const f = $('#apply-form [aria-invalid="true"]'); if (f) f.focus(); return; }
     const b = $('#a-submit'); b.disabled = true; b.textContent = 'Sending…';
-    try { const id = await db.add('requests', { name, dept, program, year, status: 'pending', uid: db.uid(), createdAt: Date.now() }); store.setItem('svx.req', id); watchReq(id); toast('Your request was sent successfully'); }
+    try {
+      const id = await db.add('requests', { name, phone, dept, program, year, status: 'pending', uid: db.uid(), createdAt: Date.now() });
+      store.setItem('svx.req', id);
+      watchReq(id);
+      toast('Your request was sent successfully');
+      notifyAdmins('طلب انضمام جديد', 'قدّم الطالب ' + name + ' طلب انضمام جديد (' + nm(dept) + ')', { type: 'new_request', requestId: id });
+    }
     catch (err) { console.error(err); toast('Could not send: ' + (err.code || err.message), 'bad'); }
     b.disabled = false; b.textContent = 'Send join request';
   });
@@ -1242,13 +1262,13 @@ function showUpdateBar(onUpdate) {
         const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
         const { getMessaging, getToken } = await import(B + 'firebase-messaging.js');
         const messaging = getMessaging();
-const reg = swReg || await navigator.serviceWorker.ready;
-const token = await getToken(messaging, {
-  vapidKey: 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c',
-  serviceWorkerRegistration: reg
-});
+        const reg = swReg || await navigator.serviceWorker.ready;
+        const token = await getToken(messaging, {
+          vapidKey: CONFIG.vapidKey || 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c',
+          serviceWorkerRegistration: reg
+        });
         if (token && me) {
-          await db.set('members', me.id, { fcmToken: token });
+          await db.set('members', me.id, { fcmToken: token, role: me.role || (isAdmin() ? 'admin' : 'member') });
         }
       }
     } catch (e) {
@@ -1265,10 +1285,7 @@ const token = await getToken(messaging, {
     const go = () => {
       LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
       body.classList.toggle('guard', !isAdmin());
-      
-      if (!isAdmin()) initPushNotifications();
-      LANG = store.getItem('svx.lang') === 'ar' ? 'ar' : 'en'; applyLang(); root.classList.remove('restoring'); body.classList.add('in-app'); $('#app').hidden = false;
-      body.classList.toggle('guard', !isAdmin());
+      initPushNotifications();
       const old = $('#wm'); if (old) old.remove();
       if (!isAdmin()) {
         const w = document.createElement('div'); w.id = 'wm'; w.setAttribute('aria-hidden', 'true');
@@ -1389,19 +1406,65 @@ const token = await getToken(messaging, {
     document.body.append(o); o.querySelector('button').onclick = () => o.remove(); o.querySelector('button').focus();
   }
 
-  /* ===== Notifications System ===== */
+  /* ===== Notifications & Push Notification System ===== */
+  async function sendPushNotification(tokens, title, body, data = {}) {
+    const list = (Array.isArray(tokens) ? tokens : [tokens]).filter(Boolean);
+    if (!list.length) return;
+    const serverUrl = CONFIG.pushServerUrl;
+    if (!serverUrl) {
+      console.log('Push Server URL not configured yet. Payload:', { count: list.length, title, body });
+      return;
+    }
+    try {
+      await fetch(serverUrl.replace(/\/+$/, '') + '/send-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokens: list, title, body, data })
+      });
+    } catch (e) {
+      console.warn('Could not send push notification via server', e);
+    }
+  }
+
+  async function notifyAdmins(title, body, data = {}) {
+    try {
+      const allMembers = await db.list('members');
+      const adminTokens = allMembers
+        .filter((m) => (m.role === 'admin' || m.id === CONFIG.adminId.toUpperCase()) && m.fcmToken)
+        .map((m) => m.fcmToken);
+      if (adminTokens.length) {
+        await sendPushNotification(adminTokens, title, body, data);
+      }
+    } catch (e) {
+      console.warn('Could not notify admins', e);
+    }
+  }
+
+  async function broadcastPush(title, body, data = {}) {
+    try {
+      const allMembers = await db.list('members');
+      const memberTokens = allMembers
+        .filter((m) => !m.deleted && m.fcmToken)
+        .map((m) => m.fcmToken);
+      if (memberTokens.length) {
+        await sendPushNotification(memberTokens, title, body, data);
+      }
+    } catch (e) {
+      console.warn('Could not broadcast push', e);
+    }
+  }
+
   async function notifyMember(to, type, meta) {
     await db.add('notifs', { to, type, meta: meta || {}, read: false, createdAt: Date.now() }).catch(() => {});
     
     try {
       const recipient = await db.get('members', to);
       if (recipient && recipient.fcmToken) {
-        // ملاحظة: إرسال الإشعار الفعلي عبر الـ Client يتطلب Cloud Function أو سيرفر خارجي (مثل Node.js) 
-        // يستقبل الطلب ويقوم بمراسلة سيرفرات FCM باستخدام المفتاح السري (Server Key).
-        console.log('FCM Token found for member:', to, recipient.fcmToken);
+        const tx = notifText({ type, meta });
+        await sendPushNotification([recipient.fcmToken], tx[0], tx[1], { type, to });
       }
     } catch (e) {
-      console.warn('Could not trigger push notification', e);
+      console.warn('Could not trigger push notification for member', e);
     }
   }
 
@@ -1994,7 +2057,14 @@ const token = await getToken(messaging, {
   };
   function openRequest(id) {
     const r = D.requests.find((x) => x.id === id); if (!r) return; const p = PILL[r.status];
-    openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([['Department', esc(nm(r.dept))], ['Program', esc(nm(r.program) || '—')], ['Year', esc(nm(r.year))], ['Request date', fmt(r.createdAt)], ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']])
+    openModal('<div class="mhead"><h3>Join request</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div><div class="mbody"><div class="mem-hero">' + av(r.name) + '<div><h3>' + esc(r.name) + '</h3><span class="pill ' + p[1] + '">' + p[0] + '</span></div></div>' + kv([
+      ['Phone', r.phone ? '<a href="tel:' + esc(r.phone) + '" dir="ltr" style="color:var(--pri);font-weight:700">📞 ' + esc(r.phone) + '</a>' : '—'],
+      ['Department', esc(nm(r.dept))],
+      ['Program', esc(nm(r.program) || '—')],
+      ['Year', esc(nm(r.year))],
+      ['Request date', fmt(r.createdAt)],
+      ['Request no.', '<span dir="ltr">' + esc(r.id.slice(-6).toUpperCase()) + '</span>']
+    ])
       + (r.status === 'pending' ? '<div class="field"><label for="rq-id">Student ID</label><div class="idrow"><input id="rq-id" dir="ltr" autocapitalize="characters" value="' + genId() + '"><button type="button" class="btn sm ghost" id="rq-gen">Generate</button></div><p class="error" id="rq-id-err"></p></div><div class="mfoot"><button class="btn sm bad" id="rq-no">Reject</button><button class="btn sm" id="rq-ok">Accept and create membership</button></div>' : (r.memberId ? '<p class="note">ID: <code>' + esc(r.memberId) + '</code></p>' : '')) + '</div>');
     if (r.status !== 'pending') return;
     $('#rq-gen').onclick = () => { $('#rq-id').value = genId(); };
@@ -2003,11 +2073,11 @@ const token = await getToken(messaging, {
       const mid = $('#rq-id').value.trim().toUpperCase();
       if (!fe('rq-id', !/^[A-Z0-9-]{4,24}$/.test(mid) ? 'Invalid ID (English letters, digits and dashes).' : (D.members.some((m) => m.id === mid) || mid === CONFIG.adminId.toUpperCase()) ? 'This ID is already in use.' : '')) return;
       $('#rq-ok').disabled = true;
-      const memberDoc = { id: mid, name: r.name, dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} };
+      const memberDoc = { id: mid, name: r.name, phone: r.phone || '', dept: r.dept, program: r.program || '', year: r.year, level: 1, role: 'member', requestId: r.id, createdAt: Date.now(), done: {} };
       if (typeof r.uid === 'string' && r.uid) memberDoc.uid = r.uid;   // only the request's original uid; never guessed for old requests
       await db.set('members', mid, memberDoc);
       await db.set('requests', r.id, { status: 'approved', memberId: mid, decidedAt: Date.now() });
-      await notifyMember(mid, 'accepted', {});
+      await notifyMember(mid, 'accepted', { memberId: mid });
       closeModal(); toast('Accepted. Give this ID to the student: ' + mid);
     };
   }
@@ -2228,11 +2298,7 @@ const token = await getToken(messaging, {
 
       // 4. إرسال الإشعارات المباشرة (تقسيم القوائم إلى مجموعات بحد أقصى 500 توكن حسب قيود FCM)
       if (targetTokens.length > 0) {
-        const batchSize = 500;
-        for (let i = 0; i < targetTokens.length; i += batchSize) {
-          const chunk = targetTokens.slice(i, i + batchSize);
-          console.log('Push notification batch ready for tokens count:', chunk.length);
-        }
+        sendPushNotification(targetTokens, 'مهمة جديدة: ' + title, 'هناك مهمة جديدة متاحة لمستواك في Solvix Kod', { type: 'task' });
       }
 
       $('#task-form').reset(); QB = [newQ()]; qbRender(); tfSync(); toast('Task published');
@@ -2362,6 +2428,7 @@ const token = await getToken(messaging, {
       if (ex) { closeModal(); return toast('You have already submitted this task', 'bad'); }
       await db.set('submissions', sid, sub);
       if (sub.status === 'graded') notifyMember(me.id, 'graded', { title: t.title, score: sub.score, max: sub.max });
+      notifyAdmins('تسليم مهمة جديد', 'قام الطالب ' + me.name + ' بتسليم مهمة: ' + t.title, { type: 'submission', taskId: t.id, memberId: me.id });
       showResult(t, sub);
     } catch (err) { console.error(err); btn.disabled = false; er('Could not submit. Check the connection and try again.'); }
   }
@@ -2535,8 +2602,10 @@ const token = await getToken(messaging, {
     }
     else if (e.target.id === 'ann-form') {
       e.preventDefault();
-      db.add('announces', { text: $('#ann-txt').value.trim(), createdAt: Date.now() }).then(() => {
+      const annText = $('#ann-txt').value.trim();
+      db.add('announces', { text: annText, createdAt: Date.now() }).then(() => {
         $('#ann-form').reset(); toast('Announcement broadcasted');
+        broadcastPush('📢 إعلان جديد في Solvix Kod', annText, { type: 'announcement' });
       });
     }
   });

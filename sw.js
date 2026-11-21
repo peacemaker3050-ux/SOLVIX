@@ -10,10 +10,31 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   const n = payload.notification || {};
-  self.registration.showNotification(n.title || 'SOLVIX', { body: n.body || '', icon: './icon-192.png' });
+  const d = payload.data || {};
+  const title = n.title || d.title || 'SOLVIX KOD';
+  const options = {
+    body: n.body || d.body || '',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    vibrate: [100, 50, 100],
+    data: d
+  };
+  self.registration.showNotification(title, options);
 });
 
-const CACHE = 'solvix-v9';   // ← غيّره مع كل نشر
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./');
+    })
+  );
+});
+
+const CACHE = 'solvix-v10';   // ← غيّره مع كل نشر
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

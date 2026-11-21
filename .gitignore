@@ -1,0 +1,11 @@
+# Firebase Admin SDK credentials (Sensitive Keys)
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
+
+# Environment variables
+.env
+.env.local
+
+# Node modules
+node_modules/
+npm-debug.log
