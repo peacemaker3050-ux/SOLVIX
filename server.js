@@ -456,10 +456,17 @@ app.get('/whatsapp', (req, res) => {
 
     <br>
     <a href="/whatsapp" class="btn">🔄 تحديث الحالة</a>
+    <a href="/whatsapp/reset" class="btn" style="background:#243656;color:#cfe2ff;margin-inline-start:8px">⚡ طلب كود جديد</a>
   </div>
 </body>
 </html>`;
   res.send(html);
+});
+
+// إعادة تهيئة الاتصال وتوليد كود ربط جديد
+app.get('/whatsapp/reset', (req, res) => {
+  whatsapp.restartWhatsApp(admin.apps.length ? admin.firestore() : null);
+  res.redirect('/whatsapp');
 });
 
 // استعلام JSON عن حالة واتساب

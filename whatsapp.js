@@ -127,9 +127,16 @@ async function initWhatsApp(db) {
     });
 
     sock.ev.on('creds.update', async () => {
-      await saveCreds();
-      if (adminDb) {
-        await backupSessionToFirestore(adminDb);
+      try {
+        if (!fs.existsSync(AUTH_DIR)) {
+          fs.mkdirSync(AUTH_DIR, { recursive: true });
+        }
+        await saveCreds();
+        if (adminDb) {
+          await backupSessionToFirestore(adminDb);
+        }
+      } catch (saveErr) {
+        console.warn('⚠️ تحذير حفظ بيانات الجلسة (غير حرج):', saveErr.message);
       }
     });
 
@@ -143,15 +150,16 @@ async function initWhatsApp(db) {
       }
 
       // توليد Pairing Code إذا لم يكن مسجلاً بعد ورقم البوت متوفر
-      if (!sock.authState.creds.registered && botPhoneNumber) {
+      const isRegistered = !!(sock?.authState?.creds?.registered);
+      if (!isRegistered && botPhoneNumber && !pairingCode) {
         setTimeout(async () => {
           try {
-            if (!sock.authState.creds.registered && !pairingCode) {
+            if (sock && !sock.authState.creds.registered && !pairingCode) {
               const cleaned = cleanPhoneForPairing(botPhoneNumber);
               const code = await sock.requestPairingCode(cleaned);
               pairingCode = code ? code.match(/.{1,4}/g)?.join('-') || code : code;
               console.log(`\n========================================`);
-              console.log(`📲 كود ربط واتساب لهاتف (${botPhoneNumber}):`);
+              console.log(`📲 كود ربط واتساب الجديد لهاتف (${botPhoneNumber}):`);
               console.log(`👉 ${pairingCode} 👈`);
               console.log(`(أدخل هذا الكود في واتساب > الأجهزة المرتبطة > ربط برقم الهاتف)`);
               console.log(`========================================\n`);
@@ -159,25 +167,35 @@ async function initWhatsApp(db) {
           } catch (pairErr) {
             console.warn('Pairing code request error:', pairErr.message);
           }
-        }, 4000);
+        }, 3000);
       }
 
       if (connection === 'close') {
         isConnected = false;
-        const statusCode = lastDisconnect?.error?.output?.statusCode;
-        const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-        console.log(`⚠️ انقطع اتصال واتساب (كود: ${statusCode}). إعادة المحاولة: ${shouldReconnect}`);
+        isInitializing = false;
         pairingCode = null;
         qrCodeDataUrl = null;
-        isInitializing = false;
 
-        if (shouldReconnect) {
-          setTimeout(() => initWhatsApp(adminDb), 6000);
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const loggedOut = isRegistered && statusCode === DisconnectReason.loggedOut;
+        console.log(`⚠️ اتصال واتساب مغلق (كود: ${statusCode}, مسجل: ${isRegistered}). تسجيل خروج نهائي: ${loggedOut}`);
+
+        if (!loggedOut) {
+          console.log('🔄 جاري إعادة محاولة الاتصال وتوليد كود ربط جديد خلال 5 ثوانٍ...');
+          setTimeout(() => initWhatsApp(adminDb), 5000);
         } else {
-          console.warn('❌ تم تسجيل الخروج من جلسة واتساب. يجب مسح QR أو إدخال كود ربط جديد.');
+          console.warn('❌ تم تسجيل الخروج من الهاتف. تنظيف الجلسة لإتاحة ربط جديد...');
           try {
-            fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+            if (fs.existsSync(AUTH_DIR)) {
+              fs.readdirSync(AUTH_DIR).forEach((file) => {
+                try { fs.unlinkSync(path.join(AUTH_DIR, file)); } catch (_) {}
+              });
+            }
+            if (adminDb) {
+              adminDb.collection('system_config').doc('whatsapp_session').delete().catch(() => {});
+            }
           } catch (_) {}
+          setTimeout(() => initWhatsApp(adminDb), 4000);
         }
       } else if (connection === 'open') {
         isConnected = true;
@@ -321,8 +339,23 @@ function getWhatsAppStatus() {
   };
 }
 
+function restartWhatsApp(db) {
+  try {
+    if (sock) {
+      try { sock.end(); } catch (_) {}
+      sock = null;
+    }
+  } catch (_) {}
+  isConnected = false;
+  pairingCode = null;
+  qrCodeDataUrl = null;
+  isInitializing = false;
+  setTimeout(() => initWhatsApp(db || adminDb), 2000);
+}
+
 module.exports = {
   initWhatsApp,
+  restartWhatsApp,
   sendWhatsAppMessage,
   runAutomatedWhatsAppReminders,
   getWhatsAppStatus,
