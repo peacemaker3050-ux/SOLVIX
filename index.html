@@ -373,7 +373,7 @@ html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
 .content.chat-mode{padding:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
 .page.chat-page{max-width:100%!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;flex:1!important;min-height:0!important;border-radius:0!important;animation:none!important}
 .chat-full-view{display:flex;flex-direction:column;flex:1;width:100%;height:100%;min-height:0;background:radial-gradient(120% 70% at 50% 0,rgba(34,208,255,.07),transparent 65%),linear-gradient(180deg,#060e24,#030713);overflow:hidden}
-.chat-top-header{display:flex;align-items:center;justify-content:space-between;padding:12px clamp(16px,3vw,36px);background:rgba(13,27,61,.75);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);flex-shrink:0}
+.chat-top-header{display:flex;align-items:center;justify-content:space-between;padding:6px clamp(12px,2vw,24px);min-height:40px;background:rgba(10,22,50,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);flex-shrink:0}
 .chat-msgs-scroller{flex:1;min-height:0;overflow-y:auto;padding:22px clamp(16px,4vw,40px);display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
 .chat-bubble{max-width:min(920px,94%);padding:14px 20px;border-radius:16px;font-size:14.5px;line-height:1.7;word-break:break-word;box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .chat-bubble.user{align-self:flex-end;background:linear-gradient(135deg,#0a84d6,#22d0ff);color:#020611;font-weight:600;border-bottom-right-radius:4px}
@@ -1912,8 +1912,20 @@ function showUpdateBar(onUpdate) {
   }
 
   /* ---------- solvix ai assistant chatbot engine ---------- */
-  let aiChatHistory = [];
-  try { aiChatHistory = JSON.parse(store.getItem('svx.aiChat') || '[]'); } catch (_) { aiChatHistory = []; }
+  function getChatKey() {
+    const uid = me ? (me.id || (me.role === 'admin' ? 'admin' : 'anon')) : 'anon';
+    return 'svx.aiChat_' + uid;
+  }
+  function loadAiChatHistory() {
+    try {
+      return JSON.parse(store.getItem(getChatKey()) || '[]');
+    } catch (_) {
+      return [];
+    }
+  }
+  function saveAiChatHistory(h) {
+    store.setItem(getChatKey(), JSON.stringify((h || []).slice(-30)));
+  }
 
   function formatAiText(txt) {
     let s = esc(txt);
@@ -1927,7 +1939,8 @@ function showUpdateBar(onUpdate) {
   function paintChat() {
     const box = $('#chat-msgs');
     if (!box) return;
-    if (!aiChatHistory.length) {
+    const history = loadAiChatHistory();
+    if (!history.length) {
       box.innerHTML = '<div style="margin:auto;text-align:center;padding:40px 16px;color:#8397bb">'
         + '<div class="pulse" style="margin:0 auto 16px"><i></i><i></i>' + ico('bot', 38) + '</div>'
         + '<b style="color:#fff;font-size:18px">' + (LANG === 'ar' ? 'مرحباً بك! أنا مرشدك الهندسي Solvix AI' : 'Welcome! I am Solvix AI Mentor') + '</b>'
@@ -1936,7 +1949,7 @@ function showUpdateBar(onUpdate) {
       return;
     }
 
-    box.innerHTML = aiChatHistory.map((m) => {
+    box.innerHTML = history.map((m) => {
       const isUser = m.role === 'user';
       const content = isUser ? esc(m.text) : formatAiText(m.text);
       return '<div class="chat-bubble ' + (isUser ? 'user' : 'ai') + '">' + content + '</div>';
@@ -1947,9 +1960,10 @@ function showUpdateBar(onUpdate) {
   async function sendAiChatMessage(userText) {
     if (!userText || !userText.trim()) return;
     const text = userText.trim();
-    aiChatHistory.push({ role: 'user', text, time: Date.now() });
+    const history = loadAiChatHistory();
+    history.push({ role: 'user', text, time: Date.now() });
+    saveAiChatHistory(history);
     paintChat();
-    store.setItem('svx.aiChat', JSON.stringify(aiChatHistory.slice(-30)));
 
     const box = $('#chat-msgs');
     const tempAi = document.createElement('div');
@@ -1964,7 +1978,7 @@ function showUpdateBar(onUpdate) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
-          history: aiChatHistory.slice(-8),
+          history: history.slice(-8),
           studentInfo: {
             name: me ? me.name : 'Student',
             dept: me ? me.dept : 'Engineering',
@@ -1978,8 +1992,8 @@ function showUpdateBar(onUpdate) {
         throw new Error(data.error || 'Failed to get response');
       }
 
-      aiChatHistory.push({ role: 'model', text: data.reply, time: Date.now() });
-      store.setItem('svx.aiChat', JSON.stringify(aiChatHistory.slice(-30)));
+      history.push({ role: 'model', text: data.reply, time: Date.now() });
+      saveAiChatHistory(history);
       paintChat();
     } catch (err) {
       console.error('Chat error:', err);
@@ -2101,11 +2115,11 @@ function showUpdateBar(onUpdate) {
         ];
         return '<div class="chat-full-view">'
           + '  <div class="chat-top-header">'
-          + '    <div style="display:flex;align-items:center;gap:12px">'
-          + '      <div class="aura l2" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center">' + ico('bot', 24) + '</div>'
-          + '      <div><b style="color:#fff;font-size:15px">' + tr('Solvix AI Assistant') + '</b><small style="display:block;color:#35c4ff;font-size:11.5px">● Online · Gemini 3.8 Flash Powered</small></div>'
+          + '    <div style="display:flex;align-items:center;gap:10px">'
+          + '      <div class="aura l2" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center">' + ico('bot', 18) + '</div>'
+          + '      <div style="line-height:1.2"><b style="color:#fff;font-size:13.5px">' + tr('Solvix AI Assistant') + '</b><small style="display:block;color:#35c4ff;font-size:10.5px">● Online · Gemini 3.8 Flash</small></div>'
           + '    </div>'
-          + '    <button type="button" class="btn sm ghost" id="chat-clear" style="padding:6px 14px;font-size:12px">' + tr('Clear chat') + '</button>'
+          + '    <button type="button" class="btn sm ghost" id="chat-clear" style="padding:3px 10px;font-size:11.5px;height:26px">' + ico('trash', 12) + ' ' + tr('Clear chat') + '</button>'
           + '  </div>'
           + '  <div id="chat-msgs" class="chat-msgs-scroller"></div>'
           + '  <div class="chat-chips-row" id="chat-chips">'
@@ -3228,8 +3242,7 @@ function showUpdateBar(onUpdate) {
       sendAiChatMessage(q);
     }
     else if (t.id === 'chat-clear') {
-      aiChatHistory = [];
-      store.removeItem('svx.aiChat');
+      store.removeItem(getChatKey());
       paintChat();
     }
     else if (t.dataset.f) { F.req = t.dataset.f; V.requests.paint(); }
