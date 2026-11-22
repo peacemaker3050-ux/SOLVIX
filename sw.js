@@ -35,7 +35,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-const CACHE = 'solvix-v24';   // ← غيّره مع كل نشر
+const CACHE = 'solvix-v25';   // ← غيّره مع كل نشر
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

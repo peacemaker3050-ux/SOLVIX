@@ -2128,12 +2128,13 @@ function showUpdateBar(onUpdate) {
     const clientTimeout = setTimeout(() => clientController.abort(), 35000); // 35 ثانية كحد أقصى للمتصفح
 
     try {
+      const prevTurns = history.slice(0, -1).slice(-6);
       const res = await fetch(serverUrl + '/api/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
-          history: history.slice(-8),
+          history: prevTurns,
           studentInfo: {
             name: me ? me.name : 'Student',
             dept: me ? me.dept : 'Engineering',

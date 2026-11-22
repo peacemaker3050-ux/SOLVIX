@@ -271,6 +271,7 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
     const timeout = setTimeout(() => controller.abort(), 25000); // 25 ثانية كحد أقصى لمنح النموذج فرصة لتوليد الإجابة كاملة دون انقطاع
 
     try {
+      console.log(`[Gemini API] ⏳ Calling ${model}...`);
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const payload = {
         contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
@@ -290,7 +291,7 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
 
       if (!response.ok) {
         const errText = await response.text();
-        console.warn(`[Gemini API] Model ${model} returned status ${response.status}:`, errText.slice(0, 180));
+        console.warn(`[Gemini API] ❌ Model ${model} returned status ${response.status}:`, errText.slice(0, 300));
         let errorMsg = response.statusText;
         try {
           const parsed = JSON.parse(errText);
@@ -306,11 +307,12 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
         lastError = new Error(`Model ${model} returned empty text candidate`);
         continue;
       }
+      console.log(`[Gemini API] ✅ Successfully generated response using ${model} (${candidateText.length} chars)`);
       return { text: candidateText, modelUsed: model };
     } catch (e) {
       clearTimeout(timeout);
       if (e.name === 'AbortError') {
-        console.warn(`[Gemini API] Model ${model} timed out after 25s. Trying fallback model...`);
+        console.warn(`[Gemini API] ⏱️ Model ${model} timed out after 25s. Trying fallback model...`);
         lastError = new Error(`(${model}) Connection timed out`);
       } else {
         lastError = e;
@@ -468,9 +470,11 @@ Return ONLY a valid JSON object with this exact structure, with NO surrounding m
 app.post('/api/ai-chat', async (req, res) => {
   try {
     const { message, history = [], studentInfo = {} } = req.body;
+    console.log(`[AI Chat] 📩 Received request: "${(message || '').slice(0, 50)}" from ${studentInfo.name || 'Student'}`);
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
+      console.warn('[AI Chat] ⚠️ GEMINI_API_KEY is missing on server!');
       return res.status(503).json({
         error: 'GEMINI_API_KEY is not configured on the server. Please add GEMINI_API_KEY in your Railway environment variables.'
       });
@@ -493,18 +497,48 @@ Your responsibilities:
 - IMPORTANT FOR SPEED & LATENCY: Be direct and concise. Get straight to the answer without long pleasantries, repetitive intros, or unnecessary filler words.
 - Keep responses formatted with clean Markdown.`;
 
-    // Map history to Gemini contents format
-    const contents = [];
+    // بناء محادثة Gemini وفق المتطلبات الصارمة لواجهة برمجة تطبيقات Google:
+    // 1. تبدأ دائماً بـ user
+    // 2. تتبادل الأدوار بصرامة: user -> model -> user -> model
+    // 3. تنتهي دائماً بـ user حاملاً الرسالة الحالية
+    const rawTurns = [];
     if (Array.isArray(history)) {
-      history.slice(-8).forEach((h) => {
-        if (h.sender === 'user' || h.role === 'user') {
-          contents.push({ role: 'user', parts: [{ text: h.text || h.content || '' }] });
-        } else if (h.sender === 'ai' || h.role === 'model') {
-          contents.push({ role: 'model', parts: [{ text: h.text || h.content || '' }] });
-        }
-      });
+      for (const h of history) {
+        const textVal = (h.text || h.content || '').trim();
+        if (!textVal) continue;
+        const role = (h.sender === 'ai' || h.role === 'model') ? 'model' : 'user';
+        rawTurns.push({ role, text: textVal });
+      }
     }
-    contents.push({ role: 'user', parts: [{ text: message }] });
+
+    // تجنب تكرار الرسالة الأخيرة إذا كانت موجودة بالفعل في السجل
+    const lastTurn = rawTurns[rawTurns.length - 1];
+    if (!lastTurn || lastTurn.role !== 'user' || lastTurn.text !== message.trim()) {
+      rawTurns.push({ role: 'user', text: message.trim() });
+    }
+
+    // فرض التبادل الصارم بين user و model
+    const contents = [];
+    for (const turn of rawTurns) {
+      if (contents.length === 0) {
+        if (turn.role === 'user') {
+          contents.push({ role: 'user', parts: [{ text: turn.text }] });
+        }
+      } else {
+        const prevRole = contents[contents.length - 1].role;
+        if (turn.role === prevRole) {
+          // دمج النصوص المتتالية لتفادي خطأ 400 في واجهة Gemini
+          contents[contents.length - 1].parts[0].text += '\n\n' + turn.text;
+        } else {
+          contents.push({ role: turn.role, parts: [{ text: turn.text }] });
+        }
+      }
+    }
+
+    // التأكد من أن المحادثة تنتهي بـ user
+    if (contents.length === 0 || contents[contents.length - 1].role !== 'user') {
+      contents.push({ role: 'user', parts: [{ text: message.trim() }] });
+    }
 
     const { text: reply, modelUsed } = await generateWithGemini({
       apiKey,
@@ -517,6 +551,7 @@ Your responsibilities:
       }
     });
 
+    console.log(`[AI Chat] 📤 Successfully replied to ${studentInfo.name || 'Student'} via ${modelUsed}`);
     return res.json({ success: true, reply, modelUsed });
   } catch (error) {
     console.error('Error in /api/ai-chat:', error);
