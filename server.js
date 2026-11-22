@@ -268,13 +268,15 @@ async function getAvailableGeminiModels(apiKey) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
     if (res.ok) {
       const data = await res.json();
+      const nonTextKeywords = ['-tts', '-image', '-clip', '-transcribe', 'robotics', 'banana', 'computer-use', 'argon', 'carbon', 'hydrogen', 'neon', 'deep-research'];
       const models = (data.models || [])
         .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
-        .map((m) => m.name.replace(/^models\//, ''));
+        .map((m) => m.name.replace(/^models\//, ''))
+        .filter((name) => !nonTextKeywords.some((kw) => name.toLowerCase().includes(kw)));
       if (models.length > 0) {
         discoveredGeminiModels = models;
         lastModelFetch = Date.now();
-        console.log(`[Gemini API] 📋 Discovered ${models.length} active models for API Key:`, models.join(', '));
+        console.log(`[Gemini API] 📋 Discovered ${models.length} active text models for API Key:`, models.join(', '));
         return models;
       }
     }
@@ -289,23 +291,28 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
   // جلب النماذج المتاحة فعلياً لمفتاح الـ API ديناميكياً لتفادي أخطاء 404 نهائياً
   const liveModels = await getAvailableGeminiModels(apiKey);
 
-  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
   if (primaryModel.includes('1.5') || primaryModel.includes('2.0') || primaryModel.includes('2.5')) {
-    primaryModel = 'gemini-3.8-flash';
+    primaryModel = 'gemini-flash-lite-latest';
   }
 
-  // ترتيب النماذج: المفضل أولاً، ثم نماذج flash المكتشفة، ثم باقي النماذج
+  // ترتيب النماذج: الفلاش لايت فائق السرعة أولاً لتفادي طوابير التفكير البطيئة وطفرات 503
   let candidateList = [];
   if (liveModels && liveModels.length > 0) {
-    const flashModels = liveModels.filter((m) => m.toLowerCase().includes('flash'));
+    const liteModels = liveModels.filter((m) => m.toLowerCase().includes('lite'));
+    const standardFlash = liveModels.filter((m) => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const otherModels = liveModels.filter((m) => !m.toLowerCase().includes('flash'));
+
     candidateList = [
+      liveModels.includes('gemini-flash-lite-latest') ? 'gemini-flash-lite-latest' : null,
+      liveModels.includes('gemini-flash-latest') ? 'gemini-flash-latest' : null,
       liveModels.includes(primaryModel) ? primaryModel : null,
-      ...flashModels,
+      ...liteModels,
+      ...standardFlash,
       ...otherModels
     ];
   } else {
-    candidateList = [primaryModel, 'gemini-3.8-flash', 'gemini-3.8-pro'];
+    candidateList = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-3.8-flash'];
   }
   const uniqueModels = [...new Set(candidateList.filter(Boolean))];
 
@@ -320,7 +327,7 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
     // محاولتان كحد أقصى لكل نموذج (لمعالجة طفرات 503 high demand المؤقتة)
     for (let attempt = 1; attempt <= 2; attempt++) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 40000); // 40 ثانية
+      const timeout = setTimeout(() => controller.abort(), 18000); // 18 ثانية كافية جداً لنماذج الفلاش لايت للرد فورياً دون إبقاء المستخدم معلقاً
 
       try {
         console.log(`[Gemini API] ⏳ Calling ${model} (attempt ${attempt}/2)...`);
