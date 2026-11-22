@@ -2125,7 +2125,7 @@ function showUpdateBar(onUpdate) {
 
     const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
     const clientController = new AbortController();
-    const clientTimeout = setTimeout(() => clientController.abort(), 20000); // 20 ثانية كحد أقصى للمتصفح
+    const clientTimeout = setTimeout(() => clientController.abort(), 35000); // 35 ثانية كحد أقصى للمتصفح
 
     try {
       const res = await fetch(serverUrl + '/api/ai-chat', {

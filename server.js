@@ -249,25 +249,26 @@ app.post('/api/notify-admins', async (req, res) => {
 
 // دالة موحدة فائقة السرعة للتواصل مع Google Gemini API مع نظام Fallback ومهلة زمنية
 async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig }) {
-  // تنظيف اسم النموذج: استبدال أي نموذج غير موجود في API بالنموذج فائق السرعة gemini-1.5-flash
-  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-  if (primaryModel.includes('3.8') || primaryModel.includes('3.5')) {
-    primaryModel = 'gemini-1.5-flash';
+  // اختيار النموذج الأساسي: استخدام الموصى به رسمياً من جوجل gemini-3.8-flash وتجاوز الموديلات القديمة المتوقفة (1.5 و 2.0)
+  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  if (primaryModel.includes('1.5') || primaryModel.includes('2.0')) {
+    primaryModel = 'gemini-3.8-flash';
   }
 
-  // ترتيب النماذج بدءاً من الأسرع والأكثر استقراراً في الاستجابة (أقل من ثانية واحدة)
+  // ترتيب النماذج الحديثة المعتمدة لدى Google
   const modelsToTry = [
     primaryModel,
-    'gemini-1.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-pro'
+    'gemini-3.8-flash',
+    'gemini-2.5-flash',
+    'gemini-3.8-flash-lite',
+    'gemini-flash'
   ];
   const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
 
   let lastError = null;
   for (const model of uniqueModels) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8 ثوانٍ كحد أقصى للنموذج الواحد لمنع التعليق
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25 ثانية كحد أقصى لمنح النموذج فرصة لتوليد الإجابة كاملة دون انقطاع
 
     try {
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -309,7 +310,7 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
     } catch (e) {
       clearTimeout(timeout);
       if (e.name === 'AbortError') {
-        console.warn(`[Gemini API] Model ${model} timed out after 8s. Trying fallback model...`);
+        console.warn(`[Gemini API] Model ${model} timed out after 25s. Trying fallback model...`);
         lastError = new Error(`(${model}) Connection timed out`);
       } else {
         lastError = e;
@@ -489,7 +490,8 @@ Your responsibilities:
 - Help students debug compiler errors, understand circuits, control theory, data structures, and algorithms.
 - Always be encouraging, respectful, and pedagogically sound.
 - Detect the language of the student's message: if they write in Arabic, respond in clear fluent Arabic; if they write in English, respond in English.
-- Keep responses concise and formatted with clean Markdown.`;
+- IMPORTANT FOR SPEED & LATENCY: Be direct and concise. Get straight to the answer without long pleasantries, repetitive intros, or unnecessary filler words.
+- Keep responses formatted with clean Markdown.`;
 
     // Map history to Gemini contents format
     const contents = [];
@@ -510,8 +512,8 @@ Your responsibilities:
       prompt: contents,
       systemInstruction,
       generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: 1000
+        temperature: 0.5,
+        maxOutputTokens: 800
       }
     });
 
