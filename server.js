@@ -288,110 +288,82 @@ async function getAvailableGeminiModels(apiKey) {
 
 // دالة موحدة فائقة السرعة للتواصل مع Google Gemini API مع نظام Fallback ومهلة زمنية
 async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig = {} }) {
-  // جلب النماذج المتاحة فعلياً لمفتاح الـ API ديناميكياً لتفادي أخطاء 404 نهائياً
-  const liveModels = await getAvailableGeminiModels(apiKey);
-
-  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
-  if (primaryModel.includes('1.5') || primaryModel.includes('2.0') || primaryModel.includes('2.5')) {
-    primaryModel = 'gemini-flash-lite-latest';
+  // استخدام النموذج الأثبت والأسرع مباشرة gemini-3.1-flash-lite-preview
+  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite-preview';
+  if (primaryModel.includes('1.5') || primaryModel.includes('2.0') || primaryModel.includes('2.5') || primaryModel.includes('latest')) {
+    primaryModel = 'gemini-3.1-flash-lite-preview';
   }
 
-  // ترتيب النماذج: الفلاش لايت فائق السرعة أولاً لتفادي طوابير التفكير البطيئة وطفرات 503
-  let candidateList = [];
-  if (liveModels && liveModels.length > 0) {
-    const liteModels = liveModels.filter((m) => m.toLowerCase().includes('lite'));
-    const standardFlash = liveModels.filter((m) => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
-    const otherModels = liveModels.filter((m) => !m.toLowerCase().includes('flash'));
-
-    candidateList = [
-      liveModels.includes('gemini-flash-lite-latest') ? 'gemini-flash-lite-latest' : null,
-      liveModels.includes('gemini-flash-latest') ? 'gemini-flash-latest' : null,
-      liveModels.includes(primaryModel) ? primaryModel : null,
-      ...liteModels,
-      ...standardFlash,
-      ...otherModels
-    ];
-  } else {
-    candidateList = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-3.8-flash'];
-  }
+  // ترتيب النماذج: النموذج المؤكد والسريع أولاً دون تضييع ثانية واحدة في نماذج متوقفة
+  const candidateList = [
+    primaryModel,
+    'gemini-3.1-flash-lite-preview',
+    'gemini-3.1-flash-lite',
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-3.8-flash'
+  ];
   const uniqueModels = [...new Set(candidateList.filter(Boolean))];
-
-  // إعداد إعدادات التوليد لتقليل زمن التفكير وإلغاء بطء التفكير (Thinking Budget)
-  let activeGenConfig = { ...generationConfig };
-  if (!activeGenConfig.thinkingConfig) {
-    activeGenConfig.thinkingConfig = { thinkingBudget: 0 };
-  }
 
   let lastError = null;
   for (const model of uniqueModels) {
-    // محاولتان كحد أقصى لكل نموذج (لمعالجة طفرات 503 high demand المؤقتة)
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 18000); // 18 ثانية كافية جداً لنماذج الفلاش لايت للرد فورياً دون إبقاء المستخدم معلقاً
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 16000); // 16 ثانية كحد أقصى لمنع التعليق
 
-      try {
-        console.log(`[Gemini API] ⏳ Calling ${model} (attempt ${attempt}/2)...`);
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const payload = {
-          contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
-          generationConfig: activeGenConfig
-        };
-        if (systemInstruction) {
-          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+    try {
+      console.log(`[Gemini API] ⏳ Calling ${model}...`);
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
+        generationConfig
+      };
+      if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`[Gemini API] ❌ Model ${model} returned status ${response.status}:`, errText.slice(0, 300));
+
+        // إذا كان الخطأ 503 مؤقت، ننتظر 1.5 ثانية ونحاول مرة واحدة أخيرة
+        if (response.status === 503) {
+          console.log(`[Gemini API] ⏳ 503 high demand detected on ${model}. Retrying after 1.5s...`);
+          await sleep(1500);
+          continue;
         }
 
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-        clearTimeout(timeout);
+        let errorMsg = response.statusText;
+        try {
+          const parsed = JSON.parse(errText);
+          if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
+        } catch (_) { }
+        lastError = new Error(`(${model}) ${errorMsg}`);
+        continue;
+      }
 
-        if (!response.ok) {
-          const errText = await response.text();
-          console.warn(`[Gemini API] ❌ Model ${model} returned status ${response.status}:`, errText.slice(0, 300));
-
-          // إذا كان الخطأ 400 بسبب thinkingConfig، نلغيه ونعيد المحاولة فوراً
-          if (response.status === 400 && errText.toLowerCase().includes('thinking')) {
-            delete activeGenConfig.thinkingConfig;
-            continue;
-          }
-
-          // إذا كان الخطأ 503 (High demand) أو 429، ننتظر 1.5 ثانية ونحاول مرة أخرى
-          if ((response.status === 503 || response.status === 429) && attempt === 1) {
-            console.log(`[Gemini API] ⏳ 503/429 high demand detected on ${model}. Retrying after 1.5s...`);
-            await sleep(1500);
-            continue;
-          }
-
-          let errorMsg = response.statusText;
-          try {
-            const parsed = JSON.parse(errText);
-            if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
-          } catch (_) { }
-          lastError = new Error(`(${model}) ${errorMsg}`);
-          break; // انتقل للنموذج التالي
-        }
-
-        const data = await response.json();
-        const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!candidateText) {
-          lastError = new Error(`Model ${model} returned empty text candidate`);
-          break;
-        }
-        console.log(`[Gemini API] ✅ Successfully generated response using ${model} (${candidateText.length} chars)`);
-        return { text: candidateText, modelUsed: model };
-      } catch (e) {
-        clearTimeout(timeout);
-        if (e.name === 'AbortError') {
-          console.warn(`[Gemini API] ⏱️ Model ${model} timed out after 40s.`);
-          lastError = new Error(`(${model}) Connection timed out`);
-          break;
-        } else {
-          lastError = e;
-          break;
-        }
+      const data = await response.json();
+      const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!candidateText) {
+        lastError = new Error(`Model ${model} returned empty text candidate`);
+        continue;
+      }
+      console.log(`[Gemini API] ✅ Successfully generated response using ${model} (${candidateText.length} chars)`);
+      return { text: candidateText, modelUsed: model };
+    } catch (e) {
+      clearTimeout(timeout);
+      if (e.name === 'AbortError') {
+        console.warn(`[Gemini API] ⏱️ Model ${model} timed out after 16s.`);
+        lastError = new Error(`(${model}) Connection timed out`);
+      } else {
+        lastError = e;
       }
     }
   }
