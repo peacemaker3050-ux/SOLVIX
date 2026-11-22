@@ -245,6 +245,19 @@ async function initWhatsApp(db) {
         if (adminDb) {
           await backupSessionToFirestore(adminDb);
         }
+
+        // تحديث اسم البوت وحالته تلقائياً ليظهر بهوية وشعار المجتمع
+        try {
+          if (sock?.updateProfileName) {
+            await sock.updateProfileName('SOLVIX KOD Community');
+            console.log('✨ تم ضبط اسم حساب البوت: SOLVIX KOD Community');
+          }
+          if (sock?.updateProfileStatus) {
+            await sock.updateProfileStatus('SOLVIX KOD | المجتمع الطلابي التقني والهندسي 🚀');
+          }
+        } catch (profErr) {
+          console.log('ملاحظة تحديث بروفايل واتساب:', profErr.message);
+        }
       }
     });
 
@@ -301,7 +314,19 @@ async function runAutomatedWhatsAppReminders(dbInstance) {
 
           if (!hasActivated) {
             const firstName = (req.name || 'طالبنا العزيز').split(' ')[0];
-            const msg = `مرحباً يا ${firstName} 🌟\n\nنود تذكيرك بأنه تم قبول طلب انضمامك إلى مجتمع SOLVIX KOD الهندسي!\n\n📌 كود العضوية الخاص بك: ${req.memberId || 'SVX'}\n🌐 رابط الدخول وتفعيل حسابك:\nhttps://solvix-95eb1.web.app\n\nنحن في انتظارك لتشاركنا الرحلة! 🚀\n— فريق SOLVIX KOD`;
+            const msg = `🌐 SOLVIX KOD | إشعار رسمي
+━━━━━━━━━━━━━━━━━━
+مرحباً يا ${firstName} 🌟
+
+يسرنا إعلامك وتذكيرك بأنه تم قبول طلب انضمامك إلى مجتمع SOLVIX KOD الهندسي!
+
+📌 كود العضوية الخاص بك: ${req.memberId || 'SVX'}
+🔗 رابط الدخول وتفعيل حسابك:
+https://solvix-95eb1.web.app
+
+نحن في انتظارك لتشاركنا الرحلة وتطوير مهاراتك الهندسية! 🚀
+━━━━━━━━━━━━━━━━━━
+🏛️ مجتمع SOLVIX KOD التقني والهندسي`;
             
             try {
               await sendWhatsAppMessage(req.phone, msg);
@@ -345,7 +370,19 @@ async function runAutomatedWhatsAppReminders(dbInstance) {
                 if (subSnap.empty) {
                   const firstName = (member.name || 'مهندسنا').split(' ')[0];
                   const hoursLeft = Math.round(timeLeft / (3600 * 1000));
-                  const msg = `تذكير بمهمة هندسية ⏳\n\nعزيزي المهندس ${firstName}،\nتذكير باقتراب الموعد النهائي لتسليم مهمة:\n"${task.title}"\n\n⏰ المتبقي على التسليم: حوالي ${hoursLeft} ساعة\n🔗 يمكنك تسليم الحل عبر التطبيق:\nhttps://solvix-95eb1.web.app\n\nبالتوفيق والتميز دائماً! 💡\n— مجتمع SOLVIX KOD`;
+                  const msg = `⏳ تذكير بمهمة هندسية | SOLVIX KOD
+━━━━━━━━━━━━━━━━━━
+عزيزي المهندس ${firstName}،
+نود تذكيرك باقتراب الموعد النهائي لتسليم المهمة:
+📝 "${task.title}"
+
+⏰ الوقت المتبقي: حوالي ${hoursLeft} ساعة
+🔗 يمكنك رفع وتسليم الحل عبر التطبيق:
+https://solvix-95eb1.web.app
+
+تمنياتنا لك بالتوفيق والتميز دائماً! 💡
+━━━━━━━━━━━━━━━━━━
+🏛️ مجتمع SOLVIX KOD التقني والهندسي`;
 
                   try {
                     await sendWhatsAppMessage(member.phone, msg);

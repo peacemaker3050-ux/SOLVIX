@@ -398,8 +398,39 @@ Your responsibilities:
   }
 });
 
-// صفحة ويب لمتابعة حالة وربط واتساب
+// حماية وإغلاق واجهة ربط واتساب بعد اكتمال الربط بنجاح
+const WHATSAPP_ACCESS_KEY = process.env.WHATSAPP_ADMIN_KEY || 'svx_admin_278601';
+
+// صفحة ويب لمتابعة حالة وربط واتساب (مغلقة ومحمية)
 app.get('/whatsapp', (req, res) => {
+  // إغلاق وقفل الرابط - لا يمكن الدخول إلا للأدمن بالمفتاح السري
+  if (req.query.key !== WHATSAPP_ACCESS_KEY) {
+    return res.status(403).send(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الوصول محمي ومغلق | SOLVIX KOD</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #060d22; color: #fff; margin: 0; padding: 24px 16px; display: flex; align-items: center; justify-content: center; min-height: 90vh; text-align: center; }
+    .card { background: #0d1b3d; border: 1px solid #1f3568; border-radius: 16px; padding: 36px 24px; max-width: 440px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    h1 { font-size: 20px; color: #4ade80; margin: 0 0 12px; }
+    p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+    .badge { display: inline-block; background: #14532d; color: #86efac; border: 1px solid #22c55e; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; }
+    .icon { font-size: 44px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔒</div>
+    <h1>تم قفل وتأمين الرابط بنجاح</h1>
+    <div style="margin: 16px 0;"><span class="badge">● البوت متصل ومحمي بالسيرفر</span></div>
+    <p>تم إغلاق هذه الصفحة وتأمين جلسة واتساب لمنع أي وصول غير مصرح به. بوت مجتمع SOLVIX KOD يعمل الآن تلقائياً في الخلفية.</p>
+  </div>
+</body>
+</html>`);
+  }
+
   const status = whatsapp.getWhatsAppStatus();
   const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -546,17 +577,29 @@ app.get('/whatsapp', (req, res) => {
   res.send(html);
 });
 
-// إعادة تهيئة الاتصال وتوليد كود ربط جديد مع مسح أي جلسة سابقة
+// إعادة تهيئة الاتصال وتوليد كود ربط جديد مع مسح أي جلسة سابقة (محمي بالمفتاح السري)
 app.get('/whatsapp/reset', async (req, res) => {
+  if (req.query.key !== WHATSAPP_ACCESS_KEY) {
+    return res.status(403).json({ error: 'Access Denied: Admin key required to reset WhatsApp.' });
+  }
   await whatsapp.hardResetWhatsApp(admin.apps.length ? admin.firestore() : null);
-  res.redirect('/whatsapp');
+  res.redirect(`/whatsapp?key=${WHATSAPP_ACCESS_KEY}`);
 });
 
-// استعلام JSON عن حالة واتساب
+// استعلام JSON عن حالة واتساب (محمي أو يعيد حالة عامة فقط)
 app.get('/api/whatsapp/status', (req, res) => {
+  const isAuthorized = req.query.key === WHATSAPP_ACCESS_KEY;
+  const status = whatsapp.getWhatsAppStatus();
   res.json({
     success: true,
-    status: whatsapp.getWhatsAppStatus()
+    status: {
+      connected: status.connected,
+      botNumber: status.botNumber,
+      // لا تعرض كود الربط أو QR إلا للأدمن المصرح له
+      pairingCode: isAuthorized ? status.pairingCode : null,
+      hasQr: isAuthorized ? status.hasQr : false,
+      qrCodeDataUrl: isAuthorized ? status.qrCodeDataUrl : null
+    }
   });
 });
 
