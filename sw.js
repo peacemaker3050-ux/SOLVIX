@@ -5,6 +5,7 @@ firebase.initializeApp({
   apiKey: "AIzaSyA0hU8922UI-TWCDfOU1rt3LGZYNMWW0HY",
   authDomain: "solvix-95eb1.firebaseapp.com",
   projectId: "solvix-95eb1",
+  messagingSenderId: "60065264617",
   appId: "1:60065264617:web:ae5af308a52bf317cad178"
 });
 const messaging = firebase.messaging();
@@ -34,7 +35,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-const CACHE = 'solvix-v19';   // ← غيّره مع كل نشر
+const CACHE = 'solvix-v21';   // ← غيّره مع كل نشر
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

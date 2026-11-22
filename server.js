@@ -1,3 +1,11 @@
+// حماية السيرفر من الانهيار عند حدوث أي خطأ غير متوقع في اتصالات المقابس الخارجية
+process.on('uncaughtException', (err) => {
+  console.warn('⚠️ [Process Uncaught Exception Caught]:', err.message || err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.warn('⚠️ [Process Unhandled Rejection Caught]:', reason?.message || reason);
+});
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');

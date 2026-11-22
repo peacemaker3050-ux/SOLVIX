@@ -243,6 +243,25 @@ body.in-app{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;widt
 .list{display:flex;flex-direction:column;gap:10px}
 .rowc{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:start;font:inherit;color:inherit;cursor:pointer;background:linear-gradient(180deg,rgba(18,34,76,.5),rgba(9,18,44,.55));border:1px solid var(--bd);border-radius:12px;transition:.2s;animation:viewIn .5s calc(var(--i,0)*45ms) both}
 .rowc:hover{border-color:rgba(80,170,255,.5);transform:translateY(-2px);box-shadow:0 14px 30px -16px rgba(47,107,255,.7)}
+.mem-card{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px 14px;background:linear-gradient(180deg,rgba(18,34,76,.5),rgba(9,18,44,.55));border:1px solid var(--bd);border-radius:12px;transition:.2s;animation:viewIn .5s calc(var(--i,0)*45ms) both}
+.mem-card:hover{border-color:rgba(80,170,255,.5);transform:translateY(-1px);box-shadow:0 12px 28px -14px rgba(47,107,255,.6)}
+.mem-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;cursor:pointer;background:none;border:none;color:inherit;text-align:inherit;padding:0}
+.mem-badge{flex:none;display:flex;align-items:center;justify-content:center}
+.mem-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.mem-name{font-size:15px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mem-meta code{font-size:11.5px;padding:1px 7px;border-radius:10px;line-height:1.4}
+.mem-meta .pill{margin:0;font-size:11px;padding:2px 8px;line-height:1.2}
+.mem-sub{color:#9fb4d6;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.mem-chat-btn{flex:none;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;border-color:rgba(34,208,255,.4);color:#22d0ff;border-radius:8px;font-weight:600;white-space:nowrap;cursor:pointer;transition:.2s}
+.mem-chat-btn:hover{background:rgba(34,208,255,.15);border-color:var(--cy);color:#fff}
+@media (max-width:480px){
+  .mem-card{padding:10px 12px;gap:8px}
+  .mem-main{gap:10px}
+  .mem-name{font-size:14px}
+  .mem-sub{font-size:11px}
+  .mem-chat-btn{padding:5px 9px;font-size:11.5px}
+}
 .rc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.rc-t b{font-size:15.5px}.rc-t small{color:#9fb4d6;font-size:12.5px}
 .rc-m{color:#8397bb;font-size:12.5px}
 .av{flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:50%;font:700 17px var(--sans);color:#031024;background:linear-gradient(135deg,var(--cy),var(--vi))}
@@ -627,7 +646,13 @@ input[type=color]{height:40px;padding:2px;border:1px solid var(--bd);border-radi
 /* ============ Solvix Kod settings — edit here only ============ */
 window.SOLVIX_CONFIG = {
   // 1) Firebase (Firestore only). Paste your web app config here. If empty, the app runs on local demo data.
-  firebase: { apiKey: "AIzaSyA0hU8922UI-TWCDfOU1rt3LGZYNMWW0HY", authDomain: "solvix-95eb1.firebaseapp.com", projectId: "solvix-95eb1", appId: "1:60065264617:web:ae5af308a52bf317cad178" },
+  firebase: {
+    apiKey: "AIzaSyA0hU8922UI-TWCDfOU1rt3LGZYNMWW0HY",
+    authDomain: "solvix-95eb1.firebaseapp.com",
+    projectId: "solvix-95eb1",
+    messagingSenderId: "60065264617",
+    appId: "1:60065264617:web:ae5af308a52bf317cad178"
+  },
   // 2) Terms and conditions PDF link on Cloudinary, e.g.:
   //    https://res.cloudinary.com/CLOUD_NAME/image/upload/v1/terms.pdf
   termsUrl: "",
@@ -1172,7 +1197,8 @@ window.SOLVIX_CONFIG = {
     'Never miss an update or message!': 'لا تفوّت أي رسالة أو مهمة جديدة!',
     'Tap any member to see their full details and promote them.': 'اضغط على أي عضو لعرض تفاصيله الكاملة وترقيته.',
     'No matching members': 'لا يوجد أعضاء مطابقين للبحث',
-    'Community members': 'أعضاء المجتمع'
+    'Community members': 'أعضاء المجتمع',
+    'Awaiting activation': 'بانتظار التفعيل'
   });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
@@ -1413,8 +1439,9 @@ function showUpdateBar(onUpdate) {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+        const { getApp } = await import(B + 'firebase-app.js');
         const { getMessaging, getToken } = await import(B + 'firebase-messaging.js');
-        const messaging = getMessaging();
+        const messaging = getMessaging(getApp());
         const reg = swReg || await navigator.serviceWorker.ready;
         const token = await getToken(messaging, {
           vapidKey: CONFIG.vapidKey || 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c',
@@ -2156,14 +2183,17 @@ function showUpdateBar(onUpdate) {
         const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && !m.deleted && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'en'));
         $('#list').innerHTML = L.length ? L.map((m, i) => {
           const l = m.level || 1;
-          return '<div class="rowc" style="--i:' + i + ';display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px">'
-            + '<button class="row-inner" data-mem="' + esc(m.id) + '" style="background:none;border:none;color:inherit;cursor:pointer;display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:inherit;padding:0">'
-            + badge(l, 38)
-            + '<div class="rc-t" style="flex:1;min-width:0"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div>'
-            + '<code>' + esc(m.id) + '</code>'
-            + '<span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'Awaiting activation') + '</span>'
+          const statusText = m.passHash ? (LEVELS[l] ? LEVELS[l].ar : '') : tr('Awaiting activation');
+          return '<div class="mem-card" style="--i:' + i + '">'
+            + '<button class="mem-main" data-mem="' + esc(m.id) + '">'
+            + '  <div class="mem-badge">' + badge(l, 40) + '</div>'
+            + '  <div class="mem-info">'
+            + '    <b class="mem-name">' + esc(m.name) + '</b>'
+            + '    <div class="mem-meta"><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + esc(statusText) + '</span></div>'
+            + '    <small class="mem-sub">' + esc(m.dept) + ' · ' + esc(m.year) + '</small>'
+            + '  </div>'
             + '</button>'
-            + '<button class="btn sm ghost" data-openchat="' + esc(m.id) + '" title="' + tr('Chat with student') + '" style="padding:6px 12px;display:flex;align-items:center;gap:6px;border-color:rgba(34,208,255,0.4);color:#22d0ff">' + ico('chat', 16) + ' <span>' + tr('Chat') + '</span></button>'
+            + '<button class="btn sm ghost mem-chat-btn" data-openchat="' + esc(m.id) + '" title="' + tr('Chat with student') + '">' + ico('chat', 15) + ' <span>' + tr('Chat') + '</span></button>'
             + '</div>';
         }).join('') : empty(tr('No matching members'));
       }

@@ -208,6 +208,15 @@ async function initWhatsApp(db) {
         isInitializing = false;
         qrCodeDataUrl = null;
 
+        try {
+          if (sock?.ws) {
+            sock.ws.removeAllListeners();
+          }
+          if (sock?.ev) {
+            sock.ev.removeAllListeners();
+          }
+        } catch (_) {}
+
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         const isAuthError = statusCode === 401 || statusCode === DisconnectReason.loggedOut;
 
@@ -232,9 +241,10 @@ async function initWhatsApp(db) {
           return;
         }
 
-        // انقطاع شبكة عادي
-        console.log('🔄 جاري إعادة محاولة الاتصال بالشبكة خلال 5 ثوانٍ...');
-        setTimeout(() => initWhatsApp(adminDb), 5000);
+        // انقطاع شبكة عادي أو إعادة تشغيل مؤقتة (مثل كود 440 أو 515)
+        const delay = (statusCode === 440 || statusCode === 515) ? 1500 : 5000;
+        console.log(`🔄 جاري إعادة محاولة الاتصال بالشبكة خلال ${delay / 1000} ثوانٍ...`);
+        setTimeout(() => initWhatsApp(adminDb), delay);
       } else if (connection === 'open') {
         isConnected = true;
         pairingCode = null;
