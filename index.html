@@ -1138,7 +1138,14 @@ window.SOLVIX_CONFIG = {
     'AI Auto-Grade': 'تصحيح بالذكاء الاصطناعي',
     'Grading with AI...': 'جاري التصحيح بالذكاء الاصطناعي...',
     'AI evaluated answers! Check score & feedback before saving.': 'تم تقييم الإجابات بالذكاء الاصطناعي! راجع الدرجة والملاحظات قبل الحفظ.',
-    'Thinking...': 'جاري التفكير...'
+    'Thinking...': 'جاري التفكير...',
+    'Choose the task type, build it and publish. Members of the right level are notified instantly.': 'اختر نوع المهمة، أنشئها وانشرها. سيتم إشعار الطلاب في المستوى المناسب فورياً.',
+    'My tasks': 'مهامي',
+    'Open a task, answer it and submit. Your result will appear here and in your notifications.': 'افتح المهمة، أجب عنها وقم بتسليمها. ستظهر نتيجتك هنا وفي إشعاراتك.',
+    'No tasks created yet': 'لم يتم إنشاء أي مهام بعد',
+    'Please enter a title': 'يرجى إدخال عنوان',
+    'Please provide a link or upload a file': 'يرجى تقديم رابط أو رفع ملف',
+    'Resource uploaded successfully': 'تم رفع المحتوى والمصدر بنجاح'
   });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
@@ -1471,7 +1478,7 @@ function showUpdateBar(onUpdate) {
     const b = $('#nb-requests'); if (b) b.textContent = pc || '';
     const pendingSubs = D.subs.filter((s) => !s.deleted && s.status === 'review').length;
     const sb = $('#nb-submissions'); if (sb) sb.textContent = pendingSubs || '';
-    if (V[route.v].paint) V[route.v].paint();
+    if (V[route.v] && V[route.v].paint) V[route.v].paint();
     countUp();
   }
   $('#side').addEventListener('click', async (e) => { const b = e.target.closest('[data-nav]'); if (b) nav(b.dataset.nav); if (e.target.closest('#logout')) { unsubs.forEach((u) => u()); const adm = !!(db.isAdminSession && db.isAdminSession()); if (adm) { store.removeItem('svx.adm'); try { await db.signOutAdmin(); } catch (_) {} } else { store.removeItem('svx.session'); } store.removeItem('svx.me'); location.reload(); } });
@@ -1971,7 +1978,7 @@ function showUpdateBar(onUpdate) {
     tempAi.innerHTML = '<span>' + tr('Thinking...') + ' ⏳</span>';
     if (box) { box.append(tempAi); box.scrollTop = box.scrollHeight; }
 
-    const serverUrl = CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app';
+    const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
     try {
       const res = await fetch(serverUrl + '/api/ai-chat', {
         method: 'POST',
@@ -2840,7 +2847,7 @@ function showUpdateBar(onUpdate) {
 
         statusTxt.textContent = tr('Gemini 3.8 Flash is crafting engineering questions...');
 
-        const serverUrl = CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app';
+        const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
         const res = await fetch(serverUrl + '/api/ai-generate-task', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -3147,7 +3154,7 @@ function showUpdateBar(onUpdate) {
       btn.disabled = true;
       btn.textContent = tr('Grading with AI...');
       try {
-        const serverUrl = CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app';
+        const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
         const res = await fetch(serverUrl + '/api/ai-grade', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

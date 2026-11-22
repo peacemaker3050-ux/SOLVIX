@@ -347,30 +347,34 @@ https://solvix-95eb1.web.app
 
     // 2) فحص المهام التي اقترب موعد تسليمها (خلال 36 ساعة القادمة)
     const tasksSnap = await db.collection('tasks').get();
-    for (const tDoc of tasksSnap.docs) {
-      const task = tDoc.data();
-      if (!task.deleted && task.due) {
+    const activeTasks = tasksSnap.docs.filter((d) => {
+      const t = d.data();
+      return !t.deleted && t.due;
+    });
+
+    if (activeTasks.length > 0) {
+      // جلب قائمة الطلاب مرة واحدة للأداء العالي وتفادي الاستعلامات المكررة
+      const membersSnap = await db.collection('members').where('role', '==', 'member').get();
+      const eligibleMembers = membersSnap.docs.map((doc) => ({ doc, data: doc.data() })).filter((m) => !m.data.deleted && m.data.phone);
+
+      for (const tDoc of activeTasks) {
+        const task = tDoc.data();
         const timeLeft = task.due - now;
         // إذا كان متبقي على الموعد بين ساعتين و 36 ساعة
         if (timeLeft > 2 * 3600 * 1000 && timeLeft <= 36 * 3600 * 1000) {
           const reminderKey = `waDueReminded_${tDoc.id}`;
-          
-          // جلب الطلاب المؤهلين للمهمة
-          const membersSnap = await db.collection('members').where('role', '==', 'member').get();
-          for (const mDoc of membersSnap.docs) {
-            const member = mDoc.data();
-            if (!member.deleted && member.phone && !member[reminderKey]) {
-              if ((member.level || 1) >= (task.minLevel || 1)) {
-                // هل قام بالتسليم؟
-                const subSnap = await db.collection('submissions')
-                  .where('taskId', '==', tDoc.id)
-                  .where('memberId', '==', mDoc.id)
-                  .get();
 
-                if (subSnap.empty) {
-                  const firstName = (member.name || 'مهندسنا').split(' ')[0];
-                  const hoursLeft = Math.round(timeLeft / (3600 * 1000));
-                  const msg = `⏳ تذكير بمهمة هندسية | SOLVIX KOD
+          // جلب تسليمات هذه المهمة مرة واحدة للتحقق السريع في الذاكرة
+          const subSnap = await db.collection('submissions').where('taskId', '==', tDoc.id).get();
+          const submittedIds = new Set(subSnap.docs.filter((d) => !d.data().deleted).map((d) => d.data().memberId));
+
+          for (const { doc: mDoc, data: member } of eligibleMembers) {
+            if (!member[reminderKey] && (member.level || 1) >= (task.minLevel || 1)) {
+              // هل قام بالتسليم؟
+              if (!submittedIds.has(mDoc.id)) {
+                const firstName = (member.name || 'مهندسنا').split(' ')[0];
+                const hoursLeft = Math.round(timeLeft / (3600 * 1000));
+                const msg = `⏳ تذكير بمهمة هندسية | SOLVIX KOD
 ━━━━━━━━━━━━━━━━━━
 عزيزي المهندس ${firstName}،
 نود تذكيرك باقتراب الموعد النهائي لتسليم المهمة:
@@ -384,14 +388,13 @@ https://solvix-95eb1.web.app
 ━━━━━━━━━━━━━━━━━━
 🏛️ مجتمع SOLVIX KOD التقني والهندسي`;
 
-                  try {
-                    await sendWhatsAppMessage(member.phone, msg);
-                    await mDoc.ref.update({ [reminderKey]: now });
-                    results.taskReminders++;
-                    await new Promise((r) => setTimeout(r, 2000));
-                  } catch (taskSendErr) {
-                    console.warn(`فشل إرسال تذكير المهمة لـ ${member.phone}:`, taskSendErr.message);
-                  }
+                try {
+                  await sendWhatsAppMessage(member.phone, msg);
+                  await mDoc.ref.update({ [reminderKey]: now });
+                  results.taskReminders++;
+                  await new Promise((r) => setTimeout(r, 2000));
+                } catch (taskSendErr) {
+                  console.warn(`فشل إرسال تذكير المهمة لـ ${member.phone}:`, taskSendErr.message);
                 }
               }
             }

@@ -147,6 +147,61 @@ app.post('/send-push', async (req, res) => {
   }
 });
 
+// دالة موحدة للتواصل مع Google Gemini API مع نظام Fallback ذكي لضمان استمرارية الخدمة
+async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig }) {
+  const modelsToTry = [
+    preferredModel || process.env.GEMINI_MODEL,
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-3.8-flash'
+  ];
+  const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
+
+  let lastError = null;
+  for (const model of uniqueModels) {
+    try {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
+        generationConfig
+      };
+      if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`[Gemini API] Model ${model} returned status ${response.status}:`, errText.slice(0, 180));
+        let errorMsg = response.statusText;
+        try {
+          const parsed = JSON.parse(errText);
+          if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
+        } catch (_) {}
+        lastError = new Error(`(${model}) ${errorMsg}`);
+        continue;
+      }
+
+      const data = await response.json();
+      const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!candidateText) {
+        lastError = new Error(`Model ${model} returned empty text candidate`);
+        continue;
+      }
+      return { text: candidateText, modelUsed: model };
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError || new Error('All Gemini model endpoints failed');
+}
+
 // توليد كويز ومهمة بالذكاء الاصطناعي من محتوى السيشن أو السلايدات
 app.post('/api/ai-generate-task', async (req, res) => {
   try {
@@ -163,7 +218,6 @@ app.post('/api/ai-generate-task', async (req, res) => {
       return res.status(400).json({ error: 'Either sessionText or topic is required' });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const languageName = lang === 'ar' ? 'Arabic' : 'English';
     const prompt = `You are an expert university engineering professor and technical curriculum examiner for the engineering community SOLVIX KOD.
 Create a comprehensive, high-quality technical assessment task based on the following session material or topic:
@@ -207,30 +261,15 @@ Return ONLY a valid JSON object with this exact structure, with NO surrounding m
   ]
 }`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          responseMimeType: "application/json"
-        }
-      })
+    const { text: candidateText, modelUsed } = await generateWithGemini({
+      apiKey,
+      preferredModel: process.env.GEMINI_MODEL,
+      prompt,
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: "application/json"
+      }
     });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API Error:', response.status, errText);
-      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
-    }
-
-    const data = await response.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!candidateText) {
-      return res.status(500).json({ error: 'No response content received from Gemini' });
-    }
 
     let parsedResult;
     try {
@@ -241,8 +280,8 @@ Return ONLY a valid JSON object with this exact structure, with NO surrounding m
       return res.status(500).json({ error: 'AI output could not be parsed as JSON' });
     }
 
-    console.log(`[AI Generator] Successfully generated task: "${parsedResult.title}" with ${parsedResult.questions?.length || 0} questions.`);
-    return res.json({ success: true, task: parsedResult });
+    console.log(`[AI Generator] Successfully generated task: "${parsedResult.title}" with ${parsedResult.questions?.length || 0} questions via ${modelUsed}.`);
+    return res.json({ success: true, task: parsedResult, modelUsed });
   } catch (error) {
     console.error('Error in /api/ai-generate-task:', error);
     return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -261,7 +300,6 @@ app.post('/api/ai-grade', async (req, res) => {
       });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const languageName = lang === 'ar' ? 'Arabic' : 'English';
 
     const prompt = `You are an expert university engineering professor grading a student's technical submission for SOLVIX KOD.
@@ -287,36 +325,21 @@ Return ONLY a valid JSON object with this exact structure, with NO surrounding m
   }
 }`;
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: "application/json"
-        }
-      })
+    const { text: candidateText, modelUsed } = await generateWithGemini({
+      apiKey,
+      preferredModel: process.env.GEMINI_MODEL,
+      prompt,
+      generationConfig: {
+        temperature: 0.2,
+        responseMimeType: "application/json"
+      }
     });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API Error (Grade):', response.status, errText);
-      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
-    }
-
-    const data = await response.json();
-    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!candidateText) {
-      return res.status(500).json({ error: 'No response content received from Gemini' });
-    }
 
     const cleaned = candidateText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
     const parsedResult = JSON.parse(cleaned);
 
-    console.log(`[AI Auto-Grading] Evaluated submission for "${taskTitle}": Score ${parsedResult.score}/${maxScore}`);
-    return res.json({ success: true, ...parsedResult });
+    console.log(`[AI Auto-Grading] Evaluated submission for "${taskTitle}": Score ${parsedResult.score}/${maxScore} via ${modelUsed}`);
+    return res.json({ success: true, modelUsed, ...parsedResult });
   } catch (error) {
     console.error('Error in /api/ai-grade:', error);
     return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -339,7 +362,6 @@ app.post('/api/ai-chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     const studentContext = `The student's name is ${studentInfo.name || 'Student'}, department: ${studentInfo.dept || 'Engineering'}, level: ${studentInfo.level || 1}.`;
 
     const systemInstruction = `You are Solvix AI, the intelligent, friendly, and expert engineering mentor for SOLVIX KOD — an elite engineering and coding community for university students.
@@ -365,33 +387,18 @@ Your responsibilities:
     }
     contents.push({ role: 'user', parts: [{ text: message }] });
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents,
-        generationConfig: {
-          temperature: 0.6,
-          maxOutputTokens: 1000
-        }
-      })
+    const { text: reply, modelUsed } = await generateWithGemini({
+      apiKey,
+      preferredModel: process.env.GEMINI_MODEL,
+      prompt: contents,
+      systemInstruction,
+      generationConfig: {
+        temperature: 0.6,
+        maxOutputTokens: 1000
+      }
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API Error (Chat):', response.status, errText);
-      return res.status(response.status).json({ error: `Gemini API returned error: ${response.statusText}` });
-    }
-
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!reply) {
-      return res.status(500).json({ error: 'No response from AI assistant' });
-    }
-
-    return res.json({ success: true, reply });
+    return res.json({ success: true, reply, modelUsed });
   } catch (error) {
     console.error('Error in /api/ai-chat:', error);
     return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -504,8 +511,8 @@ app.get('/whatsapp', (req, res) => {
     </div>
 
     <br>
-    <a href="/whatsapp" class="btn">🔄 تحديث يدوي</a>
-    <a href="/whatsapp/reset" class="btn" style="background:#243656;color:#cfe2ff;margin-inline-start:8px">⚡ طلب كود جديد</a>
+    <a href="/whatsapp?key=${WHATSAPP_ACCESS_KEY}" class="btn">🔄 تحديث يدوي</a>
+    <a href="/whatsapp/reset?key=${WHATSAPP_ACCESS_KEY}" class="btn" style="background:#243656;color:#cfe2ff;margin-inline-start:8px">⚡ طلب كود جديد</a>
   </div>
 
   <script>
@@ -513,7 +520,7 @@ app.get('/whatsapp', (req, res) => {
 
     async function checkStatus() {
       try {
-        const res = await fetch('/api/whatsapp/status');
+        const res = await fetch('/api/whatsapp/status?key=' + encodeURIComponent('${WHATSAPP_ACCESS_KEY}'));
         const data = await res.json();
         if (!data || !data.status) return;
         const s = data.status;

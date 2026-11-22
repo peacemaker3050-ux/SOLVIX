@@ -1,6 +1,7 @@
 # Firebase Admin SDK credentials (Sensitive Keys)
 *-firebase-adminsdk-*.json
 serviceAccountKey.json
+service_account.json
 
 # Environment variables
 .env
