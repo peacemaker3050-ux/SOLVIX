@@ -1,13 +1,14 @@
 const path = require('path');
 const fs = require('fs');
 
-let makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion;
+let makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers;
 try {
   const baileys = require('@whiskeysockets/baileys');
   makeWASocket = baileys.default || baileys.makeWASocket;
   useMultiFileAuthState = baileys.useMultiFileAuthState;
   DisconnectReason = baileys.DisconnectReason;
   fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
+  Browsers = baileys.Browsers;
 } catch (e) {
   console.warn('⚠️ @whiskeysockets/baileys not yet installed or loaded:', e.message);
 }
@@ -65,8 +66,22 @@ async function restoreSessionFromFirestore(db) {
     if (snap.exists) {
       const data = snap.data();
       if (data && data.credsJson) {
+        let isRegistered = false;
+        try {
+          const parsed = JSON.parse(data.credsJson);
+          if (parsed && (parsed.registered === true || parsed.me)) {
+            isRegistered = true;
+          }
+        } catch (_) {}
+
+        if (!isRegistered) {
+          console.warn('🗑️ الجلسة المخزنة في Firestore غير مكتملة (لم يتم ربطها بعد). جاري حذفها فوراً لتجنب خطأ 401...');
+          await db.collection('system_config').doc('whatsapp_session').delete().catch(() => {});
+          return;
+        }
+
         fs.writeFileSync(path.join(AUTH_DIR, 'creds.json'), data.credsJson, 'utf8');
-        console.log('🔄 تم استرجاع جلسة واتساب من Firestore بنجاح.');
+        console.log('🔄 تم استرجاع جلسة واتساب المعتمدة من Firestore بنجاح.');
       }
     }
   } catch (err) {
@@ -76,14 +91,25 @@ async function restoreSessionFromFirestore(db) {
 
 async function backupSessionToFirestore(db) {
   try {
+    // شرط قاطع: لا تحفظ إلا إذا كانت الجلسة مسجلة فعلياً بعد اكتمال الربط بنجاح!
+    if (!sock?.authState?.creds?.registered && !isConnected) {
+      return;
+    }
     const credsPath = path.join(AUTH_DIR, 'creds.json');
     if (fs.existsSync(credsPath)) {
       const credsJson = fs.readFileSync(credsPath, 'utf8');
+      try {
+        const parsed = JSON.parse(credsJson);
+        if (!parsed.registered) return;
+      } catch (_) {
+        return;
+      }
       await db.collection('system_config').doc('whatsapp_session').set({
         credsJson,
         updatedAt: Date.now(),
         botNumber: botPhoneNumber
       }, { merge: true });
+      console.log('💾 تم عمل نسخة احتياطية للجلسة المسجلة في Firestore.');
     }
   } catch (err) {
     console.warn('تعذر حفظ نسخة جلسة واتساب في Firestore:', err.message);
@@ -116,16 +142,42 @@ async function initWhatsApp(db) {
       version = [2, 3000, 1015901307];
     }
 
+    const browserConfig = (Browsers && Browsers.ubuntu)
+      ? Browsers.ubuntu('Chrome')
+      : ['Ubuntu', 'Chrome', '20.0.04'];
+
     sock = makeWASocket({
       version,
       auth: state,
       printQRInTerminal: false,
       logger,
-      browser: ['Ubuntu', 'Chrome', '20.0.04'],
+      browser: browserConfig,
       connectTimeoutMs: 60000,
       defaultQueryTimeoutMs: 60000,
       keepAliveIntervalMs: 30000
     });
+
+    // طلب كود الربط مرة واحدة بهدوء إذا لم يكن الجهاز مسجلاً
+    const isRegistered = !!(sock?.authState?.creds?.registered);
+    if (!isRegistered && botPhoneNumber && !pairingCode) {
+      setTimeout(async () => {
+        try {
+          if (sock && !sock.authState.creds.registered && !pairingCode) {
+            const cleaned = cleanPhoneForPairing(botPhoneNumber);
+            const code = await sock.requestPairingCode(cleaned);
+            pairingCode = code ? code.match(/.{1,4}/g)?.join('-') || code : code;
+            pairingCodeGeneratedAt = Date.now();
+            console.log(`\n========================================`);
+            console.log(`📲 كود ربط واتساب الجديد لهاتف (${botPhoneNumber}):`);
+            console.log(`👉 ${pairingCode} 👈`);
+            console.log(`(أدخل هذا الكود في واتساب > الأجهزة المرتبطة > ربط برقم الهاتف)`);
+            console.log(`========================================\n`);
+          }
+        } catch (pairErr) {
+          console.warn('Pairing code request error:', pairErr.message);
+        }
+      }, 5000);
+    }
 
     sock.ev.on('creds.update', async () => {
       try {
@@ -133,7 +185,8 @@ async function initWhatsApp(db) {
           fs.mkdirSync(AUTH_DIR, { recursive: true });
         }
         await saveCreds();
-        if (adminDb) {
+        // فقط احفظ الجلسة في Firestore إذا كان الحساب مسجلاً بنجاح
+        if (adminDb && sock?.authState?.creds?.registered) {
           await backupSessionToFirestore(adminDb);
         }
       } catch (saveErr) {
@@ -150,52 +203,18 @@ async function initWhatsApp(db) {
         } catch (_) {}
       }
 
-      // توليد Pairing Code إذا لم يكن مسجلاً بعد ورقم البوت متوفر
-      const isRegistered = !!(sock?.authState?.creds?.registered);
-      const isCodeFresh = pairingCode && (Date.now() - pairingCodeGeneratedAt < 180000);
-
-      if (!isRegistered && botPhoneNumber && !isCodeFresh) {
-        setTimeout(async () => {
-          try {
-            if (sock && !sock.authState.creds.registered) {
-              const freshCheck = pairingCode && (Date.now() - pairingCodeGeneratedAt < 180000);
-              if (freshCheck) return;
-
-              const cleaned = cleanPhoneForPairing(botPhoneNumber);
-              const code = await sock.requestPairingCode(cleaned);
-              pairingCode = code ? code.match(/.{1,4}/g)?.join('-') || code : code;
-              pairingCodeGeneratedAt = Date.now();
-              console.log(`\n========================================`);
-              console.log(`📲 كود ربط واتساب الجديد لهاتف (${botPhoneNumber}):`);
-              console.log(`👉 ${pairingCode} 👈`);
-              console.log(`(أدخل هذا الكود في واتساب > الأجهزة المرتبطة > ربط برقم الهاتف)`);
-              console.log(`========================================\n`);
-            }
-          } catch (pairErr) {
-            console.warn('Pairing code request error:', pairErr.message);
-          }
-        }, 3000);
-      }
-
       if (connection === 'close') {
         isConnected = false;
         isInitializing = false;
-        
-        // لا نحذف الكود إذا كان تم توليده خلال آخر 3 دقائق حتى يتمكن المستخدم من إدخاله بهدوء
-        if (Date.now() - pairingCodeGeneratedAt > 180000) {
-          pairingCode = null;
-        }
         qrCodeDataUrl = null;
 
         const statusCode = lastDisconnect?.error?.output?.statusCode;
-        const loggedOut = isRegistered && statusCode === DisconnectReason.loggedOut;
-        console.log(`⚠️ اتصال واتساب مغلق (كود: ${statusCode}, مسجل: ${isRegistered}). تسجيل خروج نهائي: ${loggedOut}`);
+        const isAuthError = statusCode === 401 || statusCode === DisconnectReason.loggedOut;
 
-        if (!loggedOut) {
-          console.log('🔄 جاري إعادة محاولة الاتصال وتجهيز الجلسة خلال 5 ثوانٍ...');
-          setTimeout(() => initWhatsApp(adminDb), 5000);
-        } else {
-          console.warn('❌ تم تسجيل الخروج من الهاتف. تنظيف الجلسة لإتاحة ربط جديد...');
+        console.log(`⚠️ اتصال واتساب مغلق (كود: ${statusCode}). خطأ مصادقة: ${isAuthError}`);
+
+        if (isAuthError) {
+          console.warn('❌ كود 401: مفاتيح الجلسة غير صالحة أو تم رفضها من واتساب. تنظيف كامل للملفات لبدء اتصال نظيف...');
           pairingCode = null;
           pairingCodeGeneratedAt = 0;
           try {
@@ -205,11 +224,17 @@ async function initWhatsApp(db) {
               });
             }
             if (adminDb) {
-              adminDb.collection('system_config').doc('whatsapp_session').delete().catch(() => {});
+              await adminDb.collection('system_config').doc('whatsapp_session').delete().catch(() => {});
             }
           } catch (_) {}
-          setTimeout(() => initWhatsApp(adminDb), 4000);
+          // إعادة تهيئة جلسة نظيفة بعد 3 ثوانٍ
+          setTimeout(() => initWhatsApp(adminDb), 3000);
+          return;
         }
+
+        // انقطاع شبكة عادي
+        console.log('🔄 جاري إعادة محاولة الاتصال بالشبكة خلال 5 ثوانٍ...');
+        setTimeout(() => initWhatsApp(adminDb), 5000);
       } else if (connection === 'open') {
         isConnected = true;
         pairingCode = null;
@@ -217,6 +242,9 @@ async function initWhatsApp(db) {
         qrCodeDataUrl = null;
         isInitializing = false;
         console.log(`✅ [Solvix WhatsApp Bot] متصل الآن بنجاح برقم: ${botPhoneNumber}`);
+        if (adminDb) {
+          await backupSessionToFirestore(adminDb);
+        }
       }
     });
 
@@ -353,7 +381,8 @@ function getWhatsAppStatus() {
   };
 }
 
-function restartWhatsApp(db) {
+async function hardResetWhatsApp(db) {
+  console.log('⚡ طلب إعادة ضبط شاملة وتوليد كود جديد لجلسة واتساب...');
   try {
     if (sock) {
       try { sock.end(); } catch (_) {}
@@ -365,12 +394,33 @@ function restartWhatsApp(db) {
   pairingCodeGeneratedAt = 0;
   qrCodeDataUrl = null;
   isInitializing = false;
-  setTimeout(() => initWhatsApp(db || adminDb), 2000);
+
+  // تنظيف مجلد الجلسة المحلي
+  try {
+    if (fs.existsSync(AUTH_DIR)) {
+      fs.readdirSync(AUTH_DIR).forEach((file) => {
+        try { fs.unlinkSync(path.join(AUTH_DIR, file)); } catch (_) {}
+      });
+    }
+  } catch (_) {}
+
+  // حذف الجلسة من Firestore
+  const targetDb = db || adminDb;
+  if (targetDb) {
+    try {
+      await targetDb.collection('system_config').doc('whatsapp_session').delete();
+      console.log('🗑️ تم مسح جلسة واتساب السابقة من Firestore بنجاح.');
+    } catch (_) {}
+  }
+
+  // إعادة البدء بعد ثانيتين بجلسة نظيفة تماماً
+  setTimeout(() => initWhatsApp(targetDb), 2000);
 }
 
 module.exports = {
   initWhatsApp,
-  restartWhatsApp,
+  restartWhatsApp: hardResetWhatsApp,
+  hardResetWhatsApp,
   sendWhatsAppMessage,
   runAutomatedWhatsAppReminders,
   getWhatsAppStatus,

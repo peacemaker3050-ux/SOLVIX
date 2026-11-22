@@ -546,9 +546,9 @@ app.get('/whatsapp', (req, res) => {
   res.send(html);
 });
 
-// إعادة تهيئة الاتصال وتوليد كود ربط جديد
-app.get('/whatsapp/reset', (req, res) => {
-  whatsapp.restartWhatsApp(admin.apps.length ? admin.firestore() : null);
+// إعادة تهيئة الاتصال وتوليد كود ربط جديد مع مسح أي جلسة سابقة
+app.get('/whatsapp/reset', async (req, res) => {
+  await whatsapp.hardResetWhatsApp(admin.apps.length ? admin.firestore() : null);
   res.redirect('/whatsapp');
 });
 
