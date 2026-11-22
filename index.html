@@ -1145,7 +1145,9 @@ window.SOLVIX_CONFIG = {
     'No tasks created yet': 'لم يتم إنشاء أي مهام بعد',
     'Please enter a title': 'يرجى إدخال عنوان',
     'Please provide a link or upload a file': 'يرجى تقديم رابط أو رفع ملف',
-    'Resource uploaded successfully': 'تم رفع المحتوى والمصدر بنجاح'
+    'Resource uploaded successfully': 'تم رفع المحتوى والمصدر بنجاح',
+    'AI took too long to respond. Please try again.': 'استغرق المساعد وقتاً طويلاً في الاستجابة، يرجى المحاولة مرة أخرى.',
+    'Error communicating with AI assistant': 'تعذر الاتصال بالمساعد الذكي، يرجى المحاولة لاحقاً.'
   });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
@@ -1979,6 +1981,9 @@ function showUpdateBar(onUpdate) {
     if (box) { box.append(tempAi); box.scrollTop = box.scrollHeight; }
 
     const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
+    const clientController = new AbortController();
+    const clientTimeout = setTimeout(() => clientController.abort(), 20000); // 20 ثانية كحد أقصى للمتصفح
+
     try {
       const res = await fetch(serverUrl + '/api/ai-chat', {
         method: 'POST',
@@ -1991,8 +1996,10 @@ function showUpdateBar(onUpdate) {
             dept: me ? me.dept : 'Engineering',
             level: me ? me.level : 1
           }
-        })
+        }),
+        signal: clientController.signal
       });
+      clearTimeout(clientTimeout);
 
       const data = await res.json();
       if (!res.ok || !data.success || !data.reply) {
@@ -2003,8 +2010,13 @@ function showUpdateBar(onUpdate) {
       saveAiChatHistory(history);
       paintChat();
     } catch (err) {
+      clearTimeout(clientTimeout);
       console.error('Chat error:', err);
-      tempAi.innerHTML = '<span style="color:#ff8fa3">' + (err.message || 'Error communicating with AI assistant') + '</span>';
+      const isTimeout = err.name === 'AbortError';
+      const msg = isTimeout
+        ? tr('AI took too long to respond. Please try again.')
+        : (err.message || tr('Error communicating with AI assistant'));
+      tempAi.innerHTML = '<span style="color:#ff8fa3">⚠️ ' + msg + '</span>';
     }
   }
 
@@ -2124,7 +2136,7 @@ function showUpdateBar(onUpdate) {
           + '  <div class="chat-top-header">'
           + '    <div style="display:flex;align-items:center;gap:10px">'
           + '      <div class="aura l2" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center">' + ico('bot', 18) + '</div>'
-          + '      <div style="line-height:1.2"><b style="color:#fff;font-size:13.5px">' + tr('Solvix AI Assistant') + '</b><small style="display:block;color:#35c4ff;font-size:10.5px">● Online · Gemini 3.8 Flash</small></div>'
+          + '      <div style="line-height:1.2"><b style="color:#fff;font-size:13.5px">' + tr('Solvix AI Assistant') + '</b><small style="display:block;color:#35c4ff;font-size:10.5px">● Online · Gemini AI Flash</small></div>'
           + '    </div>'
           + '    <button type="button" class="btn sm ghost" id="chat-clear" style="padding:3px 10px;font-size:11.5px;height:26px">' + ico('trash', 12) + ' ' + tr('Clear chat') + '</button>'
           + '  </div>'

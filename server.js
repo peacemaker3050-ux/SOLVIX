@@ -147,19 +147,28 @@ app.post('/send-push', async (req, res) => {
   }
 });
 
-// دالة موحدة للتواصل مع Google Gemini API مع نظام Fallback ذكي لضمان استمرارية الخدمة
+// دالة موحدة فائقة السرعة للتواصل مع Google Gemini API مع نظام Fallback ومهلة زمنية
 async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig }) {
+  // تنظيف اسم النموذج: استبدال أي نموذج غير موجود في API بالنموذج فائق السرعة gemini-1.5-flash
+  let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  if (primaryModel.includes('3.8') || primaryModel.includes('3.5')) {
+    primaryModel = 'gemini-1.5-flash';
+  }
+
+  // ترتيب النماذج بدءاً من الأسرع والأكثر استقراراً في الاستجابة (أقل من ثانية واحدة)
   const modelsToTry = [
-    preferredModel || process.env.GEMINI_MODEL,
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
+    primaryModel,
     'gemini-1.5-flash',
-    'gemini-3.8-flash'
+    'gemini-2.0-flash',
+    'gemini-1.5-pro'
   ];
   const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
 
   let lastError = null;
   for (const model of uniqueModels) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 ثوانٍ كحد أقصى للنموذج الواحد لمنع التعليق
+
     try {
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const payload = {
@@ -173,8 +182,10 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
       const response = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         const errText = await response.text();
@@ -183,7 +194,7 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
         try {
           const parsed = JSON.parse(errText);
           if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
-        } catch (_) {}
+        } catch (_) { }
         lastError = new Error(`(${model}) ${errorMsg}`);
         continue;
       }
@@ -196,7 +207,13 @@ async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstru
       }
       return { text: candidateText, modelUsed: model };
     } catch (e) {
-      lastError = e;
+      clearTimeout(timeout);
+      if (e.name === 'AbortError') {
+        console.warn(`[Gemini API] Model ${model} timed out after 8s. Trying fallback model...`);
+        lastError = new Error(`(${model}) Connection timed out`);
+      } else {
+        lastError = e;
+      }
     }
   }
   throw lastError || new Error('All Gemini model endpoints failed');
@@ -644,7 +661,7 @@ setInterval(() => {
     if (admin.apps.length) {
       whatsapp.runAutomatedWhatsAppReminders(admin.firestore()).catch((e) => console.warn('[Auto-Reminders] Cron error:', e.message));
     }
-  } catch (_) {}
+  } catch (_) { }
 }, 4 * 60 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
