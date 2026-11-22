@@ -901,7 +901,7 @@ window.SOLVIX_CONFIG = {
   function toast(m, t = 'ok') { const e = document.createElement('div'); e.className = 'toast ' + t; e.textContent = m; $('#toasts').append(e); setTimeout(() => e.classList.add('out'), 3200); setTimeout(() => e.remove(), 3700); }
 
   /* ---------- icons + level badges ---------- */
-  const IC = { bot: 'M12 2a2 2 0 012 2v2h2a3 3 0 013 3v8a3 3 0 01-3 3H8a3 3 0 01-3-3v-8a3 3 0 013-3h2V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-6 5h6', book: 'M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z', bell: 'M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0', home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', cog: 'M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2' };
+  const IC = { bot: 'M12 2a2 2 0 012 2v2h2a3 3 0 013 3v8a3 3 0 01-3 3H8a3 3 0 01-3-3v-8a3 3 0 013-3h2V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-6 5h6', book: 'M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z', bell: 'M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0', home: 'M3 11l9-8 9 8M5 10v10h14V10', inbox: 'M3 13l3-8h12l3 8M3 13v6h18v-6M3 13h5l1 3h6l1-3h5', cog: 'M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1', users: 'M16 20v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1M9.5 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1a4 4 0 00-3-3.9M16 4.2a3.5 3.5 0 010 6.6', tasks: 'M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h9', user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8', out: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9', x: 'M18 6L6 18M6 6l12 12', plus: 'M12 5v14M5 12h14', up: 'M12 19V5M5 12l7-7 7 7', check: 'M20 6L9 17l-5-5', clock: 'M12 21a9 9 0 100-18 9 9 0 000 18M12 7v5l3 2', chat: 'M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z' };
   const ico = (n, s = 20) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + IC[n] + '"/></svg>';
   const LEVELS = [null,
     { ar: 'Initiate', en: 'Level 1', d: 'The start of the journey' }, { ar: 'Explorer', en: 'Level 2', d: 'Learns and experiments' },
@@ -1147,7 +1147,32 @@ window.SOLVIX_CONFIG = {
     'Please provide a link or upload a file': 'يرجى تقديم رابط أو رفع ملف',
     'Resource uploaded successfully': 'تم رفع المحتوى والمصدر بنجاح',
     'AI took too long to respond. Please try again.': 'استغرق المساعد وقتاً طويلاً في الاستجابة، يرجى المحاولة مرة أخرى.',
-    'Error communicating with AI assistant': 'تعذر الاتصال بالمساعد الذكي، يرجى المحاولة لاحقاً.'
+    'Error communicating with AI assistant': 'تعذر الاتصال بالمساعد الذكي، يرجى المحاولة لاحقاً.',
+    'Admin Direct Chat': 'محادثة الإدارة المباشرة',
+    'Direct Chats': 'المحادثات المباشرة',
+    'Admin Chat': 'محادثة الإدارة',
+    'Messages': 'الرسائل',
+    'Chat': 'مراسلة',
+    'Chat with student': 'مراسلة الطالب',
+    'Connect directly with community leaders and mentors': 'تواصل مباشرة مع مسؤولي ومشرفي المجتمع',
+    'Communicate directly in real time with community students and members.': 'تواصل فورياً ومباشراً مع طلاب وأعضاء المجتمع.',
+    'Type a message...': 'اكتب رسالتك هنا...',
+    'Type a reply to': 'اكتب رداً إلى',
+    'Search conversations': 'البحث في المحادثات',
+    'Search by student name or ID...': 'ابحث باسم الطالب أو الرقم التعريفي...',
+    'Start a conversation': 'ابدأ المحادثة',
+    'No messages yet': 'لا توجد رسائل حتى الآن',
+    'Community Admin': 'مسؤول المجتمع',
+    'New message from Admin': 'رسالة جديدة من الإدارة',
+    'New message from': 'رسالة جديدة من',
+    'Details': 'التفاصيل',
+    'All Chats': 'جميع المحادثات',
+    'Enable Mobile Alerts': 'تفعيل إشعارات الهاتف',
+    'Enable Notifications Now 🔔': 'تفعيل الإشعارات الآن 🔔',
+    'Never miss an update or message!': 'لا تفوّت أي رسالة أو مهمة جديدة!',
+    'Tap any member to see their full details and promote them.': 'اضغط على أي عضو لعرض تفاصيله الكاملة وترقيته.',
+    'No matching members': 'لا يوجد أعضاء مطابقين للبحث',
+    'Community members': 'أعضاء المجتمع'
   });
   const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
@@ -1315,10 +1340,11 @@ window.SOLVIX_CONFIG = {
   });
 
   /* ---------- app: shell, routing, data ---------- */
-  const D = { requests: [], members: [], tasks: [], subs: [], notifs: [], resources: [], questions: [], announces: [], sessions: [] }, F = { req: 'pending', q: '', lvl: '0', resDept: '0', subFilter: 'review', subTask: '0', sesDept: '0' }, route = { v: '' }; let unsubs = [], firstPaint = true;
+  const D = { requests: [], members: [], tasks: [], subs: [], notifs: [], resources: [], questions: [], announces: [], sessions: [], messages: [] }, F = { req: 'pending', q: '', lvl: '0', resDept: '0', subFilter: 'review', subTask: '0', sesDept: '0', activeChatStudent: null, chatQ: '' }, route = { v: '' }; let unsubs = [], firstPaint = true;
   const NAV = {
     member: [
       ['home', 'Home', 'home'],
+      ['messages', 'Admin Chat', 'chat'],
       ['tasks', 'Tasks', 'tasks'],
       ['study', 'Study Hub', 'book'],
       ['assistant', 'AI Assistant', 'bot'],
@@ -1330,6 +1356,7 @@ window.SOLVIX_CONFIG = {
     ],
     admin: [
       ['requests', 'Join requests', 'inbox'],
+      ['messages', 'Direct Chats', 'chat'],
       ['members', 'Members', 'users'],
       ['tasks', 'Tasks Studio', 'tasks'],
       ['submissions', 'Submissions', 'check'],
@@ -1377,8 +1404,12 @@ function showUpdateBar(onUpdate) {
   d.querySelector('button').onclick = () => { d.querySelector('button').disabled = true; d.querySelector('button').textContent = 'Updating...'; onUpdate(); };
   document.body.append(d);
 }
-  async function initPushNotifications() {
+  async function initPushNotifications(fromUserGesture = false) {
+    if (!('Notification' in window)) return;
     try {
+      if (Notification.permission !== 'granted' && !fromUserGesture) {
+        return; // لا تطلب الإذن تلقائياً بدون نقرة لتفادي حظر المتصفحات الحديثة
+      }
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
@@ -1390,11 +1421,19 @@ function showUpdateBar(onUpdate) {
           serviceWorkerRegistration: reg
         });
         if (token && me) {
+          me.fcmToken = token;
+          cacheMe();
           await db.set('members', me.id, { fcmToken: token, role: me.role || (isAdmin() ? 'admin' : 'member') });
+          console.log('✅ Push notification token registered:', token.slice(0, 20) + '...');
+          if (fromUserGesture) toast(LANG === 'ar' ? 'تم تفعيل إشعارات الهاتف بنجاح 🔔' : 'Push notifications enabled! 🔔');
+          paint();
         }
+      } else if (fromUserGesture) {
+        toast(LANG === 'ar' ? 'تم حظر الإشعارات من إعدادات المتصفح، يرجى تفعيلها يدوياً' : 'Notifications blocked in browser settings', 'bad');
       }
     } catch (e) {
       console.warn('Push notifications not supported or blocked', e);
+      if (fromUserGesture) toast(LANG === 'ar' ? 'تعذر تفعيل الإشعارات: ' + (e.message || e) : 'Could not enable push: ' + (e.message || e), 'bad');
     }
   }
 
@@ -1420,6 +1459,7 @@ function showUpdateBar(onUpdate) {
       history.replaceState({ view: initView }, '');
       buildShell(); startData(); nav(initView, true);
       if (!isAdmin()) setTimeout(checkMissingPhone, 600);
+      setTimeout(checkNotificationOnboarding, 1400);
     };
     if (instant) go(); else { body.classList.add('leaving'); setTimeout(go, 650); }
   }
@@ -1435,18 +1475,39 @@ function showUpdateBar(onUpdate) {
   function startData() {
     const U = unsubs; const tk = () => paint();
     if (isAdmin()) {
-      let seen = null, seenS = null;
+      let seen = null, seenS = null, seenM = null;
       $('#bell-btn').style.display = 'none';
       U.push(
         db.watch('requests', (l) => { if (seen) l.forEach((r) => { if (r.status === 'pending' && !seen.has(r.id)) toast('New join request: ' + r.name); }); seen = new Set(l.map((r) => r.id)); D.requests = l; tk(); }),
         db.watch('members', (l) => { D.members = l; tk(); }),
-        db.watch('submissions', (l) => { if (seenS) l.forEach((s) => { if (!seenS.has(s.id)) toast('New submission: ' + s.memberName); }); seenS = new Set(l.map((s) => s.id)); D.subs = l; tk(); })
+        db.watch('submissions', (l) => { if (seenS) l.forEach((s) => { if (!seenS.has(s.id)) toast('New submission: ' + s.memberName); }); seenS = new Set(l.map((s) => s.id)); D.subs = l; tk(); }),
+        db.watch('direct_messages', (l) => {
+          if (seenM) l.forEach((m) => {
+            if (!seenM.has(m.id) && m.senderRole === 'member' && !m.read) {
+              toast((LANG === 'ar' ? 'رسالة جديدة من ' : 'New message from ') + m.senderName);
+            }
+          });
+          seenM = new Set(l.map((m) => m.id));
+          D.messages = l;
+          tk();
+        })
       );
     } else {
+      let seenM = null;
       U.push(
         db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); if (me.pendingPromotion) checkPromotion(); else checkMissingPhone(); tk(); }),
-                db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }, 'memberId', me.id),
-        db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); }, 'to', me.id)
+        db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }, 'memberId', me.id),
+        db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); }, 'to', me.id),
+        db.watch('direct_messages', (l) => {
+          if (seenM) l.forEach((m) => {
+            if (!seenM.has(m.id) && m.senderRole === 'admin' && !m.read) {
+              toast(LANG === 'ar' ? 'رسالة جديدة من إدارة Solvix Kod' : 'New message from Solvix Admin');
+            }
+          });
+          seenM = new Set(l.map((m) => m.id));
+          D.messages = l;
+          tk();
+        }, 'studentId', me.id)
       );
     }
     U.push(
@@ -1466,9 +1527,9 @@ function showUpdateBar(onUpdate) {
     route.v = v; firstPaint = true;
     $$('.nav[data-nav]').forEach((b) => b.classList.toggle('on', b.dataset.nav === v));
     const L = NAV[isAdmin() ? 'admin' : 'member'].find((x) => x[0] === v);
-    $('#top-title').textContent = L ? tr(L[1]) : (v === 'assistant' ? tr('Solvix AI Assistant') : '');
-    $('#content').classList.toggle('chat-mode', v === 'assistant');
-    $('#content').innerHTML = '<div class="page' + (v === 'assistant' ? ' chat-page' : '') + '">' + (V[v] ? V[v].html() : '') + '</div>';
+    $('#top-title').textContent = L ? tr(L[1]) : (v === 'assistant' ? tr('Solvix AI Assistant') : (v === 'messages' ? (isAdmin() ? tr('Direct Chats') : tr('Admin Chat')) : ''));
+    $('#content').classList.toggle('chat-mode', v === 'assistant' || v === 'messages');
+    $('#content').innerHTML = '<div class="page' + (v === 'assistant' || v === 'messages' ? ' chat-page' : '') + '">' + (V[v] ? V[v].html() : '') + '</div>';
     $('#side').classList.remove('open');
     $('#scrim').classList.remove('open');
     paint();
@@ -1480,6 +1541,10 @@ function showUpdateBar(onUpdate) {
     const b = $('#nb-requests'); if (b) b.textContent = pc || '';
     const pendingSubs = D.subs.filter((s) => !s.deleted && s.status === 'review').length;
     const sb = $('#nb-submissions'); if (sb) sb.textContent = pendingSubs || '';
+    const unreadMsgs = isAdmin()
+      ? (D.messages || []).filter((m) => m.senderRole === 'member' && !m.read).length
+      : (D.messages || []).filter((m) => m.senderRole === 'admin' && !m.read).length;
+    const mb = $('#nb-messages'); if (mb) mb.textContent = unreadMsgs || '';
     if (V[route.v] && V[route.v].paint) V[route.v].paint();
     countUp();
   }
@@ -1561,16 +1626,16 @@ function showUpdateBar(onUpdate) {
   }
 
   async function notifyAdmins(title, body, data = {}) {
+    const serverUrl = (CONFIG.pushServerUrl || 'https://solvix-production-6d76abf4.up.railway.app').replace(/\/+$/, '');
     try {
-      const allMembers = await db.list('members');
-      const adminTokens = allMembers
-        .filter((m) => (m.role === 'admin' || m.id === CONFIG.adminId.toUpperCase()) && m.fcmToken)
-        .map((m) => m.fcmToken);
-      if (adminTokens.length) {
-        await sendPushNotification(adminTokens, title, body, data);
-      }
+      // إرسال الإشعار عبر نقطة النهاية السحابية المخصصة (تتجاوز قيود حماية فايرستور للطلاب)
+      await fetch(serverUrl + '/api/notify-admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body, data })
+      });
     } catch (e) {
-      console.warn('Could not notify admins', e);
+      console.warn('Could not notify admins via server API', e);
     }
   }
 
@@ -1608,10 +1673,12 @@ function showUpdateBar(onUpdate) {
     if (n.type === 'promotion') return [tr('You have been promoted'), tr('You have been promoted to') + ' ' + (LEVELS[m.level] ? LEVELS[m.level].ar : '')];
     if (n.type === 'graded') return [tr('Your task was graded'), (m.title || '') + ' · ' + m.score + ' / ' + m.max];
     if (n.type === 'award') return ['🏆 New trophy', m.title || ''];
+    if (n.type === 'chat') return [tr('New message from Admin'), m.text || tr('You received a new message')];
     return [tr('New task available'), m.title || ''];
   }
 
   function notifTarget(n) {
+    if (n.type === 'chat') return 'messages';
     return n.type === 'accepted' ? 'home' : n.type === 'promotion' ? 'profile' : n.type === 'award' ? 'vault' : 'tasks';
   }
 
@@ -1621,8 +1688,8 @@ function showUpdateBar(onUpdate) {
     bd.textContent = unread > 9 ? '9+' : String(unread); bd.hidden = !unread;
     $('#notif-title').textContent = tr('Notifications');
     $('#notif-list').innerHTML = list.length ? list.map((n) => {
-      const tx = notifText(n), ic = n.type === 'promotion' ? 'up' : n.type === 'accepted' ? 'check' : n.type === 'award' ? 'trophy' : 'tasks';
-      const cl = n.type === 'promotion' ? ' gold' : (n.type === 'task' || n.type === 'graded') ? ' green' : '';
+      const tx = notifText(n), ic = n.type === 'promotion' ? 'up' : n.type === 'accepted' ? 'check' : n.type === 'award' ? 'trophy' : n.type === 'chat' ? 'chat' : 'tasks';
+      const cl = n.type === 'promotion' ? ' gold' : (n.type === 'task' || n.type === 'graded') ? ' green' : n.type === 'chat' ? ' cyan' : '';
       return '<button class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + esc(n.id) + '"><div class="notif-icon' + cl + '">' + ico(ic, 20) + '</div><div class="notif-body"><b>' + esc(tx[0]) + '</b><small>' + esc(tx[1]) + '</small><div class="time">' + ago(n.createdAt) + '</div></div></button>';
     }).join('') : '<div class="notif-empty">' + tr('No notifications yet') + '</div>';
   }
@@ -1631,6 +1698,41 @@ function showUpdateBar(onUpdate) {
     const p = $('#notif-panel'); if (!p || !p.classList.contains('open')) return;
     p.classList.remove('open'); $('#bell-btn').classList.remove('on');
     (D.notifs || []).filter((n) => !n.read).forEach((n) => { db.set('notifs', n.id, { read: true }).catch(() => {}); });
+  }
+
+  function checkNotificationOnboarding() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') return;
+    if (sessionStorage.getItem('svx.notif_asked')) return;
+    const lastDismissed = store.getItem('svx.notif_dismissed_time');
+    if (lastDismissed && Date.now() - Number(lastDismissed) < 2 * 86400 * 1000) return;
+    if ($('#modal') && !$('#modal').hidden && $('#modal').innerHTML.trim()) return;
+
+    const isAr = LANG === 'ar';
+    const html = '<div class="mhead"><h3>' + (isAr ? '🔔 تفعيل إشعارات الهاتف الفورية' : '🔔 Enable Mobile Alerts') + '</h3><button class="icon" data-close aria-label="Close">' + ico('x') + '</button></div>'
+      + '<div class="mbody" style="text-align:center;padding:24px 16px">'
+      + '<div style="font-size:48px;margin-bottom:12px;line-height:1">📲</div>'
+      + '<h4 style="margin:0 0 8px;font-size:16px;color:#fff">' + (isAr ? 'لا تفوّت أي رسالة أو مهمة جديدة!' : 'Never miss an update or message!') + '</h4>'
+      + '<p style="color:#9fb4d6;font-size:13.5px;line-height:1.6;margin:0 0 20px">'
+      + (isAr ? 'احصل على تنبيهات فورية على شاشة هاتفك عند استلام رسائل مباشرة، مهام جديدة، ونتائج التقييمات حتى لو كان التطبيق مغلقاً.' : 'Receive instant lock-screen notifications when you get direct messages, new tasks, and grading feedback even if the app is closed.')
+      + '</p>'
+      + '<div style="display:flex;flex-direction:column;gap:10px">'
+      + '<button class="btn" id="btn-onboard-notif" style="width:100%;font-weight:700;font-size:14.5px;padding:12px;background:linear-gradient(135deg,#22d0ff,#8a5cff);color:#020611;border:none;box-shadow:0 0 20px rgba(34,208,255,0.4)">' + (isAr ? 'تفعيل الإشعارات الآن 🔔' : 'Enable Notifications Now 🔔') + '</button>'
+      + '<button class="btn ghost sm" id="btn-dismiss-notif" style="width:100%;color:#8397bb">' + (isAr ? 'لاحقاً' : 'Later') + '</button>'
+      + '</div>'
+      + '</div>';
+
+    openModal(html);
+    sessionStorage.setItem('svx.notif_asked', '1');
+
+    $('#btn-onboard-notif').onclick = async () => {
+      closeModal();
+      await initPushNotifications(true);
+    };
+    $('#btn-dismiss-notif').onclick = () => {
+      store.setItem('svx.notif_dismissed_time', String(Date.now()));
+      closeModal();
+    };
   }
 
   async function promoteMember(m, n, msg) {
@@ -2025,8 +2127,23 @@ function showUpdateBar(onUpdate) {
   const kv = (a) => '<dl class="kv">' + a.map((x) => '<div><dt>' + x[0] + '</dt><dd>' + x[1] + '</dd></div>').join('') + '</dl>';
   const V = {
     requests: {
-      html: () => '<h2 class="ph">Join requests</h2><p class="pp">Review new requests and assign an ID to each accepted student.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>',
+      html: () => {
+        const needsNotif = isAdmin() && (!('Notification' in window) || Notification.permission !== 'granted' || !(me && me.fcmToken));
+        const notifBanner = needsNotif
+          ? '<div class="card" id="notif-prompt-banner" style="background:linear-gradient(90deg,rgba(34,208,255,0.15),rgba(138,92,255,0.15));border:1px solid #22d0ff;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+            + '  <div style="display:flex;align-items:center;gap:10px">'
+            + '    <span style="font-size:24px">📲</span>'
+            + '    <div><b style="color:#fff;font-size:13.5px">' + (LANG === 'ar' ? 'تفعيل إشعارات الهاتف الفورية' : 'Enable Mobile Push Notifications') + '</b>'
+            + '    <small style="display:block;color:#9fb4d6;font-size:11.5px">' + (LANG === 'ar' ? 'اضغط هنا لتفعيل استلام إشعارات طلبات الانضمام والمهام على شريط هاتفك فورياً.' : 'Tap here to receive instant alerts for join requests and submissions.') + '</small></div>'
+            + '  </div>'
+            + '  <button type="button" class="btn sm" id="btn-enable-notif" style="background:#22d0ff;color:#020611;font-weight:700">' + (LANG === 'ar' ? 'تفعيل الإشعارات الآن 🔔' : 'Enable Alerts 🔔') + '</button>'
+            + '</div>'
+          : '';
+        return notifBanner + '<h2 class="ph">Join requests</h2><p class="pp">Review new requests and assign an ID to each accepted student.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>';
+      },
       paint() {
+        const btnNotif = $('#btn-enable-notif');
+        if (btnNotif) btnNotif.onclick = () => initPushNotifications(true);
         const R = D.requests; $('#stats').innerHTML = stat('Pending', R.filter((r) => r.status === 'pending').length, 'clock') + stat('Members', D.members.filter((m) => m.role !== 'admin' && !m.deleted).length, 'users') + stat('Tasks', D.tasks.filter((t) => !t.deleted).length, 'tasks');
         $('#chips').innerHTML = [['pending', 'Pending'], ['approved', 'Accepted'], ['rejected', 'Rejected'], ['all', 'All']].map((c) => '<button class="chip' + (F.req === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + '</button>').join('');
         const L = R.filter((r) => F.req === 'all' || r.status === F.req).sort((a, b) => b.createdAt - a.createdAt);
@@ -2034,10 +2151,284 @@ function showUpdateBar(onUpdate) {
       }
     },
     members: {
-      html: () => '<h2 class="ph">Community members</h2><p class="pp">Tap any member to see their full details and promote them.</p><div class="tools"><div class="field"><label for="q">Search</label><input id="q" placeholder="Name or ID" value="' + esc(F.q) + '"></div><div class="field"><label for="fl">Level</label><select id="fl"><option value="0">All</option>' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '"' + (F.lvl === String(i + 1) ? ' selected' : '') + '>' + l.ar + '</option>').join('') + '</select></div></div><div class="list" id="list"></div>',
+      html: () => '<h2 class="ph">' + tr('Community members') + '</h2><p class="pp">' + tr('Tap any member to see their full details and promote them.') + '</p><div class="tools"><div class="field"><label for="q">' + tr('Search') + '</label><input id="q" placeholder="' + tr('Name or ID') + '" value="' + esc(F.q) + '"></div><div class="field"><label for="fl">' + tr('Level') + '</label><select id="fl"><option value="0">' + tr('All') + '</option>' + LEVELS.slice(1).map((l, i) => '<option value="' + (i + 1) + '"' + (F.lvl === String(i + 1) ? ' selected' : '') + '>' + l.ar + '</option>').join('') + '</select></div></div><div class="list" id="list"></div>',
       paint() {
         const q = F.q.toLowerCase(); const L = D.members.filter((m) => m.role !== 'admin' && !m.deleted && (F.lvl === '0' || String(m.level || 1) === F.lvl) && (!q || (m.name + ' ' + m.id).toLowerCase().indexOf(q) >= 0)).sort((a, b) => (b.level || 1) - (a.level || 1) || a.name.localeCompare(b.name, 'en'));
-        $('#list').innerHTML = L.length ? L.map((m, i) => { const l = m.level || 1; return '<button class="rowc" data-mem="' + esc(m.id) + '" style="--i:' + i + '">' + badge(l, 38) + '<div class="rc-t"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'Awaiting activation') + '</span></button>'; }).join('') : empty('No matching members');
+        $('#list').innerHTML = L.length ? L.map((m, i) => {
+          const l = m.level || 1;
+          return '<div class="rowc" style="--i:' + i + ';display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px">'
+            + '<button class="row-inner" data-mem="' + esc(m.id) + '" style="background:none;border:none;color:inherit;cursor:pointer;display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:inherit;padding:0">'
+            + badge(l, 38)
+            + '<div class="rc-t" style="flex:1;min-width:0"><b>' + esc(m.name) + '</b><small>' + esc(m.dept) + ' · ' + esc(m.year) + '</small></div>'
+            + '<code>' + esc(m.id) + '</code>'
+            + '<span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + (m.passHash ? LEVELS[l].ar : 'Awaiting activation') + '</span>'
+            + '</button>'
+            + '<button class="btn sm ghost" data-openchat="' + esc(m.id) + '" title="' + tr('Chat with student') + '" style="padding:6px 12px;display:flex;align-items:center;gap:6px;border-color:rgba(34,208,255,0.4);color:#22d0ff">' + ico('chat', 16) + ' <span>' + tr('Chat') + '</span></button>'
+            + '</div>';
+        }).join('') : empty(tr('No matching members'));
+      }
+    },
+    messages: {
+      html: () => {
+        if (!isAdmin()) {
+          // Student 1-on-1 Chat view with Admin
+          return '<div class="chat-full-view">'
+            + '<div class="chat-top-header">'
+            + '  <div style="display:flex;align-items:center;gap:12px">'
+            + '    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#8a5cff,#22d0ff);display:flex;align-items:center;justify-content:center;color:#020611;font-weight:800;font-size:16px">👑</div>'
+            + '    <div><b style="color:#fff;font-size:14px;display:block">' + tr('Admin Direct Chat') + '</b>'
+            + '    <small style="color:#8397bb;font-size:11.5px">' + tr('Connect directly with community leaders and mentors') + '</small></div>'
+            + '  </div>'
+            + '</div>'
+            + '<div class="chat-msgs-scroller" id="direct-chat-feed"></div>'
+            + '<form class="chat-composer" id="direct-chat-form">'
+            + '  <input id="direct-chat-in" placeholder="' + tr('Type a message...') + '" autocomplete="off" maxlength="2000" required>'
+            + '  <button class="btn chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
+            + '</form>'
+            + '</div>';
+        }
+
+        // Admin view:
+        if (F.activeChatStudent) {
+          const st = D.members.find((m) => m.id === F.activeChatStudent);
+          const stName = st ? st.name : F.activeChatStudent;
+          const stDept = st ? (st.dept + ' · ' + st.year) : '';
+          const stLvl = (st && st.level) || 1;
+          return '<div class="chat-full-view">'
+            + '<div class="chat-top-header">'
+            + '  <div style="display:flex;align-items:center;gap:10px">'
+            + '    <button class="btn sm ghost" id="btn-back-chats" style="padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:4px">' + tr('All Chats') + '</button>'
+            + '    ' + badge(stLvl, 32)
+            + '    <div><b style="color:#fff;font-size:13.5px;display:block">' + esc(stName) + '</b>'
+            + '    <small style="color:#8397bb;font-size:11px">' + esc(stDept) + ' · <code>' + esc(F.activeChatStudent) + '</code></small></div>'
+            + '  </div>'
+            + '  <button class="btn sm ghost" id="btn-view-st-profile" data-mem="' + esc(F.activeChatStudent) + '" style="font-size:12px">' + tr('Details') + '</button>'
+            + '</div>'
+            + '<div class="chat-msgs-scroller" id="direct-chat-feed"></div>'
+            + '<form class="chat-composer" id="direct-chat-form">'
+            + '  <input id="direct-chat-in" placeholder="' + tr('Type a reply to') + ' ' + esc(stName.split(' ')[0]) + '..." autocomplete="off" maxlength="2000" required>'
+            + '  <button class="btn chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
+            + '</form>'
+            + '</div>';
+        }
+
+        // Admin Conversation List
+        return '<div style="padding:clamp(16px,3vw,28px);max-width:960px;margin:0 auto;width:100%">'
+          + '<h2 class="ph">' + tr('Direct Chats') + '</h2>'
+          + '<p class="pp">' + tr('Communicate directly in real time with community students and members.') + '</p>'
+          + '<div class="tools" style="margin-bottom:18px">'
+          + '  <div class="field" style="flex:1"><label for="chat-q">' + tr('Search conversations') + '</label><input id="chat-q" placeholder="' + tr('Search by student name or ID...') + '" value="' + esc(F.chatQ || '') + '"></div>'
+          + '</div>'
+          + '<div class="list" id="direct-chats-list"></div>'
+          + '</div>';
+      },
+      paint() {
+        const isAr = LANG === 'ar';
+        if (!isAdmin()) {
+          // Render Student feed
+          const feed = $('#direct-chat-feed');
+          if (!feed) return;
+          const msgs = (D.messages || []).filter((m) => m.studentId === me.id).sort((a, b) => a.createdAt - b.createdAt);
+          
+          if (!msgs.length) {
+            feed.innerHTML = '<div style="margin:auto;text-align:center;padding:40px 20px;color:#8397bb">'
+              + '<div style="font-size:44px;margin-bottom:12px">💬</div>'
+              + '<h3 style="color:#fff;margin:0 0 8px">' + tr('No messages yet') + '</h3>'
+              + '<p style="max-width:380px;margin:0 auto;font-size:13.5px;line-height:1.6">' + (isAr ? 'ابدأ المحادثة الآن مع إدارة ومسؤولي Solvix Kod. اسأل أي سؤال أو استفسار وسنرد عليك في أقرب وقت!' : 'Start a direct chat with Solvix Kod leaders. Ask any questions and we will respond shortly!') + '</p>'
+              + '</div>';
+          } else {
+            feed.innerHTML = msgs.map((m) => {
+              const isMine = m.senderRole === 'member';
+              const timeStr = ago(m.createdAt);
+              return '<div class="chat-bubble ' + (isMine ? 'user' : 'ai') + '" style="' + (isMine ? '' : 'background:#0b1935;border:1px solid rgba(138,92,255,0.3);') + '">'
+                + (!isMine ? '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span class="pill" style="background:rgba(138,92,255,0.2);color:#c4a4ff;border-color:rgba(138,92,255,0.4);font-size:10.5px;padding:2px 8px">👑 ' + tr('Community Admin') + '</span></div>' : '')
+                + '<div style="white-space:pre-wrap;font-weight:400">' + esc(m.text) + '</div>'
+                + '<div style="font-size:10.5px;opacity:0.75;margin-top:6px;text-align:' + (isMine ? 'right' : 'left') + '">' + timeStr + (isMine ? (m.read ? ' · ' + (isAr ? 'تمت القراءة' : 'Read') : ' · ' + (isAr ? 'تم الإرسال' : 'Sent')) : '') + '</div>'
+                + '</div>';
+            }).join('');
+            feed.scrollTop = feed.scrollHeight;
+          }
+
+          // Mark incoming unread as read
+          msgs.filter((m) => m.senderRole === 'admin' && !m.read).forEach((m) => {
+            db.set('direct_messages', m.id, { read: true }).catch(() => {});
+          });
+
+          const form = $('#direct-chat-form');
+          if (form && !form.dataset.ready) {
+            form.dataset.ready = '1';
+            form.onsubmit = async (e) => {
+              e.preventDefault();
+              const inp = $('#direct-chat-in');
+              const text = (inp.value || '').trim();
+              if (!text) return;
+              inp.value = '';
+              const sendBtn = $('#direct-chat-send');
+              if (sendBtn) sendBtn.disabled = true;
+              try {
+                await db.add('direct_messages', {
+                  chatId: 'chat_' + me.id,
+                  studentId: me.id,
+                  senderId: me.id,
+                  senderName: me.name,
+                  senderRole: 'member',
+                  recipientId: '278601',
+                  text,
+                  createdAt: Date.now(),
+                  read: false
+                });
+                notifyAdmins((isAr ? 'رسالة جديدة من ' : 'New message from ') + me.name, text.length > 60 ? text.slice(0, 60) + '...' : text, { type: 'chat', studentId: me.id });
+              } catch (err) {
+                toast(tr('Could not save, please try again.'), 'bad');
+              } finally {
+                if (sendBtn) sendBtn.disabled = false;
+                if (inp) inp.focus();
+              }
+            };
+          }
+          return;
+        }
+
+        // Admin View:
+        if (F.activeChatStudent) {
+          const feed = $('#direct-chat-feed');
+          if (!feed) return;
+          const msgs = (D.messages || []).filter((m) => m.studentId === F.activeChatStudent).sort((a, b) => a.createdAt - b.createdAt);
+          const st = D.members.find((m) => m.id === F.activeChatStudent);
+          const stName = st ? st.name : F.activeChatStudent;
+
+          if (!msgs.length) {
+            feed.innerHTML = '<div style="margin:auto;text-align:center;padding:40px 20px;color:#8397bb">'
+              + '<div style="font-size:44px;margin-bottom:12px">💬</div>'
+              + '<h3 style="color:#fff;margin:0 0 8px">' + tr('No messages yet') + '</h3>'
+              + '<p style="max-width:380px;margin:0 auto;font-size:13.5px;line-height:1.6">' + (isAr ? 'أرسل أول رسالة إلى الطالب ' + esc(stName) : 'Send the first message to ' + esc(stName)) + '</p>'
+              + '</div>';
+          } else {
+            feed.innerHTML = msgs.map((m) => {
+              const isMine = m.senderRole === 'admin';
+              const timeStr = ago(m.createdAt);
+              return '<div class="chat-bubble ' + (isMine ? 'user' : 'ai') + '" style="' + (isMine ? '' : 'background:#0b1935;border:1px solid rgba(34,208,255,0.25);') + '">'
+                + (!isMine ? '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-weight:700;font-size:11.5px;color:#22d0ff">' + esc(m.senderName) + '</span></div>' : '')
+                + '<div style="white-space:pre-wrap;font-weight:400">' + esc(m.text) + '</div>'
+                + '<div style="font-size:10.5px;opacity:0.75;margin-top:6px;text-align:' + (isMine ? 'right' : 'left') + '">' + timeStr + (isMine ? (m.read ? ' · ' + (isAr ? 'تمت القراءة' : 'Read') : ' · ' + (isAr ? 'تم الإرسال' : 'Sent')) : '') + '</div>'
+                + '</div>';
+            }).join('');
+            feed.scrollTop = feed.scrollHeight;
+          }
+
+          // Mark student's messages as read by admin
+          msgs.filter((m) => m.senderRole === 'member' && !m.read).forEach((m) => {
+            db.set('direct_messages', m.id, { read: true }).catch(() => {});
+          });
+
+          const btnBack = $('#btn-back-chats');
+          if (btnBack) btnBack.onclick = () => { F.activeChatStudent = null; nav('messages'); };
+
+          const form = $('#direct-chat-form');
+          if (form && !form.dataset.ready) {
+            form.dataset.ready = '1';
+            form.onsubmit = async (e) => {
+              e.preventDefault();
+              const inp = $('#direct-chat-in');
+              const text = (inp.value || '').trim();
+              if (!text) return;
+              inp.value = '';
+              const sendBtn = $('#direct-chat-send');
+              if (sendBtn) sendBtn.disabled = true;
+              try {
+                await db.add('direct_messages', {
+                  chatId: 'chat_' + F.activeChatStudent,
+                  studentId: F.activeChatStudent,
+                  senderId: me.id,
+                  senderName: me.name,
+                  senderRole: 'admin',
+                  recipientId: F.activeChatStudent,
+                  text,
+                  createdAt: Date.now(),
+                  read: false
+                });
+                notifyMember(F.activeChatStudent, 'chat', { text: text.slice(0, 100), senderName: 'Admin' });
+              } catch (err) {
+                toast(tr('Could not save, please try again.'), 'bad');
+              } finally {
+                if (sendBtn) sendBtn.disabled = false;
+                if (inp) inp.focus();
+              }
+            };
+          }
+          return;
+        }
+
+        // Admin Conversation List:
+        const listEl = $('#direct-chats-list');
+        if (!listEl) return;
+        const q = (F.chatQ || '').toLowerCase();
+        const membersList = (D.members || []).filter((m) => m.role !== 'admin' && !m.deleted);
+
+        // Group messages by student
+        const threadsMap = {};
+        (D.messages || []).forEach((m) => {
+          if (!m.studentId) return;
+          if (!threadsMap[m.studentId]) threadsMap[m.studentId] = [];
+          threadsMap[m.studentId].push(m);
+        });
+
+        // Build list: students with existing threads first (sorted by latest msg), then other members matching search
+        const studentThreads = [];
+        membersList.forEach((st) => {
+          const msgs = threadsMap[st.id] || [];
+          msgs.sort((a, b) => b.createdAt - a.createdAt);
+          const lastMsg = msgs[0] || null;
+          const unreadCount = msgs.filter((m) => m.senderRole === 'member' && !m.read).length;
+          const matches = !q || (st.name + ' ' + st.id + ' ' + (st.dept || '')).toLowerCase().indexOf(q) >= 0;
+          if (matches) {
+            studentThreads.push({
+              student: st,
+              lastMsg,
+              unreadCount,
+              sortTime: lastMsg ? lastMsg.createdAt : (st.createdAt || 0)
+            });
+          }
+        });
+
+        studentThreads.sort((a, b) => {
+          if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
+          return b.sortTime - a.sortTime;
+        });
+
+        const qInput = $('#chat-q');
+        if (qInput && !qInput.dataset.ready) {
+          qInput.dataset.ready = '1';
+          qInput.oninput = (e) => {
+            F.chatQ = e.target.value.trim();
+            V.messages.paint();
+          };
+        }
+
+        if (!studentThreads.length) {
+          listEl.innerHTML = empty(tr('No matching members'));
+          return;
+        }
+
+        listEl.innerHTML = studentThreads.map((item, idx) => {
+          const st = item.student;
+          const l = st.level || 1;
+          const msgSnippet = item.lastMsg ? esc(item.lastMsg.text) : '<i style="opacity:0.6">' + tr('Start a conversation') + '</i>';
+          const timeStr = item.lastMsg ? ago(item.lastMsg.createdAt) : '';
+          return '<button class="rowc" data-openchat="' + esc(st.id) + '" style="--i:' + idx + ';cursor:pointer;width:100%;text-align:inherit;display:flex;align-items:center;gap:12px">'
+            + badge(l, 40)
+            + '<div class="rc-t" style="flex:1;min-width:0">'
+            + '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'
+            + '    <b style="font-size:14px;color:#fff">' + esc(st.name) + '</b>'
+            + '    <small style="color:#8397bb;font-size:11px">' + timeStr + '</small>'
+            + '  </div>'
+            + '  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+            + '    <small style="color:#9fb4d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;flex:1">' + msgSnippet + '</small>'
+            + (item.unreadCount ? '<span class="pill" style="background:#22d0ff;color:#020611;font-weight:700;font-size:11px;padding:2px 8px">' + item.unreadCount + ' new</span>' : '')
+            + '  </div>'
+            + '</div>'
+            + '</button>';
+        }).join('');
       }
     },
     tasks: {
@@ -2247,8 +2638,28 @@ function showUpdateBar(onUpdate) {
         + '<div class="field"><label for="s-prog">' + tr('Program') + '</label><select id="s-prog"></select><p class="error" id="s-prog-err"></p></div>'
         + '<div class="field" style="margin-top:12px"><label for="s-year">' + tr('Year') + '</label><select id="s-year"></select><p class="error" id="s-year-err"></p></div>'
         + '<button class="btn sm" type="submit">' + tr('Save changes') + '</button></form>'
+        + '<div class="card" style="margin-bottom:20px"><h3 style="margin:0 0 10px">' + (LANG === 'ar' ? 'إشعارات الهاتف (Push Notifications)' : 'Push Notifications') + '</h3>'
+        + '<p class="note" style="margin:0 0 12px;text-align:start">' + (LANG === 'ar' ? 'استلام تنبيهات فورية على ستارة هاتفك لطلبات الانضمام والمهام حتى والتطبيق مغلق.' : 'Receive instant phone alerts for requests, tasks and announcements.') + '</p>'
+        + '<div id="notif-settings-status" style="margin-bottom:14px"></div>'
+        + '<button type="button" class="btn sm" id="btn-toggle-push" style="background:linear-gradient(90deg,#22d0ff,#0a84d6);color:#020611;font-weight:700">' + (LANG === 'ar' ? 'تفعيل أو تحديث إشعارات الهاتف 🔔' : 'Enable / Refresh Push Alerts 🔔') + '</button></div>'
         + '<div class="card"><h3 style="margin:0 0 14px">' + tr('Language') + '</h3><div class="chips" style="margin:0"><button type="button" class="chip' + (LANG === 'ar' ? ' on' : '') + '" data-lang="ar">العربية</button><button type="button" class="chip' + (LANG === 'en' ? ' on' : '') + '" data-lang="en">English</button></div></div>',
-      paint() { const d = $('#s-dept'); if (d && !d.dataset.ready) { d.dataset.ready = '1'; acSet = acadInit('s', me); } }
+      paint() {
+        const d = $('#s-dept'); if (d && !d.dataset.ready) { d.dataset.ready = '1'; acSet = acadInit('s', me); }
+        const nStat = $('#notif-settings-status');
+        if (nStat) {
+          const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+          const hasToken = !!(me && me.fcmToken);
+          if (perm === 'granted' && hasToken) {
+            nStat.innerHTML = '<span class="pill ok">● ' + (LANG === 'ar' ? 'الإشعارات مفعلة ونشطة على هذا الجهاز' : 'Push notifications active on this device') + '</span>';
+          } else if (perm === 'denied') {
+            nStat.innerHTML = '<span class="pill bad">✕ ' + (LANG === 'ar' ? 'الإشعارات محظورة من إعدادات المتصفح، افتح إعدادات الموقع واسمح بالإشعارات' : 'Notifications blocked in browser settings') + '</span>';
+          } else {
+            nStat.innerHTML = '<span class="pill warn">⏳ ' + (LANG === 'ar' ? 'الإشعارات غير مفعلة بعد على هذا الجهاز' : 'Notifications not enabled yet on this device') + '</span>';
+          }
+        }
+        const btnPush = $('#btn-toggle-push');
+        if (btnPush) btnPush.onclick = () => initPushNotifications(true);
+      }
     },
     profile: {
       html: () => { const l = lvl(); return '<h2 class="ph">' + tr('My profile') + '</h2><div class="card" style="margin:18px 0"><div class="mem-hero"><div class="aura l' + l + '">' + badge(l, 84) + '</div><div><h3>' + esc(me.name) + '</h3><code>' + esc(me.id) + '</code></div></div>' + kv([[tr('Department'), esc(nm(me.dept) || '—')], [tr('Program'), esc(nm(me.program) || '—')], [tr('Year'), esc(nm(me.year) || '—')], [tr('Level'), LEVELS[l].ar], [tr('Joined'), fmt(me.createdAt)]]) + '</div><h3 style="margin:24px 0 12px">' + tr('Level journey') + '</h3><div class="ladder">' + LEVELS.slice(1).map((L, i) => '<div class="step l' + (i + 1) + ' ' + (i + 1 < l ? 'done' : i + 1 === l ? 'cur' : 'lock') + '">' + badge(i + 1, 48) + '<b>' + L.ar + '</b><small>' + L.en + '</small><em>' + L.d + '</em></div>').join('') + '</div>'; }
@@ -2678,11 +3089,13 @@ function showUpdateBar(onUpdate) {
       + '<div class="promo">' + (l < 6 ? '<div class="pr-flow">' + badge(l, 46) + ico('up', 22) + badge(l + 1, 46) + '</div><button class="btn sm" id="m-up">Promote to ' + LEVELS[l + 1].ar + '</button>' : '<p class="note" style="margin:0">Highest level in the community</p>')
       + '<div class="idrow" style="width:100%"><select id="m-lvl" aria-label="Level">' + LEVELS.slice(1).map((x, i) => '<option value="' + (i + 1) + '"' + (i + 1 === l ? ' selected' : '') + '>' + x.ar + '</option>').join('') + '</select><button class="btn sm ghost" id="m-set">Set level</button></div>'
       + '<div style="display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap">'
+      + '<button class="btn sm" id="m-chat" style="background:#22d0ff;color:#050c1a;font-weight:700;display:inline-flex;align-items:center;gap:6px">' + ico('chat', 18) + ' ' + tr('Chat with student') + '</button>'
       + (m.passHash ? '<button class="btn sm bad" id="m-reset">Reset password</button>' : '')
       + '<button class="btn sm bad" id="m-del">Delete member</button>'
       + '</div></div></div>');
 
     const upd = async (d, msg) => { await db.set('members', m.id, d); closeModal(); toast(msg); };
+    if ($('#m-chat')) $('#m-chat').onclick = () => { closeModal(); F.activeChatStudent = m.id; nav('messages'); };
     if ($('#m-up')) $('#m-up').onclick = () => promoteMember(m, l + 1, 'Promoted ' + m.name.split(' ')[0]);
     $('#m-set').onclick = () => { const n = +$('#m-lvl').value; if (n !== l) promoteMember(m, n, 'Level updated'); };
     if ($('#m-reset')) $('#m-reset').onclick = () => upd({ passHash: null, salt: null, uid: null }, 'Password and device binding were reset. The member can sign in from a new device');
@@ -3245,8 +3658,12 @@ function showUpdateBar(onUpdate) {
   }
   const C = $('#content');
   C.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann],[data-preview],[data-subf],[data-grade],[data-viewsubs],[data-readpdf],[data-sesf],[data-delses],[data-aigen],[data-chatq],[data-studytab],#chat-clear'); if (!t) return;
+    const t = e.target.closest('[data-req],[data-mem],[data-f],[data-lang],[data-open],[data-subs],[data-qadd],[data-qdel],[data-deltask],[data-edtask],[data-resf],[data-delres],[data-sendrp],[data-delann],[data-preview],[data-subf],[data-grade],[data-viewsubs],[data-readpdf],[data-sesf],[data-delses],[data-aigen],[data-chatq],[data-studytab],[data-openchat],#chat-clear'); if (!t) return;
     if (t.dataset.lang) setLang(t.dataset.lang);
+    else if (t.dataset.openchat) {
+      F.activeChatStudent = t.dataset.openchat;
+      nav('messages');
+    }
     else if (t.dataset.studytab) {
       F.studyTab = t.dataset.studytab;
       $$('[data-studytab]').forEach(b => b.classList.toggle('on', b.dataset.studytab === F.studyTab));

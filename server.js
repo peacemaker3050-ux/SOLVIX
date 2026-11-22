@@ -147,6 +147,98 @@ app.post('/send-push', async (req, res) => {
   }
 });
 
+// إشعار فوري للمشرفين (يتم جلب توكنات الأدمن بالسيرفر بصلاحيات Admin SDK متجاوزاً قيود حماية فايرستور للطلاب)
+app.post('/api/notify-admins', async (req, res) => {
+  try {
+    const { title, body, data = {} } = req.body;
+    if (!admin.apps.length) {
+      return res.status(503).json({ error: 'Firebase Admin not initialized on server' });
+    }
+
+    const db = admin.firestore();
+    const membersSnap = await db.collection('members').get();
+    const adminTokens = [];
+    const adminPhones = [];
+
+    membersSnap.docs.forEach((doc) => {
+      const m = doc.data();
+      if (m.role === 'admin' || doc.id === '278601') {
+        if (m.fcmToken) adminTokens.push(m.fcmToken);
+        if (m.phone) adminPhones.push(m.phone);
+      }
+    });
+
+    if (process.env.ADMIN_PHONE && !adminPhones.includes(process.env.ADMIN_PHONE)) {
+      adminPhones.push(process.env.ADMIN_PHONE);
+    }
+
+    console.log(`[Notify Admins] Found ${adminTokens.length} admin FCM tokens and ${adminPhones.length} admin phones for: "${title}".`);
+
+    let pushResult = { success: true, count: 0 };
+    if (adminTokens.length) {
+      const uniqueTokens = [...new Set(adminTokens)];
+      const stringData = {};
+      for (const [k, v] of Object.entries(data)) {
+        stringData[k] = String(v);
+      }
+      stringData.title = title || 'SOLVIX KOD';
+      stringData.body = body || '';
+
+      const message = {
+        notification: {
+          title: title || 'SOLVIX KOD',
+          body: body || ''
+        },
+        data: stringData,
+        tokens: uniqueTokens,
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            channelId: 'solvix_general',
+            priority: 'max'
+          }
+        },
+        webpush: {
+          headers: { Urgency: 'high' },
+          notification: {
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            vibrate: [100, 50, 100],
+            requireInteraction: true
+          }
+        }
+      };
+
+      const response = await admin.messaging().sendEachForMulticast(message);
+      pushResult = {
+        success: true,
+        sentCount: response.successCount,
+        failedCount: response.failureCount
+      };
+      console.log(`[Notify Admins Push] Delivered: ${response.successCount} success, ${response.failureCount} failed.`);
+    }
+
+    // إرسال تنبيه واتساب للأدمن كقناة بديلة مضمونة
+    if (adminPhones.length && whatsapp) {
+      const waMsg = `🔔 إشعار مشرف جديد | SOLVIX KOD
+━━━━━━━━━━━━━━━━━━
+📢 ${title || 'إشعار إداري جديد'}
+📝 ${body || ''}
+━━━━━━━━━━━━━━━━━━
+📱 افتح لوحة التحكم: https://solvix-95eb1.web.app`;
+      for (const phone of adminPhones) {
+        whatsapp.sendWhatsAppMessage(phone, waMsg).catch((e) => console.warn('[Notify Admins WhatsApp] Error:', e.message));
+      }
+    }
+
+    return res.json({ success: true, push: pushResult, adminTokensCount: adminTokens.length });
+  } catch (err) {
+    console.error('Error in /api/notify-admins:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
 // دالة موحدة فائقة السرعة للتواصل مع Google Gemini API مع نظام Fallback ومهلة زمنية
 async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig }) {
   // تنظيف اسم النموذج: استبدال أي نموذج غير موجود في API بالنموذج فائق السرعة gemini-1.5-flash
