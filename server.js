@@ -411,53 +411,136 @@ app.get('/whatsapp', (req, res) => {
     body { font-family: system-ui, -apple-system, sans-serif; background: #060d22; color: #fff; margin: 0; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; text-align: center; }
     .card { background: #0d1b3d; border: 1px solid #1f3568; border-radius: 16px; padding: 28px 24px; max-width: 480px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     h1 { font-size: 20px; margin: 0 0 12px; color: #22d0ff; }
-    .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 20px; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 20px; transition: all 0.3s; }
     .badge.ok { background: #1b4d2e; color: #4ade80; border: 1px solid #22c55e; }
     .badge.wait { background: #4a3b10; color: #fde047; border: 1px solid #eab308; }
-    .code-box { background: #030712; border: 2px dashed #22d0ff; border-radius: 12px; padding: 18px; margin: 18px 0; font-size: 28px; font-weight: 800; letter-spacing: 4px; color: #38bdf8; font-family: monospace; }
+    .code-container { margin: 18px 0; }
+    .code-box { background: #030712; border: 2px dashed #22d0ff; border-radius: 12px; padding: 16px; font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #38bdf8; font-family: monospace; display: inline-block; min-width: 220px; user-select: all; }
     .instructions { text-align: start; font-size: 13.5px; line-height: 1.8; color: #cfe2ff; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px 18px; margin: 18px 0; }
     .instructions ol { margin: 0; padding-inline-start: 20px; }
-    .btn { display: inline-block; background: linear-gradient(135deg, #22d0ff, #0a84d6); color: #020611; font-weight: 700; padding: 10px 22px; border-radius: 10px; text-decoration: none; border: none; cursor: pointer; font-size: 14px; margin-top: 14px; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #22d0ff, #0a84d6); color: #020611; font-weight: 700; padding: 10px 22px; border-radius: 10px; text-decoration: none; border: none; cursor: pointer; font-size: 14px; margin-top: 10px; transition: all 0.2s; }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-copy { background: #1e3a8a; color: #60a5fa; border: 1px solid #3b82f6; font-size: 13px; padding: 8px 16px; border-radius: 8px; margin-top: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
     .qr-img { margin-top: 14px; border-radius: 12px; border: 4px solid #fff; max-width: 200px; }
+    .note { font-size: 12px; color: #94a3b8; margin-top: 10px; }
   </style>
-  ${!status.connected ? '<meta http-equiv="refresh" content="6">' : ''}
 </head>
 <body>
   <div class="card">
     <h1>🤖 بوت واتساب التلقائي | SOLVIX KOD</h1>
     <p style="color:#9fb4d6;font-size:13px;margin:0 0 14px">الرقم المستهدف: <b>${status.botNumber}</b></p>
+    
     <div>
-      ${status.connected 
-        ? '<span class="badge ok">● البوت متصل وجاهز للعمل بنجاح</span><p style="font-size:14px;color:#a7f3d0">يتم إرسال تذكيرات القبول والمهام تلقائياً للطلاب.</p>' 
-        : '<span class="badge wait">⏳ بانتظار الربط مع الهاتف</span>'}
+      <span id="statusBadge" class="badge ${status.connected ? 'ok' : 'wait'}">
+        ${status.connected ? '● البوت متصل وجاهز للعمل بنجاح' : '⏳ بانتظار الربط مع الهاتف'}
+      </span>
     </div>
 
-    ${!status.connected && status.pairingCode ? `
-      <div class="instructions">
-        <b>طريقة الربط السريعة بالهاتف:</b>
-        <ol>
-          <li>افتح تطبيق WhatsApp على هاتف <b>${status.botNumber}</b>.</li>
-          <li>اضغط على <b>الإعدادات ⬅️ الأجهزة المرتبطة ⬅️ ربط جهاز</b>.</li>
-          <li>اختر <b>"ربط باستخدام رقم الهاتف بدلاً من ذلك"</b>.</li>
-          <li>أدخل الكود التالي:</li>
-        </ol>
-      </div>
-      <div class="code-box">${status.pairingCode}</div>
-    ` : ''}
+    <div id="contentArea">
+      ${status.connected ? `
+        <div style="background:rgba(34,197,94,0.15);border:1px solid #22c55e;border-radius:12px;padding:20px;margin:20px 0;">
+          <h2 style="color:#4ade80;font-size:18px;margin:0 0 8px">✅ تم ربط هاتف البوت بنجاح!</h2>
+          <p style="color:#d1fae5;font-size:14px;margin:0">البوت متصل ويعمل في الخلفية، ويتم إرسال تذكيرات القبول والمهام تلقائياً للطلاب.</p>
+        </div>
+      ` : ''}
 
-    ${!status.connected && !status.pairingCode && status.qrCodeDataUrl ? `
-      <p style="font-size:13px;color:#cfe2ff">أو امسح رمز الـ QR من داخل تطبيق واتساب:</p>
-      <img src="${status.qrCodeDataUrl}" class="qr-img" alt="WhatsApp QR">
-    ` : ''}
+      ${!status.connected && status.pairingCode ? `
+        <div class="instructions">
+          <b>طريقة الربط بالهاتف (الكود ثابت ولا يتغير أثناء الكتابة):</b>
+          <ol>
+            <li>افتح تطبيق WhatsApp على هاتف <b>${status.botNumber}</b>.</li>
+            <li>اضغط على <b>الإعدادات ⬅️ الأجهزة المرتبطة ⬅️ ربط جهاز</b>.</li>
+            <li>اختر <b>"ربط باستخدام رقم الهاتف بدلاً من ذلك"</b>.</li>
+            <li>أدخل الكود التالي:</li>
+          </ol>
+        </div>
+        <div class="code-container">
+          <div class="code-box" id="pairingCodeText">${status.pairingCode}</div>
+          <br>
+          <button id="copyBtn" class="btn-copy" onclick="copyCode()">📋 نسخ الكود</button>
+        </div>
+        <p class="note">💡 لا تقلق، الصفحة ثابتة تماماً ولن يتم إعادة تحميلها تلقائياً أثناء كتابة الكود.</p>
+      ` : ''}
 
-    ${!status.connected && !status.pairingCode && !status.qrCodeDataUrl ? `
-      <p style="font-size:13px;color:#9fb4d6">جاري إعداد جلسة الاتصال وتوليد الكود... (يتم التحديث تلقائياً)</p>
-    ` : ''}
+      ${!status.connected && !status.pairingCode && status.qrCodeDataUrl ? `
+        <p style="font-size:13px;color:#cfe2ff">أو امسح رمز الـ QR من داخل تطبيق واتساب:</p>
+        <img src="${status.qrCodeDataUrl}" class="qr-img" alt="WhatsApp QR">
+      ` : ''}
+
+      ${!status.connected && !status.pairingCode && !status.qrCodeDataUrl ? `
+        <p style="font-size:13px;color:#9fb4d6">جاري إعداد جلسة الاتصال وتوليد كود الربط... انتظر ثوانٍ معدودة.</p>
+      ` : ''}
+    </div>
 
     <br>
-    <a href="/whatsapp" class="btn">🔄 تحديث الحالة</a>
+    <a href="/whatsapp" class="btn">🔄 تحديث يدوي</a>
     <a href="/whatsapp/reset" class="btn" style="background:#243656;color:#cfe2ff;margin-inline-start:8px">⚡ طلب كود جديد</a>
   </div>
+
+  <script>
+    let isConnected = ${status.connected ? 'true' : 'false'};
+
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/whatsapp/status');
+        const data = await res.json();
+        if (!data || !data.status) return;
+        const s = data.status;
+
+        if (s.connected && !isConnected) {
+          isConnected = true;
+          const badge = document.getElementById('statusBadge');
+          if (badge) {
+            badge.className = 'badge ok';
+            badge.innerText = '● البوت متصل وجاهز للعمل بنجاح! 🎉';
+          }
+          const content = document.getElementById('contentArea');
+          if (content) {
+            content.innerHTML = \`
+              <div style="background:rgba(34,197,94,0.15);border:1px solid #22c55e;border-radius:12px;padding:20px;margin:20px 0;">
+                <h2 style="color:#4ade80;font-size:18px;margin:0 0 8px">✅ تم ربط هاتف البوت بنجاح!</h2>
+                <p style="color:#d1fae5;font-size:14px;margin:0">البوت متصل ويعمل في الخلفية، ويتم إرسال تذكيرات القبول والمهام تلقائياً للطلاب.</p>
+              </div>
+            \`;
+          }
+          return;
+        }
+
+        if (!s.connected && s.pairingCode) {
+          const codeEl = document.getElementById('pairingCodeText');
+          if (codeEl && codeEl.innerText !== s.pairingCode) {
+            codeEl.innerText = s.pairingCode;
+          } else if (!codeEl) {
+            window.location.reload();
+          }
+        }
+      } catch (_) {}
+    }
+
+    setInterval(checkStatus, 3500);
+
+    function copyCode() {
+      const el = document.getElementById('pairingCodeText');
+      if (!el) return;
+      const txt = el.innerText.trim();
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        const btn = document.getElementById('copyBtn');
+        if (btn) {
+          btn.innerText = '✅ تم النسخ!';
+          btn.style.background = '#10b981';
+          btn.style.color = '#fff';
+          setTimeout(() => {
+            btn.innerText = '📋 نسخ الكود';
+            btn.style.background = '#1e3a8a';
+            btn.style.color = '#60a5fa';
+          }, 2000);
+        }
+      }).catch(() => {
+        alert('الكود هو: ' + txt);
+      });
+    }
+  </script>
 </body>
 </html>`;
   res.send(html);

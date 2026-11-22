@@ -25,6 +25,7 @@ try {
 let sock = null;
 let isConnected = false;
 let pairingCode = null;
+let pairingCodeGeneratedAt = 0;
 let qrCodeDataUrl = null;
 let botPhoneNumber = process.env.WHATSAPP_BOT_NUMBER || '01554677212';
 let adminDb = null;
@@ -151,13 +152,19 @@ async function initWhatsApp(db) {
 
       // توليد Pairing Code إذا لم يكن مسجلاً بعد ورقم البوت متوفر
       const isRegistered = !!(sock?.authState?.creds?.registered);
-      if (!isRegistered && botPhoneNumber && !pairingCode) {
+      const isCodeFresh = pairingCode && (Date.now() - pairingCodeGeneratedAt < 180000);
+
+      if (!isRegistered && botPhoneNumber && !isCodeFresh) {
         setTimeout(async () => {
           try {
-            if (sock && !sock.authState.creds.registered && !pairingCode) {
+            if (sock && !sock.authState.creds.registered) {
+              const freshCheck = pairingCode && (Date.now() - pairingCodeGeneratedAt < 180000);
+              if (freshCheck) return;
+
               const cleaned = cleanPhoneForPairing(botPhoneNumber);
               const code = await sock.requestPairingCode(cleaned);
               pairingCode = code ? code.match(/.{1,4}/g)?.join('-') || code : code;
+              pairingCodeGeneratedAt = Date.now();
               console.log(`\n========================================`);
               console.log(`📲 كود ربط واتساب الجديد لهاتف (${botPhoneNumber}):`);
               console.log(`👉 ${pairingCode} 👈`);
@@ -173,7 +180,11 @@ async function initWhatsApp(db) {
       if (connection === 'close') {
         isConnected = false;
         isInitializing = false;
-        pairingCode = null;
+        
+        // لا نحذف الكود إذا كان تم توليده خلال آخر 3 دقائق حتى يتمكن المستخدم من إدخاله بهدوء
+        if (Date.now() - pairingCodeGeneratedAt > 180000) {
+          pairingCode = null;
+        }
         qrCodeDataUrl = null;
 
         const statusCode = lastDisconnect?.error?.output?.statusCode;
@@ -181,10 +192,12 @@ async function initWhatsApp(db) {
         console.log(`⚠️ اتصال واتساب مغلق (كود: ${statusCode}, مسجل: ${isRegistered}). تسجيل خروج نهائي: ${loggedOut}`);
 
         if (!loggedOut) {
-          console.log('🔄 جاري إعادة محاولة الاتصال وتوليد كود ربط جديد خلال 5 ثوانٍ...');
+          console.log('🔄 جاري إعادة محاولة الاتصال وتجهيز الجلسة خلال 5 ثوانٍ...');
           setTimeout(() => initWhatsApp(adminDb), 5000);
         } else {
           console.warn('❌ تم تسجيل الخروج من الهاتف. تنظيف الجلسة لإتاحة ربط جديد...');
+          pairingCode = null;
+          pairingCodeGeneratedAt = 0;
           try {
             if (fs.existsSync(AUTH_DIR)) {
               fs.readdirSync(AUTH_DIR).forEach((file) => {
@@ -200,6 +213,7 @@ async function initWhatsApp(db) {
       } else if (connection === 'open') {
         isConnected = true;
         pairingCode = null;
+        pairingCodeGeneratedAt = 0;
         qrCodeDataUrl = null;
         isInitializing = false;
         console.log(`✅ [Solvix WhatsApp Bot] متصل الآن بنجاح برقم: ${botPhoneNumber}`);
@@ -348,6 +362,7 @@ function restartWhatsApp(db) {
   } catch (_) {}
   isConnected = false;
   pairingCode = null;
+  pairingCodeGeneratedAt = 0;
   qrCodeDataUrl = null;
   isInitializing = false;
   setTimeout(() => initWhatsApp(db || adminDb), 2000);
