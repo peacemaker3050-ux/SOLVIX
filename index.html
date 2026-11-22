@@ -403,10 +403,15 @@ html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
 .chat-chips-row{padding:8px clamp(16px,3vw,32px);display:flex;gap:8px;overflow-x:auto;white-space:nowrap;background:rgba(6,13,32,.75);backdrop-filter:blur(8px);border-top:1px solid rgba(80,170,255,.08);flex-shrink:0}
 .chat-chip{font-size:12px;padding:6px 14px;border-radius:20px;background:rgba(34,208,255,.08);border:1px solid rgba(80,170,255,.25);color:#d0e6ff;cursor:pointer;transition:.2s}
 .chat-chip:hover{background:rgba(34,208,255,.2);color:#fff;border-color:var(--cy)}
-.chat-composer{display:flex;gap:10px;align-items:center;padding:12px clamp(16px,3vw,36px);background:#070f24;border-top:1px solid var(--bd);flex-shrink:0}
-.chat-composer input{flex:1;background:#030713;border:1px solid var(--bd);border-radius:10px;color:#fff;padding:12px 18px;font-size:14.5px;outline:none;transition:border-color .2s}
+.chat-composer{display:flex;gap:12px;align-items:center;padding:12px clamp(16px,3vw,36px);background:#070f24;border-top:1px solid var(--bd);flex-shrink:0;width:100%;box-sizing:border-box}
+.chat-composer input{flex:1 1 auto;min-width:0;width:auto;background:#030713;border:1px solid var(--bd);border-radius:12px;color:#fff;padding:13px 18px;font-size:14.5px;outline:none;transition:border-color .2s,box-shadow .2s}
 .chat-composer input:focus{border-color:var(--cy);box-shadow:0 0 14px -4px var(--cy)}
-.chat-send-btn{padding:0 22px;height:44px;display:flex;align-items:center;gap:6px;font-weight:700}
+.chat-send-btn{flex:0 0 auto!important;width:auto!important;min-width:96px;height:44px;padding:0 20px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:700;white-space:nowrap;cursor:pointer}
+@media (max-width:480px){
+  .chat-composer{padding:10px 12px;gap:8px}
+  .chat-composer input{padding:11px 14px;font-size:14px}
+  .chat-send-btn{min-width:auto;padding:0 14px;height:42px;font-size:13px}
+}
 
 /* ===== Content protection (members only) ===== */
 body.guard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -2222,7 +2227,7 @@ function showUpdateBar(onUpdate) {
             + '<div class="chat-msgs-scroller" id="direct-chat-feed"></div>'
             + '<form class="chat-composer" id="direct-chat-form">'
             + '  <input id="direct-chat-in" placeholder="' + tr('Type a message...') + '" autocomplete="off" maxlength="2000" required>'
-            + '  <button class="btn chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
+            + '  <button class="btn sm chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
             + '</form>'
             + '</div>';
         }
@@ -2246,7 +2251,7 @@ function showUpdateBar(onUpdate) {
             + '<div class="chat-msgs-scroller" id="direct-chat-feed"></div>'
             + '<form class="chat-composer" id="direct-chat-form">'
             + '  <input id="direct-chat-in" placeholder="' + tr('Type a reply to') + ' ' + esc(stName.split(' ')[0]) + '..." autocomplete="off" maxlength="2000" required>'
-            + '  <button class="btn chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
+            + '  <button class="btn sm chat-send-btn" type="submit" id="direct-chat-send">' + ico('up', 18) + ' ' + tr('Send') + '</button>'
             + '</form>'
             + '</div>';
         }
