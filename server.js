@@ -62,6 +62,14 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+// فحص النماذج النشطة والمتاحة لحساب Gemini
+app.get('/api/debug-models', async (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'No GEMINI_API_KEY configured' });
+  const models = await getAvailableGeminiModels(apiKey);
+  res.json({ success: true, count: models?.length || 0, models: models || [] });
+});
+
 // إرسال إشعار لمجموعة من أجهزة المستخدمين
 app.post('/send-push', async (req, res) => {
   try {
@@ -247,75 +255,136 @@ app.post('/api/notify-admins', async (req, res) => {
   }
 });
 
+// فحص وكشف النماذج المتاحة لمفتاح API تلقائياً
+let discoveredGeminiModels = null;
+let lastModelFetch = 0;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function getAvailableGeminiModels(apiKey) {
+  if (discoveredGeminiModels && (Date.now() - lastModelFetch < 3600000)) {
+    return discoveredGeminiModels;
+  }
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (res.ok) {
+      const data = await res.json();
+      const models = (data.models || [])
+        .filter((m) => m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m) => m.name.replace(/^models\//, ''));
+      if (models.length > 0) {
+        discoveredGeminiModels = models;
+        lastModelFetch = Date.now();
+        console.log(`[Gemini API] 📋 Discovered ${models.length} active models for API Key:`, models.join(', '));
+        return models;
+      }
+    }
+  } catch (e) {
+    console.warn('[Gemini API] Could not list models:', e.message);
+  }
+  return null;
+}
+
 // دالة موحدة فائقة السرعة للتواصل مع Google Gemini API مع نظام Fallback ومهلة زمنية
-async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig }) {
-  // اختيار النموذج الأساسي: استخدام الموصى به رسمياً من جوجل gemini-3.8-flash وتجاوز الموديلات القديمة المتوقفة (1.5 و 2.0)
+async function generateWithGemini({ apiKey, preferredModel, prompt, systemInstruction, generationConfig = {} }) {
+  // جلب النماذج المتاحة فعلياً لمفتاح الـ API ديناميكياً لتفادي أخطاء 404 نهائياً
+  const liveModels = await getAvailableGeminiModels(apiKey);
+
   let primaryModel = preferredModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
-  if (primaryModel.includes('1.5') || primaryModel.includes('2.0')) {
+  if (primaryModel.includes('1.5') || primaryModel.includes('2.0') || primaryModel.includes('2.5')) {
     primaryModel = 'gemini-3.8-flash';
   }
 
-  // ترتيب النماذج الحديثة المعتمدة لدى Google
-  const modelsToTry = [
-    primaryModel,
-    'gemini-3.8-flash',
-    'gemini-2.5-flash',
-    'gemini-3.8-flash-lite',
-    'gemini-flash'
-  ];
-  const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
+  // ترتيب النماذج: المفضل أولاً، ثم نماذج flash المكتشفة، ثم باقي النماذج
+  let candidateList = [];
+  if (liveModels && liveModels.length > 0) {
+    const flashModels = liveModels.filter((m) => m.toLowerCase().includes('flash'));
+    const otherModels = liveModels.filter((m) => !m.toLowerCase().includes('flash'));
+    candidateList = [
+      liveModels.includes(primaryModel) ? primaryModel : null,
+      ...flashModels,
+      ...otherModels
+    ];
+  } else {
+    candidateList = [primaryModel, 'gemini-3.8-flash', 'gemini-3.8-pro'];
+  }
+  const uniqueModels = [...new Set(candidateList.filter(Boolean))];
+
+  // إعداد إعدادات التوليد لتقليل زمن التفكير وإلغاء بطء التفكير (Thinking Budget)
+  let activeGenConfig = { ...generationConfig };
+  if (!activeGenConfig.thinkingConfig) {
+    activeGenConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
 
   let lastError = null;
   for (const model of uniqueModels) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000); // 25 ثانية كحد أقصى لمنح النموذج فرصة لتوليد الإجابة كاملة دون انقطاع
+    // محاولتان كحد أقصى لكل نموذج (لمعالجة طفرات 503 high demand المؤقتة)
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 40000); // 40 ثانية
 
-    try {
-      console.log(`[Gemini API] ⏳ Calling ${model}...`);
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
-        generationConfig
-      };
-      if (systemInstruction) {
-        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-      }
+      try {
+        console.log(`[Gemini API] ⏳ Calling ${model} (attempt ${attempt}/2)...`);
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: Array.isArray(prompt) ? prompt : [{ parts: [{ text: prompt }] }],
+          generationConfig: activeGenConfig
+        };
+        if (systemInstruction) {
+          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+        }
 
-      const response = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
 
-      if (!response.ok) {
-        const errText = await response.text();
-        console.warn(`[Gemini API] ❌ Model ${model} returned status ${response.status}:`, errText.slice(0, 300));
-        let errorMsg = response.statusText;
-        try {
-          const parsed = JSON.parse(errText);
-          if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
-        } catch (_) { }
-        lastError = new Error(`(${model}) ${errorMsg}`);
-        continue;
-      }
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`[Gemini API] ❌ Model ${model} returned status ${response.status}:`, errText.slice(0, 300));
 
-      const data = await response.json();
-      const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!candidateText) {
-        lastError = new Error(`Model ${model} returned empty text candidate`);
-        continue;
-      }
-      console.log(`[Gemini API] ✅ Successfully generated response using ${model} (${candidateText.length} chars)`);
-      return { text: candidateText, modelUsed: model };
-    } catch (e) {
-      clearTimeout(timeout);
-      if (e.name === 'AbortError') {
-        console.warn(`[Gemini API] ⏱️ Model ${model} timed out after 25s. Trying fallback model...`);
-        lastError = new Error(`(${model}) Connection timed out`);
-      } else {
-        lastError = e;
+          // إذا كان الخطأ 400 بسبب thinkingConfig، نلغيه ونعيد المحاولة فوراً
+          if (response.status === 400 && errText.toLowerCase().includes('thinking')) {
+            delete activeGenConfig.thinkingConfig;
+            continue;
+          }
+
+          // إذا كان الخطأ 503 (High demand) أو 429، ننتظر 1.5 ثانية ونحاول مرة أخرى
+          if ((response.status === 503 || response.status === 429) && attempt === 1) {
+            console.log(`[Gemini API] ⏳ 503/429 high demand detected on ${model}. Retrying after 1.5s...`);
+            await sleep(1500);
+            continue;
+          }
+
+          let errorMsg = response.statusText;
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed.error && parsed.error.message) errorMsg = parsed.error.message;
+          } catch (_) { }
+          lastError = new Error(`(${model}) ${errorMsg}`);
+          break; // انتقل للنموذج التالي
+        }
+
+        const data = await response.json();
+        const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!candidateText) {
+          lastError = new Error(`Model ${model} returned empty text candidate`);
+          break;
+        }
+        console.log(`[Gemini API] ✅ Successfully generated response using ${model} (${candidateText.length} chars)`);
+        return { text: candidateText, modelUsed: model };
+      } catch (e) {
+        clearTimeout(timeout);
+        if (e.name === 'AbortError') {
+          console.warn(`[Gemini API] ⏱️ Model ${model} timed out after 40s.`);
+          lastError = new Error(`(${model}) Connection timed out`);
+          break;
+        } else {
+          lastError = e;
+          break;
+        }
       }
     }
   }
