@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
+const whatsapp = require('./whatsapp');
 
 const app = express();
 app.use(cors({ origin: '*' }));
@@ -32,6 +33,8 @@ try {
       projectId: process.env.FIREBASE_PROJECT_ID || 'solvix-95eb1'
     });
     console.log('✅ تم تهيئة Firebase Admin SDK بنجاح.');
+    // تهيئة بوت الواتساب
+    whatsapp.initWhatsApp(admin.firestore());
   }
 } catch (err) {
   console.error('❌ خطأ في تهيئة Firebase Admin:', err.message);
@@ -394,6 +397,115 @@ Your responsibilities:
     return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
+
+// صفحة ويب لمتابعة حالة وربط واتساب
+app.get('/whatsapp', (req, res) => {
+  const status = whatsapp.getWhatsAppStatus();
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ربط بوت واتساب | SOLVIX KOD</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #060d22; color: #fff; margin: 0; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; text-align: center; }
+    .card { background: #0d1b3d; border: 1px solid #1f3568; border-radius: 16px; padding: 28px 24px; max-width: 480px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    h1 { font-size: 20px; margin: 0 0 12px; color: #22d0ff; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; margin-bottom: 20px; }
+    .badge.ok { background: #1b4d2e; color: #4ade80; border: 1px solid #22c55e; }
+    .badge.wait { background: #4a3b10; color: #fde047; border: 1px solid #eab308; }
+    .code-box { background: #030712; border: 2px dashed #22d0ff; border-radius: 12px; padding: 18px; margin: 18px 0; font-size: 28px; font-weight: 800; letter-spacing: 4px; color: #38bdf8; font-family: monospace; }
+    .instructions { text-align: start; font-size: 13.5px; line-height: 1.8; color: #cfe2ff; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px 18px; margin: 18px 0; }
+    .instructions ol { margin: 0; padding-inline-start: 20px; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #22d0ff, #0a84d6); color: #020611; font-weight: 700; padding: 10px 22px; border-radius: 10px; text-decoration: none; border: none; cursor: pointer; font-size: 14px; margin-top: 14px; }
+    .qr-img { margin-top: 14px; border-radius: 12px; border: 4px solid #fff; max-width: 200px; }
+  </style>
+  ${!status.connected ? '<meta http-equiv="refresh" content="6">' : ''}
+</head>
+<body>
+  <div class="card">
+    <h1>🤖 بوت واتساب التلقائي | SOLVIX KOD</h1>
+    <p style="color:#9fb4d6;font-size:13px;margin:0 0 14px">الرقم المستهدف: <b>${status.botNumber}</b></p>
+    <div>
+      ${status.connected 
+        ? '<span class="badge ok">● البوت متصل وجاهز للعمل بنجاح</span><p style="font-size:14px;color:#a7f3d0">يتم إرسال تذكيرات القبول والمهام تلقائياً للطلاب.</p>' 
+        : '<span class="badge wait">⏳ بانتظار الربط مع الهاتف</span>'}
+    </div>
+
+    ${!status.connected && status.pairingCode ? `
+      <div class="instructions">
+        <b>طريقة الربط السريعة بالهاتف:</b>
+        <ol>
+          <li>افتح تطبيق WhatsApp على هاتف <b>${status.botNumber}</b>.</li>
+          <li>اضغط على <b>الإعدادات ⬅️ الأجهزة المرتبطة ⬅️ ربط جهاز</b>.</li>
+          <li>اختر <b>"ربط باستخدام رقم الهاتف بدلاً من ذلك"</b>.</li>
+          <li>أدخل الكود التالي:</li>
+        </ol>
+      </div>
+      <div class="code-box">${status.pairingCode}</div>
+    ` : ''}
+
+    ${!status.connected && !status.pairingCode && status.qrCodeDataUrl ? `
+      <p style="font-size:13px;color:#cfe2ff">أو امسح رمز الـ QR من داخل تطبيق واتساب:</p>
+      <img src="${status.qrCodeDataUrl}" class="qr-img" alt="WhatsApp QR">
+    ` : ''}
+
+    ${!status.connected && !status.pairingCode && !status.qrCodeDataUrl ? `
+      <p style="font-size:13px;color:#9fb4d6">جاري إعداد جلسة الاتصال وتوليد الكود... (يتم التحديث تلقائياً)</p>
+    ` : ''}
+
+    <br>
+    <a href="/whatsapp" class="btn">🔄 تحديث الحالة</a>
+  </div>
+</body>
+</html>`;
+  res.send(html);
+});
+
+// استعلام JSON عن حالة واتساب
+app.get('/api/whatsapp/status', (req, res) => {
+  res.json({
+    success: true,
+    status: whatsapp.getWhatsAppStatus()
+  });
+});
+
+// إرسال رسالة واتساب لأي رقم من الأدمن
+app.post('/api/whatsapp/send', async (req, res) => {
+  try {
+    const { phone, message } = req.body;
+    if (!phone || !message) {
+      return res.status(400).json({ error: 'phone and message are required' });
+    }
+    const result = await whatsapp.sendWhatsAppMessage(phone, message);
+    return res.json({ success: true, result });
+  } catch (err) {
+    console.error('Error sending WhatsApp message:', err);
+    return res.status(500).json({ error: err.message || 'Failed to send WhatsApp message' });
+  }
+});
+
+// تشغيل فحص التذكيرات فورياً يدوياً
+app.post('/api/whatsapp/trigger-reminders', async (req, res) => {
+  try {
+    if (!admin.apps.length) {
+      return res.status(503).json({ error: 'Firebase not initialized' });
+    }
+    const results = await whatsapp.runAutomatedWhatsAppReminders(admin.firestore());
+    return res.json({ success: true, results });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// تشغيل الفحص التلقائي للتذكيرات كل 4 ساعات
+setInterval(() => {
+  try {
+    if (admin.apps.length) {
+      whatsapp.runAutomatedWhatsAppReminders(admin.firestore()).catch((e) => console.warn('[Auto-Reminders] Cron error:', e.message));
+    }
+  } catch (_) {}
+}, 4 * 60 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
