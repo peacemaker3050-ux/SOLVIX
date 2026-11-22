@@ -243,24 +243,26 @@ body.in-app{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;widt
 .list{display:flex;flex-direction:column;gap:10px}
 .rowc{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:start;font:inherit;color:inherit;cursor:pointer;background:linear-gradient(180deg,rgba(18,34,76,.5),rgba(9,18,44,.55));border:1px solid var(--bd);border-radius:12px;transition:.2s;animation:viewIn .5s calc(var(--i,0)*45ms) both}
 .rowc:hover{border-color:rgba(80,170,255,.5);transform:translateY(-2px);box-shadow:0 14px 30px -16px rgba(47,107,255,.7)}
-.mem-card{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px 14px;background:linear-gradient(180deg,rgba(18,34,76,.5),rgba(9,18,44,.55));border:1px solid var(--bd);border-radius:12px;transition:.2s;animation:viewIn .5s calc(var(--i,0)*45ms) both}
-.mem-card:hover{border-color:rgba(80,170,255,.5);transform:translateY(-1px);box-shadow:0 12px 28px -14px rgba(47,107,255,.6)}
-.mem-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;cursor:pointer;background:none;border:none;color:inherit;text-align:inherit;padding:0}
-.mem-badge{flex:none;display:flex;align-items:center;justify-content:center}
-.mem-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.mem-name{font-size:15px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mem-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.mem-meta code{font-size:11.5px;padding:1px 7px;border-radius:10px;line-height:1.4}
-.mem-meta .pill{margin:0;font-size:11px;padding:2px 8px;line-height:1.2}
-.mem-sub{color:#9fb4d6;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.mem-chat-btn{flex:none;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;border-color:rgba(34,208,255,.4);color:#22d0ff;border-radius:8px;font-weight:600;white-space:nowrap;cursor:pointer;transition:.2s}
-.mem-chat-btn:hover{background:rgba(34,208,255,.15);border-color:var(--cy);color:#fff}
+.mem-card{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;width:100%!important;box-sizing:border-box!important;padding:12px 14px!important;background:linear-gradient(180deg,rgba(18,34,76,.55),rgba(9,18,44,.62))!important;border:1px solid var(--bd)!important;border-radius:12px!important;transition:border-color .2s,transform .2s,box-shadow .2s!important;animation:viewIn .4s calc(var(--i,0)*35ms) both!important}
+.mem-card:hover{border-color:rgba(80,170,255,.5)!important;transform:translateY(-1px)!important;box-shadow:0 10px 24px -12px rgba(47,107,255,.6)!important}
+.mem-main{flex:1 1 auto!important;min-width:0!important;display:flex!important;align-items:center!important;gap:12px!important;cursor:pointer!important;background:none!important;border:none!important;color:inherit!important;text-align:inherit!important;padding:0!important}
+.mem-badge{flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:center!important;width:40px!important;height:40px!important}
+.mem-info{flex:1 1 auto!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:4px!important;overflow:hidden!important}
+.mem-info .mem-head{display:flex!important;align-items:center!important;gap:8px!important;min-width:0!important}
+.mem-info .mem-name{font-size:14.5px!important;font-weight:700!important;color:#fff!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.mem-info .mem-meta{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important}
+.mem-info .mem-meta code{font-size:11px!important;padding:1px 7px!important;border-radius:6px!important;line-height:1.3!important;background:rgba(34,208,255,.1)!important;color:#8fe8ff!important;direction:ltr!important;unicode-bidi:isolate!important}
+.mem-info .mem-meta .pill{margin:0!important;font-size:10.5px!important;padding:1px 7px!important;line-height:1.2!important}
+.mem-info .mem-sub{color:#9fb4d6!important;font-size:11.5px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;display:block!important;line-height:1.3!important}
+.mem-chat-btn{flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:6px 12px!important;font-size:12px!important;border:1px solid rgba(34,208,255,.4)!important;background:transparent!important;color:#22d0ff!important;border-radius:8px!important;font-weight:600!important;white-space:nowrap!important;cursor:pointer!important;transition:.2s!important}
+.mem-chat-btn:hover{background:rgba(34,208,255,.15)!important;border-color:var(--cy)!important;color:#fff!important}
 @media (max-width:480px){
-  .mem-card{padding:10px 12px;gap:8px}
-  .mem-main{gap:10px}
-  .mem-name{font-size:14px}
-  .mem-sub{font-size:11px}
-  .mem-chat-btn{padding:5px 9px;font-size:11.5px}
+  .mem-card{padding:9px 11px!important;gap:8px!important}
+  .mem-main{gap:9px!important}
+  .mem-badge{width:34px!important;height:34px!important}
+  .mem-info .mem-name{font-size:13.5px!important}
+  .mem-info .mem-sub{font-size:11px!important}
+  .mem-chat-btn{padding:5px 8px!important;font-size:11px!important}
 }
 .rc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.rc-t b{font-size:15.5px}.rc-t small{color:#9fb4d6;font-size:12.5px}
 .rc-m{color:#8397bb;font-size:12.5px}
@@ -403,14 +405,14 @@ html[dir=rtl] .wa-go svg{transform:scaleX(-1)}
 .chat-chips-row{padding:8px clamp(16px,3vw,32px);display:flex;gap:8px;overflow-x:auto;white-space:nowrap;background:rgba(6,13,32,.75);backdrop-filter:blur(8px);border-top:1px solid rgba(80,170,255,.08);flex-shrink:0}
 .chat-chip{font-size:12px;padding:6px 14px;border-radius:20px;background:rgba(34,208,255,.08);border:1px solid rgba(80,170,255,.25);color:#d0e6ff;cursor:pointer;transition:.2s}
 .chat-chip:hover{background:rgba(34,208,255,.2);color:#fff;border-color:var(--cy)}
-.chat-composer{display:flex;gap:12px;align-items:center;padding:12px clamp(16px,3vw,36px);background:#070f24;border-top:1px solid var(--bd);flex-shrink:0;width:100%;box-sizing:border-box}
-.chat-composer input{flex:1 1 auto;min-width:0;width:auto;background:#030713;border:1px solid var(--bd);border-radius:12px;color:#fff;padding:13px 18px;font-size:14.5px;outline:none;transition:border-color .2s,box-shadow .2s}
-.chat-composer input:focus{border-color:var(--cy);box-shadow:0 0 14px -4px var(--cy)}
-.chat-send-btn{flex:0 0 auto!important;width:auto!important;min-width:96px;height:44px;padding:0 20px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:700;white-space:nowrap;cursor:pointer}
+.chat-composer{display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;padding:12px clamp(16px,3vw,36px)!important;background:#070f24!important;border-top:1px solid var(--bd)!important;flex-shrink:0!important;width:100%!important;box-sizing:border-box!important}
+.chat-composer input{flex:1 1 auto!important;min-width:0!important;width:100%!important;background:#030713!important;border:1px solid var(--bd)!important;border-radius:12px!important;color:#fff!important;padding:13px 18px!important;font-size:14.5px!important;outline:none!important;box-sizing:border-box!important;transition:border-color .2s,box-shadow .2s!important}
+.chat-composer input:focus{border-color:var(--cy)!important;box-shadow:0 0 14px -4px var(--cy)!important}
+.chat-composer button,.chat-composer .chat-send-btn,.chat-composer #direct-chat-send,.chat-composer #chat-send{flex:0 0 auto!important;width:auto!important;max-width:140px!important;min-width:92px!important;height:44px!important;padding:0 18px!important;margin:0!important;border-radius:10px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;font-weight:700!important;white-space:nowrap!important;cursor:pointer!important}
 @media (max-width:480px){
-  .chat-composer{padding:10px 12px;gap:8px}
-  .chat-composer input{padding:11px 14px;font-size:14px}
-  .chat-send-btn{min-width:auto;padding:0 14px;height:42px;font-size:13px}
+  .chat-composer{padding:10px 12px!important;gap:8px!important}
+  .chat-composer input{padding:11px 14px!important;font-size:14px!important}
+  .chat-composer button,.chat-composer .chat-send-btn,.chat-composer #direct-chat-send,.chat-composer #chat-send{min-width:auto!important;max-width:110px!important;padding:0 12px!important;height:42px!important;font-size:13px!important}
 }
 
 /* ===== Content protection (members only) ===== */
@@ -1060,7 +1062,28 @@ window.SOLVIX_CONFIG = {
   function showView(v, t, l) { curView = v; GV.forEach((e) => { e.hidden = e.dataset.view !== v; }); const d = TITLES[v]; $('#login-title').textContent = t || d[0]; $('#gate-lede').innerHTML = l || d[1]; if (state === 'login-visible') focusFirst(); }
   /* ---------- academic data, language, translations ---------- */
   const DEPTS = CONFIG.departments, YEARS = CONFIG.years, PREP = CONFIG.prepYear;
-  const NM = {}; [PREP].concat(YEARS, DEPTS, [].concat(...DEPTS.map((d) => d.programs))).forEach((o) => { NM[o.ar] = o.en; });
+  const NM = {
+    'الفرقة الإعدادية': 'Preparatory Year',
+    'الفرقة الأولى': 'First Year',
+    'الفرقة الثانية': 'Second Year',
+    'الفرقة الثالثة': 'Third Year',
+    'الفرقة الرابعة': 'Fourth Year',
+    'إعدادي': 'Prep Year',
+    'أولى': 'First Year',
+    'ثانية': 'Second Year',
+    'ثالثة': 'Third Year',
+    'رابعة': 'Fourth Year'
+  };
+  [PREP].concat(YEARS, DEPTS, [].concat(...DEPTS.map((d) => d.programs))).forEach((o) => {
+    if (o && o.ar && o.en) {
+      NM[o.ar] = o.en;
+      NM[o.ar.trim()] = o.en;
+      const stripped = o.ar.replace(/^قسم\s+/, '').trim();
+      if (stripped && !NM[stripped]) {
+        NM[stripped] = o.en.replace(/\s+Department$/i, '').trim();
+      }
+    }
+  });
   let LANG = 'en', acSet = null;
   const AR = {
     'Home': 'الرئيسية', 'Tasks': 'المهام', 'My profile': 'ملفي الشخصي', 'Settings': 'الإعدادات', 'Join requests': 'طلبات الانضمام', 'Members': 'الأعضاء', 'Sign out': 'تسجيل الخروج',
@@ -1205,7 +1228,15 @@ window.SOLVIX_CONFIG = {
     'Community members': 'أعضاء المجتمع',
     'Awaiting activation': 'بانتظار التفعيل'
   });
-  const nm = (v) => (LANG === 'en' && NM[v]) || v || '';
+  const nm = (v) => {
+    if (!v) return '';
+    if (LANG !== 'en') return v;
+    const str = String(v).trim();
+    if (NM[str]) return NM[str];
+    const stripped = str.replace(/^قسم\s+/, '').trim();
+    if (NM[stripped]) return NM[stripped];
+    return str;
+  };
   const dline = (o) => [nm(o.dept), nm(o.program), nm(o.year)].filter(Boolean).map(esc).join(' · ');
   const LV_EN = [
     null,
@@ -1321,13 +1352,12 @@ window.SOLVIX_CONFIG = {
       try { d = await db.get('members', idv); }
       catch (err) {
         btn.disabled = false;
-        if (err && err.code === 'permission-denied') return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
+        console.warn('Member login lookup error:', err);
         return setSt('Could not connect to the database.');
       }
       btn.disabled = false;
       if (!d || d.deleted) return fe('l-id', 'This ID is not registered.');
       if (isAdminRec(d)) return fe('l-id', 'This account is not available.');
-      if (d.uid && d.uid !== db.uid()) return fe('l-id', 'This ID belongs to another user and is registered on a different device.');
       ld = d; $('#l-id').value = idv; $('#l-id').readOnly = true; $('#l-pw-wrap').hidden = false; $('#l-back').hidden = false; $('#l-new').hidden = true;
       if (d.passHash) { lstep = 'pw'; btn.textContent = 'Sign in'; }
       else { lstep = 'setup'; $('#l-pw2-wrap').hidden = false; $('#l-pw-label').textContent = 'Create a new password'; $('#l-pw').autocomplete = 'new-password'; btn.textContent = 'Save password and sign in'; setSt('Welcome ' + d.name.split(' ')[0] + '! This is your first time, choose a password and use it to sign in from now on.'); }
@@ -1363,19 +1393,25 @@ window.SOLVIX_CONFIG = {
       fails = 0;
       if (ld.role !== 'admin') {
         try {
-          const cur = await db.get('members', ld.id);
-          if (cur && cur.uid && cur.uid !== db.uid()) return fe('l-pw', 'This ID belongs to another user and is registered on a different device.');
-          if (!cur || !cur.uid) await db.set('members', ld.id, { uid: db.uid() });
-          ld = Object.assign({}, ld, { uid: db.uid() });
-        } catch (_) { return setSt('Could not connect to the database.'); }
+          if (!ld.uid || (db.uid() && ld.uid !== db.uid())) {
+            await db.set('members', ld.id, { uid: db.uid() });
+            ld = Object.assign({}, ld, { uid: db.uid() });
+          }
+        } catch (_) {}
       }
       return enterApp(ld);
     }
     const a = fe('l-pw', pw.length >= 8 ? '' : 'At least 8 characters.'), c = fe('l-pw2', $('#l-pw2').value === pw ? '' : 'Passwords do not match.');
     if (!a || !c) return;
     btn.disabled = true;
-    try { const salt = crypto.getRandomValues(new Uint8Array(16)); const rec = Object.assign({}, ld, { salt: b64(salt), passHash: await hashPw(pw, salt), passSetAt: Date.now(), uid: db.uid() }); await db.set('members', ld.id, rec); btn.disabled = false; enterApp(rec); }
-    catch (_) { btn.disabled = false; setSt('Could not save, please try again.'); }
+    try {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const myUid = db.uid() || '';
+      const rec = Object.assign({}, ld, { salt: b64(salt), passHash: await hashPw(pw, salt), passSetAt: Date.now(), uid: myUid });
+      await db.set('members', ld.id, { salt: rec.salt, passHash: rec.passHash, passSetAt: rec.passSetAt, uid: myUid });
+      btn.disabled = false;
+      enterApp(rec);
+    } catch (_) { btn.disabled = false; setSt('Could not save, please try again.'); }
   });
 
   /* ---------- app: shell, routing, data ---------- */
@@ -1454,7 +1490,14 @@ function showUpdateBar(onUpdate) {
         const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
         const { getApp } = await import(B + 'firebase-app.js');
         const { getMessaging, getToken } = await import(B + 'firebase-messaging.js');
-        const messaging = getMessaging(getApp());
+        const defaultApp = getApp();
+        if (!defaultApp.options.messagingSenderId) {
+          defaultApp.options.messagingSenderId = (CONFIG.firebase && CONFIG.firebase.messagingSenderId) || "60065264617";
+        }
+        if (!defaultApp.options.appId) {
+          defaultApp.options.appId = (CONFIG.firebase && CONFIG.firebase.appId) || "1:60065264617:web:ae5af308a52bf317cad178";
+        }
+        const messaging = getMessaging(defaultApp);
         const reg = swReg || await navigator.serviceWorker.ready;
         const token = await getToken(messaging, {
           vapidKey: CONFIG.vapidKey || 'BGbgrolsBgBzQLKAOM7oatFAuXsZU_lJIcs1xY902JR5oRPXUbNjnsZsRbW9HLOAcUAEcpu1lFqIeteGVYQRO4c',
@@ -1463,8 +1506,12 @@ function showUpdateBar(onUpdate) {
         if (token && me) {
           me.fcmToken = token;
           cacheMe();
-          await db.set('members', me.id, { fcmToken: token, role: me.role || (isAdmin() ? 'admin' : 'member') });
-          console.log('✅ Push notification token registered:', token.slice(0, 20) + '...');
+          try {
+            await db.set('members', me.id, { fcmToken: token });
+            console.log('✅ Push notification token registered:', token.slice(0, 20) + '...');
+          } catch (tokErr) {
+            console.warn('Could not save fcmToken in member document', tokErr);
+          }
           if (fromUserGesture) toast(LANG === 'ar' ? 'تم تفعيل إشعارات الهاتف بنجاح 🔔' : 'Push notifications enabled! 🔔');
           paint();
         }
@@ -1536,7 +1583,23 @@ function showUpdateBar(onUpdate) {
     } else {
       let seenM = null;
       U.push(
-        db.watchDoc('members', me.id, (d) => { if (!d) return; if (!d.passHash) { store.removeItem('svx.session'); store.removeItem('svx.me'); location.reload(); return; } const old = lvl(); me = d; cacheMe(); paintProfile(); if (lvl() > old) levelUp(lvl()); if (me.pendingPromotion) checkPromotion(); else checkMissingPhone(); tk(); }),
+        db.watchDoc('members', me.id, (d) => {
+          if (!d) return;
+          if (d.deleted) {
+            store.removeItem('svx.session');
+            store.removeItem('svx.me');
+            location.reload();
+            return;
+          }
+          const old = lvl();
+          me = Object.assign({}, me, d);
+          cacheMe();
+          paintProfile();
+          if (lvl() > old) levelUp(lvl());
+          if (me.pendingPromotion) checkPromotion();
+          else checkMissingPhone();
+          tk();
+        }),
         db.watch('submissions', (l) => { D.subs = l.filter((s) => s.memberId === me.id); tk(); }, 'memberId', me.id),
         db.watch('notifs', (l) => { D.notifs = l.filter((n) => n.to === me.id); paintNotifs(); }, 'to', me.id),
         db.watch('direct_messages', (l) => {
@@ -2199,13 +2262,16 @@ function showUpdateBar(onUpdate) {
         $('#list').innerHTML = L.length ? L.map((m, i) => {
           const l = m.level || 1;
           const statusText = m.passHash ? (LANG === 'ar' ? (LEVELS[l] ? LEVELS[l].ar : '') : (LV_EN[l] ? LV_EN[l][0] : (LEVELS[l] ? LEVELS[l].ar : ''))) : tr('Awaiting activation');
+          const deptText = dline(m);
           return '<div class="mem-card" style="--i:' + i + '">'
             + '<button class="mem-main" data-mem="' + esc(m.id) + '">'
-            + '  <div class="mem-badge">' + badge(l, 40) + '</div>'
+            + '  <div class="mem-badge">' + badge(l, 38) + '</div>'
             + '  <div class="mem-info">'
-            + '    <b class="mem-name">' + esc(m.name) + '</b>'
-            + '    <div class="mem-meta"><code>' + esc(m.id) + '</code><span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + esc(statusText) + '</span></div>'
-            + '    <small class="mem-sub">' + dline(m) + '</small>'
+            + '    <div class="mem-head">'
+            + '      <b class="mem-name">' + esc(m.name) + '</b>'
+            + '      <span class="pill ' + (m.passHash ? 'ok' : 'warn') + '">' + esc(statusText) + '</span>'
+            + '    </div>'
+            + '    <div class="mem-meta"><code>' + esc(m.id) + '</code>' + (deptText ? '<span class="mem-sub">' + deptText + '</span>' : '') + '</div>'
             + '  </div>'
             + '</button>'
             + '<button class="btn sm ghost mem-chat-btn" data-openchat="' + esc(m.id) + '" title="' + tr('Chat with student') + '">' + ico('chat', 15) + ' <span>' + tr('Chat') + '</span></button>'
@@ -3961,21 +4027,32 @@ try {
     if (sid) {
       try {
         let m = await db.get('members', sid);
+        if (!m) {
+          try { m = JSON.parse(store.getItem('svx.me') || 'null'); } catch (_) {}
+        }
         if (m && m.role === 'admin') {
           store.removeItem('svx.session');
           store.removeItem('svx.me');
-        } else if (m && m.uid && m.uid !== db.uid()) {
-          store.removeItem('svx.session');
-          store.removeItem('svx.me');
-        } else if (m && m.passHash) {
-          if (!m.uid) { try { await db.set('members', m.id, { uid: db.uid() }); m = Object.assign({}, m, { uid: db.uid() }); } catch (_) {} }
+        } else if (m && !m.deleted) {
+          if (m.uid && db.uid() && m.uid !== db.uid()) {
+            try { await db.set('members', m.id, { uid: db.uid() }); m.uid = db.uid(); } catch (_) {}
+          }
           enterApp(m, true);
           return;
         } else {
           store.removeItem('svx.session');
           store.removeItem('svx.me');
         }
-      } catch (_) {}
+      } catch (bootErr) {
+        console.warn('Boot session restore fallback to cached profile', bootErr);
+        try {
+          const cached = JSON.parse(store.getItem('svx.me') || 'null');
+          if (cached && !cached.deleted && cached.id === sid && cached.role !== 'admin') {
+            enterApp(cached, true);
+            return;
+          }
+        } catch (_) {}
+      }
     }
     root.classList.remove('restoring');
     const rid = store.getItem('svx.req'); if (rid) watchReq(rid); else showView('apply');

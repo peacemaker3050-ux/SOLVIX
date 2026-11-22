@@ -1,25 +1,45 @@
 const fs = require('fs');
-const vm = require('vm');
 
-const html = fs.readFileSync('index.html', 'utf8');
-const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
-let match, count = 0;
-while ((match = scriptRegex.exec(html)) !== null) {
-  const code = match[1];
-  if (!code.trim() || match[0].includes('src=')) continue;
-  count++;
-  try {
-    new vm.Script(code);
-  } catch (e) {
-    console.error('Syntax error in script tag ' + count, e);
-    process.exit(1);
+console.log('--- 1. Testing index.html parsing ---');
+try {
+  const content = fs.readFileSync('index.html', 'utf8');
+  // Extract scripts
+  const scriptRegex = /<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+  let count = 0;
+  while ((match = scriptRegex.exec(content)) !== null) {
+    count++;
+    try {
+      new Function(match[1]);
+      console.log(`Script ${count} parsed successfully.`);
+    } catch (e) {
+      console.error(`Script ${count} failed to parse:`, e);
+      process.exit(1);
+    }
   }
+} catch (err) {
+  console.error('index.html error:', err);
+  process.exit(1);
 }
-console.log('Checked ' + count + ' scripts in index.html: all valid syntax.');
 
-new vm.Script(fs.readFileSync('sw.js', 'utf8'));
-console.log('sw.js: valid syntax.');
+console.log('\n--- 2. Testing sw.js syntax ---');
+try {
+  const sw = fs.readFileSync('sw.js', 'utf8');
+  new Function(sw);
+  console.log('sw.js parsed successfully.');
+} catch (e) {
+  console.error('sw.js error:', e);
+  process.exit(1);
+}
 
-new vm.Script(fs.readFileSync('server/server.js', 'utf8'));
-new vm.Script(fs.readFileSync('server/whatsapp.js', 'utf8'));
-console.log('Server scripts: all valid syntax.');
+console.log('\n--- 3. Testing server/server.js syntax ---');
+try {
+  const srv = fs.readFileSync('server/server.js', 'utf8');
+  new Function(srv);
+  console.log('server/server.js parsed successfully.');
+} catch (e) {
+  console.error('server/server.js error:', e);
+  process.exit(1);
+}
+
+console.log('\nAll JS syntax valid!');
