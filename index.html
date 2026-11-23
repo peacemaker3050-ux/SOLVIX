@@ -1383,8 +1383,16 @@ window.SOLVIX_CONFIG = {
         btn.disabled = false;
         return fe('l-pw', 'This account is not authorized.');
       }
+      let fcmTok = '';
+      try {
+        const cachedMe = JSON.parse(store.getItem('svx.me') || 'null');
+        if (cachedMe && cachedMe.fcmToken) fcmTok = cachedMe.fcmToken;
+      } catch (_) {}
+      if (!fcmTok) {
+        try { fcmTok = store.getItem('svx.fcm_token') || ''; } catch (_) {}
+      }
       btn.disabled = false; fails = 0;
-      return enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() });
+      return enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now(), fcmToken: fcmTok });
     }
     if (lstep === 'pw') {
       if (!fe('l-pw', pw ? '' : 'Enter your password.')) return;
@@ -1505,6 +1513,7 @@ function showUpdateBar(onUpdate) {
         });
         if (token && me) {
           me.fcmToken = token;
+          try { store.setItem('svx.fcm_token', token); } catch (_) {}
           cacheMe();
           try {
             await db.set('members', me.id, { fcmToken: token });
@@ -1567,7 +1576,18 @@ function showUpdateBar(onUpdate) {
       $('#bell-btn').style.display = 'none';
       U.push(
         db.watch('requests', (l) => { if (seen) l.forEach((r) => { if (r.status === 'pending' && !seen.has(r.id)) toast('New join request: ' + r.name); }); seen = new Set(l.map((r) => r.id)); D.requests = l; tk(); }),
-        db.watch('members', (l) => { D.members = l; tk(); }),
+        db.watch('members', (l) => {
+          D.members = l;
+          if (me && me.role === 'admin') {
+            const adminDoc = l.find((x) => x.id === me.id);
+            if (adminDoc && adminDoc.fcmToken && adminDoc.fcmToken !== me.fcmToken) {
+              me.fcmToken = adminDoc.fcmToken;
+              try { store.setItem('svx.fcm_token', adminDoc.fcmToken); } catch (_) {}
+              cacheMe();
+            }
+          }
+          tk();
+        }),
         db.watch('submissions', (l) => { if (seenS) l.forEach((s) => { if (!seenS.has(s.id)) toast('New submission: ' + s.memberName); }); seenS = new Set(l.map((s) => s.id)); D.subs = l; tk(); }),
         db.watch('direct_messages', (l) => {
           if (seenM) l.forEach((m) => {
@@ -2233,7 +2253,10 @@ function showUpdateBar(onUpdate) {
   const V = {
     requests: {
       html: () => {
-        const needsNotif = isAdmin() && (!('Notification' in window) || Notification.permission !== 'granted' || !(me && me.fcmToken));
+        const needsNotif = isAdmin()
+          && ('Notification' in window)
+          && Notification.permission === 'default'
+          && !store.getItem('svx.dismiss_notif_banner');
         const notifBanner = needsNotif
           ? '<div class="card" id="notif-prompt-banner" style="background:linear-gradient(90deg,rgba(34,208,255,0.15),rgba(138,92,255,0.15));border:1px solid #22d0ff;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">'
             + '  <div style="display:flex;align-items:center;gap:10px">'
@@ -2241,7 +2264,10 @@ function showUpdateBar(onUpdate) {
             + '    <div><b style="color:#fff;font-size:13.5px">' + (LANG === 'ar' ? 'تفعيل إشعارات الهاتف الفورية' : 'Enable Mobile Push Notifications') + '</b>'
             + '    <small style="display:block;color:#9fb4d6;font-size:11.5px">' + (LANG === 'ar' ? 'اضغط هنا لتفعيل استلام إشعارات طلبات الانضمام والمهام على شريط هاتفك فورياً.' : 'Tap here to receive instant alerts for join requests and submissions.') + '</small></div>'
             + '  </div>'
-            + '  <button type="button" class="btn sm" id="btn-enable-notif" style="background:#22d0ff;color:#020611;font-weight:700">' + (LANG === 'ar' ? 'تفعيل الإشعارات الآن 🔔' : 'Enable Alerts 🔔') + '</button>'
+            + '  <div style="display:flex;align-items:center;gap:8px">'
+            + '    <button type="button" class="btn sm" id="btn-enable-notif" style="background:#22d0ff;color:#020611;font-weight:700">' + (LANG === 'ar' ? 'تفعيل الإشعارات الآن 🔔' : 'Enable Alerts 🔔') + '</button>'
+            + '    <button type="button" class="btn sm ghost" id="btn-dismiss-banner" style="color:#9fb4d6;padding:6px 10px;font-size:14px" title="' + (LANG === 'ar' ? 'إغلاق' : 'Dismiss') + '">✕</button>'
+            + '  </div>'
             + '</div>'
           : '';
         return notifBanner + '<h2 class="ph">Join requests</h2><p class="pp">Review new requests and assign an ID to each accepted student.</p><div class="stats" id="stats"></div><div class="chips" id="chips"></div><div class="list" id="list"></div>';
@@ -2249,6 +2275,12 @@ function showUpdateBar(onUpdate) {
       paint() {
         const btnNotif = $('#btn-enable-notif');
         if (btnNotif) btnNotif.onclick = () => initPushNotifications(true);
+        const btnDismiss = $('#btn-dismiss-banner');
+        if (btnDismiss) btnDismiss.onclick = () => {
+          store.setItem('svx.dismiss_notif_banner', '1');
+          const b = $('#notif-prompt-banner');
+          if (b) b.remove();
+        };
         const R = D.requests; $('#stats').innerHTML = stat('Pending', R.filter((r) => r.status === 'pending').length, 'clock') + stat('Members', D.members.filter((m) => m.role !== 'admin' && !m.deleted).length, 'users') + stat('Tasks', D.tasks.filter((t) => !t.deleted).length, 'tasks');
         $('#chips').innerHTML = [['pending', 'Pending'], ['approved', 'Accepted'], ['rejected', 'Rejected'], ['all', 'All']].map((c) => '<button class="chip' + (F.req === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + '</button>').join('');
         const L = R.filter((r) => F.req === 'all' || r.status === F.req).sort((a, b) => b.createdAt - a.createdAt);
@@ -4019,7 +4051,15 @@ try {
   return;
 }
     if (db.isAdminSession && db.isAdminSession()) {
-      enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now() }, true);
+      let fcmTok = '';
+      try {
+        const cached = JSON.parse(store.getItem('svx.me') || 'null');
+        if (cached && cached.fcmToken) fcmTok = cached.fcmToken;
+      } catch (_) {}
+      if (!fcmTok) {
+        try { fcmTok = store.getItem('svx.fcm_token') || ''; } catch (_) {}
+      }
+      enterApp({ id: CONFIG.adminId.toUpperCase(), role: 'admin', name: 'Admin', level: 6, createdAt: Date.now(), fcmToken: fcmTok }, true);
       return;
     }
     store.removeItem('svx.adm');
